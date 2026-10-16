@@ -1,256 +1,292 @@
 <!DOCTYPE html>
-<html lang="es" class="dark">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#060911" />
-  <title>Aether Outpost 3D — Beta 3.0 (Duck Survival Architecture & Day/Night Base RPG)</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23f59e0b'/%3E%3Cpath d='M32 8l20 12v24L32 56 12 44V20z' fill='%230f172a' stroke='%23fff' stroke-width='4'/%3E%3C/svg%3E" />
+  <meta name="theme-color" content="#1e293b" />
+  <title>Duck Survival 3D — Réplica 1:1 (Build by Day, Defend by Night)</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23facc15'/%3E%3Ccircle cx='32' cy='30' r='18' fill='%23fde047' stroke='%23000' stroke-width='3'/%3E%3Cellipse cx='32' cy='36' rx='10' ry='5' fill='%23f97316' stroke='%23000' stroke-width='2.5'/%3E%3Ccircle cx='25' cy='25' r='3' fill='%23000'/%3E%3Ccircle cx='39' cy='25' r='3' fill='%23000'/%3E%3C/svg%3E" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
     html, body {
       margin: 0; padding: 0; width: 100%; height: 100%;
-      background: #04060b; color: #f8fafc;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0b101b; color: #ffffff;
+      font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
       overflow: hidden;
     }
     .phone-viewport-wrapper {
       width: 100vw; height: 100dvh;
       display: flex; align-items: center; justify-content: center;
-      background: radial-gradient(circle at center, #111827 0%, #030407 82%);
+      background: radial-gradient(circle at center, #1e293b 0%, #060911 80%);
     }
     .phone-frame {
       position: relative;
       width: 100%; height: 100%;
-      max-width: 465px; max-height: 940px;
-      background: #080c14;
+      max-width: 460px; max-height: 930px;
+      background: #1a2436;
       overflow: hidden;
       display: flex; flex-direction: column;
-      box-shadow: 0 25px 80px rgba(0,0,0,0.92), 0 0 0 2px rgba(255,255,255,0.08);
+      box-shadow: 0 25px 80px rgba(0,0,0,0.9), 0 0 0 3px #0f172a;
     }
     @media (min-width: 520px) {
       .phone-frame.framed-mode {
         height: 95dvh;
-        border-radius: 36px;
-        border: 6px solid #1e293b;
+        border-radius: 38px;
+        border: 7px solid #0f172a;
       }
       .phone-frame.fullscreen-mode {
         max-width: 100vw; max-height: 100dvh; height: 100dvh;
         border-radius: 0; border: none;
       }
     }
-    .btn-tactile {
-      transition: transform 0.12s ease, filter 0.15s ease;
+    /* Estilo Cartoon Glossy de Duck Survival / Habby */
+    .cartoon-box {
+      background: linear-gradient(180deg, #2b3954 0%, #1d283d 100%);
+      border: 2.5px solid #0b111e;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.18), 0 4px 0 #0b111e;
+    }
+    .cartoon-btn-yellow {
+      background: linear-gradient(180deg, #fde047 0%, #eab308 100%);
+      border: 2.5px solid #0b111e;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.6), 0 4px 0 #0b111e;
+      color: #0b111e;
+      font-weight: 900;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+      transition: transform 0.08s ease;
       cursor: pointer;
     }
-    .btn-tactile:hover { filter: brightness(1.12); transform: translateY(-2px); }
-    .btn-tactile:active { transform: scale(0.92); }
-    .glass-hud {
-      background: rgba(9, 13, 22, 0.86);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.14);
+    .cartoon-btn-yellow:active { transform: translateY(3px); box-shadow: 0 1px 0 #0b111e; }
+
+    .cartoon-btn-green {
+      background: linear-gradient(180deg, #4ade80 0%, #16a34a 100%);
+      border: 2.5px solid #0b111e;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.45), 0 4px 0 #0b111e;
+      color: #052e16;
+      font-weight: 900;
+      transition: transform 0.08s ease;
+      cursor: pointer;
     }
-    .drawer-sheet {
-      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    .cartoon-btn-green:active { transform: translateY(3px); box-shadow: 0 1px 0 #0b111e; }
+
+    .cartoon-btn-blue {
+      background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+      border: 2.5px solid #0b111e;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.45), 0 4px 0 #0b111e;
+      color: #ffffff;
+      font-weight: 900;
+      text-shadow: 0 1.5px 0 #0b111e;
+      transition: transform 0.08s ease;
+      cursor: pointer;
     }
-    @keyframes pulseBoss {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.03); }
+    .cartoon-btn-blue:active { transform: translateY(3px); box-shadow: 0 1px 0 #0b111e; }
+
+    .text-outline {
+      text-shadow: -1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000, 0 2px 0 #000;
     }
-    .boss-pulse { animation: pulseBoss 1s ease-in-out infinite; }
     ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.25); border-radius: 999px; }
+    ::-webkit-scrollbar-thumb { background: #475569; border-radius: 999px; }
   </style>
 </head>
 <body>
 
-  <!-- LOADING SCREEN -->
-  <div id="loading-overlay" class="fixed inset-0 z-50 bg-[#04060b] flex flex-col items-center justify-center p-6 transition-opacity duration-500">
-    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 via-orange-500 to-emerald-500 flex items-center justify-center text-3xl shadow-2xl mb-3 animate-bounce">
-      ☀️
+  <!-- PANTALLA DE CARGA ESTILO DUCK SURVIVAL -->
+  <div id="loading-overlay" class="fixed inset-0 z-50 bg-[#131c2e] flex flex-col items-center justify-center p-6 transition-opacity duration-500">
+    <div class="w-20 h-20 rounded-3xl cartoon-btn-yellow flex items-center justify-center text-4xl mb-3 animate-bounce">
+      🦆
     </div>
-    <span class="px-3 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-extrabold text-xs mb-1">
-      BETA 3.0 • ARQUITECTURA COMPLETA DUCK SURVIVAL 3D
+    <span class="px-3 py-1 rounded-full bg-amber-400 text-black font-black text-xs border-2 border-black mb-1">
+      RÉPLICA 1:1 • JOY NICE GAMES STYLE
     </span>
-    <h1 class="text-xl font-black tracking-wider text-white">AETHER OUTPOST 3D</h1>
-    <p class="text-xs text-slate-400 mt-1 mb-5 text-center max-w-xs">
-      Construye de Día ☀️ • Defiende de Noche 🌙 • 6 Slots de Equipo + Fusión de Gemas • Escuadrón 2+2 Elemental
+    <h1 class="text-2xl font-black tracking-wide text-amber-300 text-outline">DUCK SURVIVAL 3D</h1>
+    <p class="text-xs text-slate-300 mt-1 mb-5 text-center max-w-xs font-bold">
+      Construye de Día ☀️ • Defiende de Noche 🌙 • Mochila de Billetes 3D • 5 Oleadas + Jefe Zombie
     </p>
-    <div class="w-64 h-2.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
-      <div id="load-bar" class="h-full bg-gradient-to-r from-amber-400 via-emerald-400 to-cyan-400 transition-all duration-300" style="width: 25%"></div>
+    <div class="w-64 h-4 bg-slate-900 rounded-full overflow-hidden border-2 border-black p-0.5">
+      <div id="load-bar" class="h-full rounded-full bg-gradient-to-r from-lime-400 to-amber-400 transition-all duration-300" style="width: 30%"></div>
     </div>
-    <p id="load-status" class="text-xs text-amber-300 font-mono mt-2">Cargando ciclo Día/Noche, Torre EMP y Meteoritos 3D...</p>
+    <p id="load-status" class="text-xs text-amber-300 font-black mt-2">Renderizando modelos 3D Toon, Pato Duke y Zombies...</p>
   </div>
 
   <div class="phone-viewport-wrapper">
     <div id="phone-container" class="phone-frame framed-mode">
 
-      <!-- ESCENA 3D THREE.JS -->
+      <!-- ====================================================
+           CAPA 1: ESCENA 3D THREE.JS (CAMPAMENTO DUCK SURVIVAL)
+           ==================================================== -->
       <div id="canvas-3d-host" class="absolute inset-0 z-0"></div>
 
-      <!-- CAPA DE TEXTOS DE DAÑO Y DINERO FLOTANTE -->
-      <div id="floating-dmg-layer" class="absolute inset-0 z-10 pointer-events-none overflow-hidden"></div>
+      <!-- ====================================================
+           CAPA 2: ETIQUETAS 2D EN EL MUNDO 3D (BARRA HP SOBRE EL PATO, CÍRCULOS DE PRECIO EN EL SUELO Y DAÑO)
+           ==================================================== -->
+      <div id="world-ui-layer" class="absolute inset-0 z-10 pointer-events-none overflow-hidden">
+        <!-- Barra de Vida Flotante sobre el Pato 3D (Exacto a Duck Survival) -->
+        <div id="duck-floating-hud" class="absolute -translate-x-1/2 -translate-y-full flex flex-col items-center pointer-events-none" style="left:50%; top:50%;">
+          <span id="duck-backpack-tag" class="px-1.5 py-0.5 rounded bg-emerald-500 border border-black text-black font-black text-xs mb-0.5 shadow">
+            💵 $350
+          </span>
+          <div class="w-14 h-2.5 bg-black/80 rounded-full border border-black p-0.5 overflow-hidden">
+            <div id="duck-hp-fill" class="h-full bg-lime-400 rounded-full" style="width:100%"></div>
+          </div>
+        </div>
+        <!-- Contenedor para los precios sobre los círculos blancos del suelo -->
+        <div id="ground-pads-labels"></div>
+        <!-- Contenedor para textos de daño flotantes -->
+        <div id="floating-dmg-box"></div>
+      </div>
 
       <!-- ====================================================
-           HUD SUPERIOR: DÍA/NOCHE + 5 OLEADAS + BARRA XP ROGUELITE
+           CAPA 3: HUD SUPERIOR CARTOON (MONEDAS, BARRA DE 5 OLEADAS, DÍA/NOCHE, XP)
            ==================================================== -->
       <header class="relative z-20 p-2 flex flex-col gap-1.5 pointer-events-auto">
 
-        <!-- BARRA DE NIVEL DE HABILIDAD ROGUELITE EN PARTIDA -->
-        <div class="w-full h-4 bg-slate-950/90 rounded-full border border-white/15 overflow-hidden relative flex items-center px-2.5">
-          <div id="xp-bar-fill" class="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-amber-500 via-yellow-400 to-emerald-400 transition-all duration-200" style="width: 25%"></div>
-          <div class="relative z-10 w-full flex items-center justify-between text-xs font-black text-white drop-shadow">
-            <span id="hud-skill-lv">🔥 HABILIDAD NV.1</span>
-            <span id="hud-synergy-txt" class="text-amber-200">⚡ SINERGIA FUEGO +30%</span>
-            <span id="hud-power-txt" class="text-emerald-300">⚔️ 4,850</span>
-          </div>
-        </div>
-
-        <!-- RELOJ DÍA/NOCHE + MARCADOR DE 5 OLEADAS + VIDA VALLA ELÉCTRICA -->
-        <div class="glass-hud rounded-2xl p-2 px-2.5 flex items-center justify-between gap-2 shadow-lg">
-          <div class="flex items-center gap-2">
-            <span id="phase-badge" class="px-2 py-1 rounded-xl bg-indigo-600 text-white font-black text-xs flex items-center gap-1 shadow">
-              🌙 NOCHE
-            </span>
-            <div>
-              <div class="flex items-center gap-1 text-xs font-extrabold">
-                <span id="wave-title-txt" class="text-white">CAP.1 • OLEADA 1/5</span>
-                <span class="text-slate-400">•</span>
-                <span id="enemies-left-txt" class="text-amber-300">Horda: 8</span>
-              </div>
-              <div class="flex items-center gap-1 mt-1">
-                <div id="w-pill-1" class="w-5 h-2 rounded-full bg-emerald-400"></div>
-                <div id="w-pill-2" class="w-5 h-2 rounded-full bg-slate-700"></div>
-                <div id="w-pill-3" class="w-5 h-2 rounded-full bg-slate-700"></div>
-                <div id="w-pill-4" class="w-5 h-2 rounded-full bg-slate-700"></div>
-                <div id="w-pill-5" class="px-1.5 h-3.5 rounded bg-rose-950 border border-rose-500/60 text-rose-300 flex items-center text-xs font-black">
-                  💀5
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="flex flex-col items-end">
-            <span class="text-xs font-bold text-slate-300">🧱 Valla Eléctrica: <strong id="hud-wall-hp" class="text-cyan-300">100%</strong></span>
-            <div class="w-24 h-2 bg-slate-800 rounded-full overflow-hidden border border-white/15 mt-0.5">
-              <div id="hud-wall-bar" class="h-full bg-gradient-to-r from-cyan-400 to-emerald-400 transition-all duration-200" style="width: 100%"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- BARRA DE JEFE FINAL SEGMENTADA (x5 BARRAS ESTILO DUCK SURVIVAL) -->
-        <div id="boss-hp-banner" class="hidden boss-pulse bg-rose-950/95 border-2 border-rose-500 rounded-2xl p-2 px-3 flex-col gap-1 shadow-2xl">
-          <div class="flex items-center justify-between text-xs font-black">
-            <span class="text-rose-200">👹 JEFE FINAL (NOCHE 5): DEVASTADOR MUTANTE</span>
-            <span id="boss-bars-txt" class="px-1.5 py-0.5 rounded bg-amber-400 text-black font-black text-xs">x5 BARRAS</span>
-          </div>
-          <div class="w-full h-3 bg-black/70 rounded-full overflow-hidden border border-rose-400/40">
-            <div id="boss-hp-fill" class="h-full bg-gradient-to-r from-rose-600 via-orange-500 to-amber-400 transition-all duration-100" style="width: 100%"></div>
-          </div>
-        </div>
-
-        <!-- FILA DE MONEDAS: DINERO (💵), PLANOS DE EQUIPO (📜), GEMAS (💎) + CONTROLES -->
+        <!-- FILA SUPERIOR DE MONEDAS (ESTILO DUCK SURVIVAL: ENERGÍA, BILLETES VERDES, GEMAS, 777 DRAWS) -->
         <div class="flex items-center justify-between gap-1">
           <div class="flex items-center gap-1">
-            <div class="glass-hud rounded-xl px-2 py-1 flex items-center gap-1 text-xs font-bold border border-emerald-500/40">
+            <!-- Billetes Verdes (Green Banknotes) -->
+            <div class="cartoon-box rounded-full px-2.5 py-0.5 flex items-center gap-1 text-xs">
               <span>💵</span>
-              <span id="res-cash" class="text-emerald-400 font-black text-sm">$380</span>
+              <span id="hud-cash" class="font-black text-lime-400 text-outline">$350</span>
             </div>
-            <div class="glass-hud rounded-xl px-2 py-1 flex items-center gap-1 text-xs font-bold">
-              <span>📜</span>
-              <span id="res-blueprints" class="text-amber-300 font-extrabold">25</span>
+            <!-- Planos / Tickets de Equipo -->
+            <div class="cartoon-box rounded-full px-2.5 py-0.5 flex items-center gap-1 text-xs">
+              <span>🎟️</span>
+              <span id="hud-tickets" class="font-black text-amber-300 text-outline">30</span>
             </div>
-            <div class="glass-hud rounded-xl px-2 py-1 flex items-center gap-1 text-xs font-bold">
+            <!-- Gemas -->
+            <div class="cartoon-box rounded-full px-2.5 py-0.5 flex items-center gap-1 text-xs">
               <span>💎</span>
-              <span id="res-gems" class="text-sky-400 font-extrabold">5,400</span>
+              <span id="hud-gems" class="font-black text-cyan-300 text-outline">5,400</span>
             </div>
           </div>
 
           <div class="flex items-center gap-1">
-            <button onclick="claimVipSupply()" class="btn-tactile px-2 py-1 rounded-xl bg-emerald-600 text-white font-extrabold text-xs shadow">
-              🎁 +$1,200
+            <button onclick="claim777Draws()" class="cartoon-btn-yellow px-2 py-0.5 rounded-full text-xs">
+              🎁 777 Draws
             </button>
-            <button onclick="toggleAutoPilot()" id="btn-autopilot" class="btn-tactile px-2 py-1 rounded-xl bg-amber-500 text-black font-extrabold text-xs shadow">
-              🤖 IA: ON
+            <button onclick="toggleAutoPilot()" id="btn-autopilot" class="cartoon-btn-green px-2 py-0.5 rounded-full text-xs">
+              🤖 Auto
             </button>
-            <button onclick="toggleFrameMode()" id="btn-frame-mode" class="btn-tactile glass-hud px-2 py-1 rounded-xl text-xs font-bold hidden sm:inline-block">
-              🖥️ Full
+            <button onclick="toggleFrameMode()" id="btn-frame-mode" class="cartoon-box px-2 py-0.5 rounded-full text-xs font-black hidden sm:inline-block">
+              🖥️
             </button>
-            <button onclick="toggleSound()" id="btn-sound" class="btn-tactile glass-hud px-2 py-1 rounded-xl text-xs font-bold">
+            <button onclick="toggleSound()" id="btn-sound" class="cartoon-box px-2 py-0.5 rounded-full text-xs font-black">
               🔊
             </button>
+          </div>
+        </div>
+
+        <!-- BARRA DE PROGRESO DE LAS 5 OLEADAS + INDICADOR DÍA/NOCHE (EXACTO A DUCK SURVIVAL) -->
+        <div class="cartoon-box rounded-2xl p-2 px-3 flex flex-col gap-1">
+          <div class="flex items-center justify-between text-xs font-black">
+            <div class="flex items-center gap-1.5">
+              <span id="day-night-pill" class="px-2 py-0.5 rounded-lg bg-amber-400 text-black border border-black font-black text-xs">
+                ☀️ DÍA 1 (CONSTRUIR)
+              </span>
+              <span id="wave-counter-txt" class="text-white text-outline">OLEADA 1 / 5</span>
+            </div>
+            <span id="zombies-left-txt" class="text-lime-300 text-outline">🧱 Valla: 100%</span>
+          </div>
+
+          <!-- Línea de progreso con los 5 nodos y calavera roja en la Oleada 5 -->
+          <div class="relative w-full h-4 flex items-center justify-between px-1 mt-0.5">
+            <div class="absolute left-2 right-2 h-2 bg-slate-950 rounded-full border border-black overflow-hidden">
+              <div id="wave-progress-line" class="h-full bg-gradient-to-r from-lime-400 to-amber-400 transition-all duration-300" style="width: 10%"></div>
+            </div>
+            <div id="node-w1" class="relative z-10 w-4 h-4 rounded-full bg-lime-400 border-2 border-black text-black font-black flex items-center justify-center text-xs">1</div>
+            <div id="node-w2" class="relative z-10 w-4 h-4 rounded-full bg-slate-700 border-2 border-black text-white font-black flex items-center justify-center text-xs">2</div>
+            <div id="node-w3" class="relative z-10 w-4 h-4 rounded-full bg-slate-700 border-2 border-black text-white font-black flex items-center justify-center text-xs">3</div>
+            <div id="node-w4" class="relative z-10 w-4 h-4 rounded-full bg-slate-700 border-2 border-black text-white font-black flex items-center justify-center text-xs">4</div>
+            <div id="node-w5" class="relative z-10 px-1.5 h-5 rounded-md bg-rose-600 border-2 border-black text-white font-black flex items-center justify-center text-xs shadow">💀JEFE</div>
+          </div>
+
+          <!-- Barra de XP Roguelite para sacar Cartas de Habilidad -->
+          <div class="w-full h-3.5 bg-slate-950 rounded-full border border-black overflow-hidden relative flex items-center px-2 mt-0.5">
+            <div id="xp-bar-fill" class="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-sky-400 to-indigo-500 transition-all duration-200" style="width: 20%"></div>
+            <span id="xp-lv-txt" class="relative z-10 text-xs font-black text-white text-outline">⚡ NV. HABILIDAD 1 (Recoge gemas azules)</span>
+          </div>
+        </div>
+
+        <!-- BARRA DE VIDA DEL JEFE ZOMBIE GIGANTE (OLEADA 5) -->
+        <div id="boss-bar-box" class="hidden cartoon-box bg-rose-950 border-rose-500 rounded-2xl p-2 flex-col gap-1">
+          <div class="flex justify-between text-xs font-black">
+            <span class="text-amber-300 text-outline">👹 JEFE ZOMBIE MUTANTE (OLEADA 5/5)</span>
+            <span id="boss-hp-bars" class="px-1.5 rounded bg-amber-400 text-black">x5</span>
+          </div>
+          <div class="w-full h-3 bg-black rounded-full border border-black overflow-hidden">
+            <div id="boss-hp-fill" class="h-full bg-gradient-to-r from-rose-500 to-amber-400" style="width: 100%"></div>
           </div>
         </div>
       </header>
 
       <!-- ====================================================
-           CARTEL DE FASE DE DÍA ☀️ (CONSTRUCCIÓN Y ECONOMÍA)
+           BOTÓN CENTRAL DE FASE DE DÍA ("🌙 ¡EMPEZAR NOCHE / OLEADA!")
            ==================================================== -->
-      <div id="day-phase-banner" class="relative z-20 mx-2.5 mt-0.5 bg-gradient-to-r from-amber-500/90 via-orange-500/90 to-emerald-600/90 border-2 border-yellow-300 rounded-2xl p-2.5 hidden items-center justify-between gap-2 shadow-2xl pointer-events-auto">
-        <div>
-          <span class="text-xs font-black text-black uppercase block">☀️ FASE DE DÍA • RECOGE DINERO (💵) Y MEJORA TU BASE</span>
-          <span class="text-xs text-slate-950 font-semibold">Tus Minas de Oro produjeron efectivo. Mejora tus torretas antes del anochecer.</span>
+      <div id="day-action-bar" class="relative z-20 mx-3 mt-1 flex items-center justify-between gap-2 cartoon-box rounded-2xl p-2 pointer-events-auto">
+        <div class="text-xs">
+          <span class="font-black text-amber-300 text-outline block">☀️ FASE DE DÍA: MEJORA TU BASE CON 💵</span>
+          <span class="text-slate-200 font-bold">Camina a los círculos del suelo o toca abajo para construir.</span>
         </div>
-        <button onclick="startNightWaveNow()" id="btn-start-night" class="btn-tactile px-3.5 py-2 rounded-xl bg-slate-950 text-amber-300 font-black text-xs shrink-0 shadow-lg border border-amber-400">
-          🌙 DEFENDER NOCHE 2/5
+        <button onclick="startNightWave()" id="btn-start-night" class="cartoon-btn-yellow px-3.5 py-2 rounded-xl text-xs shrink-0">
+          🌙 OLEADA 1/5
         </button>
       </div>
 
       <!-- ====================================================
-           SELECTOR DE 3 CARTAS ROGUELITE (SKILL DRAFT DE DUCK SURVIVAL)
+           MODAL ROGUELITE DE 3 CARTAS (EXACTO A DUCK SURVIVAL)
            ==================================================== -->
-      <div id="roguelite-draft-modal" class="relative z-30 mx-2.5 mt-1 glass-hud border-2 border-amber-400 rounded-2xl p-2.5 hidden flex-col gap-2 shadow-2xl pointer-events-auto">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-black text-amber-300 uppercase">🃏 ¡SUBISTE DE NIVEL! ELIGE HABILIDAD (S-TIER META)</span>
-          <span class="text-xs text-emerald-300 font-bold">Toca 1 Carta</span>
+      <div id="skill-draft-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 pointer-events-auto">
+        <div class="cartoon-box rounded-3xl max-w-sm w-full p-4 flex flex-col items-center gap-3">
+          <span class="px-3 py-1 rounded-full bg-amber-400 text-black font-black text-xs border-2 border-black">
+            ⚡ ¡SUBISTE DE NIVEL!
+          </span>
+          <h3 class="text-lg font-black text-white text-outline">Elige una Habilidad para tu Pato</h3>
+          <div id="skill-cards-container" class="grid grid-cols-3 gap-2 w-full"></div>
         </div>
-        <div id="draft-cards-grid" class="grid grid-cols-3 gap-1.5"></div>
       </div>
 
       <!-- ====================================================
-           ZONA INFERIOR DEL MAPA 3D: 6 PADS DE BASE + JOYSTICK + 3 SKILLS
+           ZONA INFERIOR DE CONTROLES EN BATALLA (6 PADS + JOYSTICK + 3 SKILLS)
            ==================================================== -->
       <div class="relative z-10 flex-1 pointer-events-none flex flex-col justify-end p-2">
 
-        <!-- LAS 6 ESTRUCTURAS DE LA BASE (MINA, CAMPAMENTO, VALLA, GATTLING, EMP, CUARTEL) -->
+        <!-- ACCESO RÁPIDO A LOS 6 CÍRCULOS DE CONSTRUCCIÓN DE BASE -->
         <div class="pointer-events-auto mb-1.5">
           <div class="flex items-center justify-between mb-1 px-1">
-            <span class="text-xs font-extrabold text-amber-300 drop-shadow">
-              🏗️ BASE 3D (Camina a los Pads o toca para mejorar con 💵)
+            <span class="text-xs font-black text-amber-300 text-outline">
+              🏗️ CÍRCULOS DE BASE (Párate encima en 3D o toca aquí)
             </span>
-            <button onclick="forceBossNight5()" class="text-xs font-extrabold text-rose-400 hover:underline cursor-pointer drop-shadow">
-              💀 Probar Noche 5 (Jefe) →
+            <button onclick="skipToBossWave5()" class="text-xs font-black text-rose-400 text-outline hover:underline cursor-pointer">
+              💀 Ir a Oleada 5 (Jefe) →
             </button>
           </div>
-          <div id="quick-base-pads" class="grid grid-cols-6 gap-1"></div>
+          <div id="quick-pads-grid" class="grid grid-cols-6 gap-1"></div>
         </div>
 
-        <!-- JOYSTICK TÁCTIL + 3 HABILIDADES META DE DUCK SURVIVAL -->
+        <!-- JOYSTICK VIRTUAL + 3 BOTONES DE HABILIDAD ACTIVA -->
         <div class="flex items-end justify-between px-1 pb-0.5">
-          <div id="joystick-zone" class="pointer-events-auto w-24 h-24 rounded-full bg-black/55 border-2 border-white/25 backdrop-blur-sm relative flex items-center justify-center touch-none shadow-xl">
-            <div id="joystick-knob" class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-md border border-white/70 transition-transform duration-75"></div>
-            <span class="absolute -top-5 text-xs font-bold text-white/80">MOVER</span>
+          <div id="joystick-zone" class="pointer-events-auto w-24 h-24 rounded-full bg-black/50 border-2 border-white/40 relative flex items-center justify-center touch-none shadow-xl">
+            <div id="joystick-knob" class="w-11 h-11 rounded-full cartoon-btn-yellow flex items-center justify-center text-base">
+              🦆
+            </div>
           </div>
 
           <div class="pointer-events-auto flex items-center gap-1.5">
-            <button onclick="castMetaSkill(0)" class="btn-tactile w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-600 to-rose-700 border-2 border-amber-300/60 flex flex-col items-center justify-center shadow-xl">
+            <button onclick="triggerActiveSkill(0)" class="cartoon-btn-yellow w-16 h-16 rounded-2xl flex flex-col items-center justify-center">
+              <span class="text-lg">🐥</span>
+              <span class="text-xs font-black leading-none">Pollo Rayo</span>
+              <span id="cd-txt-0" class="text-xs font-bold text-rose-700 mt-0.5">LISTO</span>
+            </button>
+            <button onclick="triggerActiveSkill(1)" class="cartoon-btn-blue w-16 h-16 rounded-2xl flex flex-col items-center justify-center">
               <span class="text-lg">☄️</span>
-              <span class="text-xs font-black leading-tight">Meteoro</span>
-              <span id="skill-cd-0" class="text-xs font-mono text-amber-200">LISTO</span>
+              <span class="text-xs font-black leading-none">Meteoro</span>
+              <span id="cd-txt-1" class="text-xs font-bold text-amber-200 mt-0.5">LISTO</span>
             </button>
-
-            <button onclick="castMetaSkill(1)" class="btn-tactile w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-600 to-blue-700 border-2 border-cyan-300/60 flex flex-col items-center justify-center shadow-xl">
-              <span class="text-lg">⚡</span>
-              <span class="text-xs font-black leading-tight">Láser S</span>
-              <span id="skill-cd-1" class="text-xs font-mono text-amber-200">LISTO</span>
-            </button>
-
-            <button onclick="castMetaSkill(2)" class="btn-tactile w-16 h-16 rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-700 border-2 border-sky-300/60 flex flex-col items-center justify-center shadow-xl">
+            <button onclick="triggerActiveSkill(2)" class="cartoon-btn-green w-16 h-16 rounded-2xl flex flex-col items-center justify-center">
               <span class="text-lg">❄️</span>
-              <span class="text-xs font-black leading-tight">Hielo+HP</span>
-              <span id="skill-cd-2" class="text-xs font-mono text-amber-200">LISTO</span>
+              <span class="text-xs font-black leading-none">Hielo+Muro</span>
+              <span id="cd-txt-2" class="text-xs font-bold text-white mt-0.5">LISTO</span>
             </button>
           </div>
         </div>
@@ -258,136 +294,124 @@
       </div>
 
       <!-- ====================================================
-           CAJÓN DESLIZANTE (INTERFACES CLONADAS DE DUCK SURVIVAL)
+           PANTALLAS COMPLETAS DE MENÚ DE DUCK SURVIVAL (EQUIPO, HÉROES, GACHA, TIENDA)
            ==================================================== -->
-      <div id="bottom-drawer" class="drawer-sheet translate-y-full absolute left-0 right-0 bottom-14 z-30 h-[70%] glass-hud rounded-t-3xl p-4 flex flex-col gap-3 shadow-2xl pointer-events-auto">
-        <div class="flex items-center justify-between border-b border-white/10 pb-2">
-          <h2 id="drawer-title" class="font-extrabold text-base text-amber-400">🎒 Equipamiento (6 Slots) y Gemas</h2>
-          <button onclick="closeDrawer()" class="btn-tactile px-3 py-1 rounded-xl bg-white/10 text-xs font-bold">
-            ✕ Volver al Mapa 3D
+      <div id="menu-modal-sheet" class="drawer-sheet translate-y-full absolute inset-x-0 top-14 bottom-14 z-30 cartoon-box rounded-t-3xl p-3.5 flex flex-col gap-2.5 pointer-events-auto">
+        <div class="flex items-center justify-between border-b-2 border-black/40 pb-2">
+          <h2 id="menu-sheet-title" class="font-black text-base text-amber-300 text-outline">🎒 Equipamiento del Pato y Gemas</h2>
+          <button onclick="closeMenuTab()" class="cartoon-btn-yellow px-3 py-1 rounded-xl text-xs">
+            ✕ Volver al Juego
           </button>
         </div>
-        <div id="drawer-content" class="flex-1 overflow-y-auto pr-1 space-y-2.5 text-xs"></div>
+        <div id="menu-sheet-body" class="flex-1 overflow-y-auto pr-1 space-y-2.5 text-xs"></div>
       </div>
 
       <!-- ====================================================
-           LAS 5 PESTAÑAS INFERIORES DE DUCK SURVIVAL
+           BARRA INFERIOR DE 5 PESTAÑAS (RÉPLICA DE DUCK SURVIVAL)
            ==================================================== -->
-      <nav class="relative z-40 bg-[#05080f] border-t border-white/15 grid grid-cols-5 py-1.5 px-1 pointer-events-auto">
-        <button onclick="openDrawer('gear')" id="nav-gear" class="btn-tactile flex flex-col items-center justify-center py-1 text-slate-300 font-bold text-xs">
-          <span class="text-base">🎒</span>
-          <span>Equipo/Gemas</span>
+      <nav class="relative z-40 bg-[#121a2a] border-t-4 border-[#090d16] grid grid-cols-5 py-1 px-1 pointer-events-auto">
+        <button onclick="openMenuTab('gear')" id="tab-gear" class="flex flex-col items-center justify-center py-1 rounded-xl text-slate-300 font-black text-xs cursor-pointer">
+          <span class="text-lg">🎒</span>
+          <span>Equipo</span>
         </button>
-        <button onclick="openDrawer('heroes')" id="nav-heroes" class="btn-tactile flex flex-col items-center justify-center py-1 text-slate-300 font-bold text-xs">
-          <span class="text-base">🌟</span>
-          <span>Héroes 2+2</span>
+        <button onclick="openMenuTab('heroes')" id="tab-heroes" class="flex flex-col items-center justify-center py-1 rounded-xl text-slate-300 font-black text-xs cursor-pointer">
+          <span class="text-lg">🦆</span>
+          <span>Patos 2+2</span>
         </button>
-        <button onclick="closeDrawer()" id="nav-battle" class="btn-tactile flex flex-col items-center justify-center py-1 text-amber-400 font-black text-xs bg-amber-500/15 rounded-xl border border-amber-400/40">
-          <span class="text-base">⚔️</span>
-          <span>Batalla 3D</span>
+        <button onclick="closeMenuTab()" id="tab-battle" class="cartoon-btn-yellow flex flex-col items-center justify-center py-1 rounded-xl text-xs">
+          <span class="text-lg">⚔️</span>
+          <span>Batalla</span>
         </button>
-        <button onclick="openDrawer('gacha')" id="nav-gacha" class="btn-tactile flex flex-col items-center justify-center py-1 text-slate-300 font-bold text-xs">
-          <span class="text-base">🎲</span>
-          <span>Cofres/Gacha</span>
+        <button onclick="openMenuTab('gacha')" id="tab-gacha" class="flex flex-col items-center justify-center py-1 rounded-xl text-slate-300 font-black text-xs cursor-pointer">
+          <span class="text-lg">🎲</span>
+          <span>Reclutar</span>
         </button>
-        <button onclick="openDrawer('base')" id="nav-base" class="btn-tactile flex flex-col items-center justify-center py-1 text-slate-300 font-bold text-xs">
-          <span class="text-base">🏰</span>
-          <span>Base/Tienda</span>
+        <button onclick="openMenuTab('shop')" id="tab-shop" class="flex flex-col items-center justify-center py-1 rounded-xl text-slate-300 font-black text-xs cursor-pointer">
+          <span class="text-lg">🛒</span>
+          <span>Tienda</span>
         </button>
       </nav>
 
     </div>
   </div>
 
-  <!-- TOAST -->
-  <div id="toast-msg" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white border border-amber-400 px-4 py-2 rounded-2xl shadow-2xl text-xs font-extrabold hidden"></div>
+  <!-- TOAST CARTOON -->
+  <div id="toast-msg" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 cartoon-btn-yellow px-4 py-2 rounded-2xl text-xs hidden"></div>
 
   <script>
     // ============================================================================
-    // 1. BASE DE DATOS DE DUCK SURVIVAL (DÍA/NOCHE, 6 EDIFICIOS, 6 SLOTS GEAR + GEMAS, 2+2 HÉROES)
+    // 1. ESTADO EXACTAMENTE CLONADO DE DUCK SURVIVAL
     // ============================================================================
-    const GAME = {
-      cash: 380,
-      blueprints: 25,
-      gems: 5400,
-      tickets: 20,
+    const STATE = {
+      cash: 350,        // Billetes verdes en la mochila del Pato
+      tickets: 30,      // Tickets Gacha / Planos
+      gems: 5400,       // Diamantes
       soundOn: true,
       autoPilot: true,
       framedMode: true,
-      activeDrawer: null,
+      openTab: null,
 
-      // Ciclo Día / Noche y 5 Oleadas
       stage: 1,
-      wave: 1, // 1..5
-      isNight: true,
-      enemiesToSpawn: 0,
+      wave: 1,          // 1..5 (Oleada 5 = Jefe Zombie Gigante)
+      isNight: false,   // Empieza de Día para que veas cómo se construye con la mochila de billetes
+      zombiesToSpawn: 0,
       spawnTimer: 0,
 
-      // Nivel Roguelite en partida
       skillLv: 1,
       skillXp: 0,
-      skillXpNext: 90,
+      skillXpNext: 80,
 
-      wallHp: 1800,
-      wallMaxHp: 1800,
-      laserBeamTimer: 0,
+      fenceHp: 1600,
+      fenceMaxHp: 1600,
+      dualGunsActive: false,
 
-      // Las 6 Estructuras de la Base (Economía de Día + Defensa de Noche)
-      buildings: [
-        { id: 'mine',    name: '⛏️ Mina de Oro',     short: 'Mina',    icon: '⛏️', level: 1, baseCost: 60, x: -6.2, z: 8.2, color: 0xfacc15, desc: 'Economía Día: Genera fajos de billetes (💵) cada pocos segundos y al amanecer.' },
-        { id: 'camp',    name: '⛺ Campamento',      short: 'Camp',    icon: '⛺', level: 1, baseCost: 70, x:  6.2, z: 8.2, color: 0x4ade80, desc: 'Soporte: Aumenta el dinero por oleada +25% y repara la Valla Eléctrica.' },
-        { id: 'fence',   name: '🧱 Valla Eléctrica', short: 'Valla',   icon: '🧱', level: 1, baseCost: 75, x:  0.0, z: 2.0, color: 0x38bdf8, desc: 'Defensa Frontal: +700 HP al muro y electrocuta a los zombies al contacto.' },
-        { id: 'turret',  name: '🔫 Torreta Gattling',short: 'Gattling',icon: '🔫', level: 1, baseCost: 90, x: -6.2, z: 3.2, color: 0xf97316, desc: 'Instala hasta 4 torretas metralleta de doble cañón sobre la muralla.' },
-        { id: 'emp',     name: '📡 Torre EMP',       short: 'EMP',     icon: '📡', level: 1, baseCost: 85, x:  0.0, z: 5.2, color: 0x818cf8, desc: 'Emite ondas electromagnéticas 3D que ralentizan un 55% a toda la horda.' },
-        { id: 'barracks',name: '🎖️ Infantería 3D',   short: 'Tropas',  icon: '🎖️', level: 1, baseCost: 95, x:  6.2, z: 3.2, color: 0x10b981, desc: 'Despliega soldados aliados en 3D que patrullan y disparan contigo.' }
+      // Los 6 Círculos de Construcción en el suelo del Campamento
+      pads: [
+        { id: 'turretL', name: 'Torreta Gattling Izq', short: 'Gattling I', icon: '🔫', level: 1, baseCost: 50, x: -5.2, z: 2.2, color: 0xfacc15 },
+        { id: 'fence',   name: 'Valla Eléctrica',      short: 'Valla',      icon: '🧱', level: 1, baseCost: 60, x:  0.0, z: 2.2, color: 0x38bdf8 },
+        { id: 'turretR', name: 'Torreta Gattling Der', short: 'Gattling D', icon: '🔫', level: 1, baseCost: 50, x:  5.2, z: 2.2, color: 0xfacc15 },
+        { id: 'mine',    name: 'Mina de Billetes',     short: 'Mina $',     icon: '💵', level: 1, baseCost: 45, x: -5.8, z: 7.5, color: 0x4ade80 },
+        { id: 'emp',     name: 'Torre Pulso EMP',      short: 'Torre EMP',  icon: '📡', level: 1, baseCost: 70, x:  0.0, z: 5.8, color: 0xa855f7 },
+        { id: 'chick',   name: 'Nido Pollos Soldado',  short: 'Pollos 3D',  icon: '🐥', level: 1, baseCost: 65, x:  5.8, z: 7.5, color: 0xf97316 }
       ],
 
-      // Las 6 Habilidades Meta de Duck Survival (S-Tier y A-Tier)
-      rogueliteSkills: {
-        flame:     { name: '🔥 Impacto Ígneo',     tier: 'S-Tier', level: 1, desc: 'Proyectiles explosivos de fuego con daño en área.' },
-        meteor:    { name: '☄️ Meteorito 3D',      tier: 'S-Tier', level: 1, desc: 'Caen meteoritos ardientes del cielo cada 3.5 segundos.' },
-        laser:     { name: '⚡ Láser Concentrado', tier: 'S-Tier', level: 1, desc: 'Rayo continuo de alta energía que barre la línea frontal.' },
-        ice:       { name: '❄️ Estalactitas Hielo',tier: 'A-Tier', level: 1, desc: 'Congela y ralentiza a las hordas que atacan el muro.' },
-        lightning: { name: '🌩️ Cadena Relámpago',  tier: 'A-Tier', level: 1, desc: 'Arco eléctrico que rebota entre múltiples enemigos.' },
-        decoy:     { name: '💣 Señuelo Explosivo', tier: 'B-Tier', level: 1, desc: 'Dron señuelo que explota al contacto en el patio.' }
+      // Cartas Roguelite de Duck Survival
+      skills: {
+        angryChick: { name: '🐥 Pollo Furioso',      tier: 'S-Tier', lv: 1, icon: '🐥', desc: 'Invoca pollitos eléctricos que disparan rayos.' },
+        flame:      { name: '🔥 Impacto Ígneo',      tier: 'S-Tier', lv: 1, icon: '🔥', desc: 'Balas explosivas de fuego para limpiar hordas.' },
+        meteor:     { name: '☄️ Lluvia Meteoritos',  tier: 'S-Tier', lv: 1, icon: '☄️', desc: 'Caen meteoritos ardientes sobre los zombies.' },
+        icicles:    { name: '❄️ Estalactitas Hielo', tier: 'A-Tier', lv: 1, icon: '❄️', desc: 'Congela de azul y frena un 50% a los zombies.' },
+        dualGuns:   { name: '🔫 Armas Dobles',       tier: 'A-Tier', lv: 1, icon: '🔫', desc: 'Duplica las ráfagas del rifle de tu Pato.' },
+        laser:      { name: '⚡ Láser Concentrado',  tier: 'S-Tier', lv: 1, icon: '⚡', desc: 'Rayo continuo de plasma que perfora todo.' }
       },
 
-      // Los 6 Slots de Equipamiento + Gemas Engarzadas (Interfaz Equipo de Duck Survival)
-      gearSlots: [
-        { id: 'weapon', name: 'Rifle Gattling Volcán', icon: '🔫', level: 3, bonusAtk: 45, gemTier: 3, gemName: 'Gema Solar Legendaria (+28% Daño Fuego)' },
-        { id: 'helmet', name: 'Casco Visor Táctico',   icon: '🪖', level: 2, bonusAtk: 25, gemTier: 2, gemName: 'Gema Épica de Crítico (+16% Crítico)' },
-        { id: 'armor',  name: 'Coraza de Titanio',     icon: '🦺', level: 2, bonusAtk: 30, gemTier: 2, gemName: 'Gema Épica de Valla (+20% HP Muro)' },
-        { id: 'gloves', name: 'Guantes de Asalto',     icon: '🧤', level: 1, bonusAtk: 18, gemTier: 1, gemName: 'Gema Rara de Cadencia (+10% Vel. Ataque)' },
-        { id: 'boots',  name: 'Botas Propulsoras',     icon: '🥾', level: 1, bonusAtk: 18, gemTier: 1, gemName: 'Gema Rara de Velocidad (+12% Mov.)' },
-        { id: 'belt',   name: 'Reactor de Cinturón',   icon: '🔋', level: 2, bonusAtk: 28, gemTier: 2, gemName: 'Gema Épica EMP (+18% Daño Eléctrico)' }
+      // Los 6 Slots de Equipamiento del Pato + Gemas Engarzadas
+      gear: [
+        { slot: 'Arma',     name: 'Gattling Pato Dorado', icon: '🔫', lv: 3, rarity: 'MÍTICO',     color: 'bg-rose-600',   gem: '🔴 Gema Fuego +35%' },
+        { slot: 'Casco',    name: 'Casco Militar Pato',   icon: '🪖', lv: 2, rarity: 'LEGENDARIO', color: 'bg-amber-500',  gem: '🟡 Gema Crítico +22%' },
+        { slot: 'Chaleco',  name: 'Chaleco Antibalas',    icon: '🦺', lv: 2, rarity: 'LEGENDARIO', color: 'bg-amber-500',  gem: '🟡 Gema Valla +25%' },
+        { slot: 'Guantes',  name: 'Alas Tácticas',        icon: '🧤', lv: 2, rarity: 'ÉPICO',      color: 'bg-purple-600', gem: '🟣 Gema Cadencia +15%' },
+        { slot: 'Botas',    name: 'Patas Turbo',          icon: '🥾', lv: 1, rarity: 'ÉPICO',      color: 'bg-purple-600', gem: '🟣 Gema Velocidad +15%' },
+        { slot: 'Cinturón', name: 'Mochila Munición',     icon: '🎒', lv: 2, rarity: 'LEGENDARIO', color: 'bg-amber-500',  gem: '🟡 Gema Billetes +30%' }
       ],
 
-      // Bolsa de Gemas para Fusionar (3 en 1: Azul -> Púrpura -> Dorada -> Roja Mítica)
-      gemBag: [
-        { tier: 1, name: '🔷 Gema Azul (Fuego +8%)', color: 'border-sky-400 text-sky-300' },
-        { tier: 1, name: '🔷 Gema Azul (Hielo +8%)', color: 'border-sky-400 text-sky-300' },
-        { tier: 1, name: '🔷 Gema Azul (Rayo +8%)',  color: 'border-sky-400 text-sky-300' },
-        { tier: 2, name: '🟣 Gema Púrpura (Láser +16%)', color: 'border-purple-400 text-purple-300' },
-        { tier: 3, name: '🟡 Gema Dorada (Meteoro +28%)', color: 'border-amber-400 text-amber-300' }
+      // Roster de Héroes Patos (2 Activos en el Mapa + 2 de Soporte Elemental)
+      ducks: [
+        { id: 'D1', name: 'Duke (Pato Líder)',      rarity: 'MÍTICO',     element: '🔥 Fuego', role: 'ACTIVO EN MAPA #1', lv: 12, stars: 3, bodyCol: 0xfacc15, hatCol: 0x15803d },
+        { id: 'D2', name: 'Cole (Pato Cohete)',     rarity: 'MÍTICO',     element: '🔥 Fuego', role: 'ACTIVO EN MAPA #2', lv: 10, stars: 3, bodyCol: 0xfef08a, hatCol: 0xdc2626 },
+        { id: 'D3', name: 'Mir (Pato Glacial)',     rarity: 'LEGENDARIO', element: '❄️ Hielo', role: 'SOPORTE PASIVO #1', lv: 9,  stars: 2, bodyCol: 0xe0f2fe, hatCol: 0x0284c7 },
+        { id: 'D4', name: 'Émilie (Pata de Lava)',  rarity: 'LEGENDARIO', element: '🔥 Fuego', role: 'SOPORTE PASIVO #2', lv: 9,  stars: 2, bodyCol: 0xfde047, hatCol: 0xea580c }
       ],
 
-      // Escuadrón 2+2 (2 Héroes Activos en 3D + 2 Héroes Pasivos de Vínculo Elemental)
-      heroes: [
-        { id: 'H01', name: 'Cole (Artillero Ígneo)',   rarity: 'MÍTICO',     element: '🔥 Fuego', role: 'ACTIVO 3D #1', level: 12, stars: 3, color: 0xf97316, skin: 'default' },
-        { id: 'H02', name: 'Mir (Comandante Glacial)', rarity: 'LEGENDARIO', element: '❄️ Hielo', role: 'ACTIVO 3D #2', level: 10, stars: 2, color: 0x38bdf8, skin: 'default' },
-        { id: 'H03', name: 'Émilie (Bruja de Lava)',   rarity: 'ÉPICO',      element: '🔥 Fuego', role: 'SOPORTE PASIVO #1', level: 9, stars: 2, color: 0xef4444, skin: 'default' },
-        { id: 'H04', name: 'Rava (Martillo Magma)',    rarity: 'ÉPICO',      element: '🔥 Fuego', role: 'SOPORTE PASIVO #2', level: 8, stars: 2, color: 0xfacc15, skin: 'default' }
-      ],
-
-      activeCooldowns: [0, 0, 0]
+      cooldowns: [0, 0, 0]
     };
 
     // ============================================================================
-    // 2. SINTETIZADOR DE SONIDO
+    // 2. AUDIO SINTETIZADO ESTILO ARCADE / DUCK SURVIVAL
     // ============================================================================
     let audioCtx = null;
     function playTone(freq, type = 'sine', dur = 0.08, vol = 0.045) {
-      if (!GAME.soundOn) return;
+      if (!STATE.soundOn) return;
       try {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const o = audioCtx.createOscillator();
@@ -400,33 +424,29 @@
         o.start(); o.stop(audioCtx.currentTime + dur);
       } catch (e) {}
     }
-    function sfxShot() { playTone(180 + Math.random() * 60, 'sawtooth', 0.05, 0.03); }
-    function sfxCash() { playTone(980 + Math.random() * 240, 'sine', 0.07, 0.04); }
-    function sfxUpgrade() {
-      [440, 554, 659, 880].forEach((f, i) => setTimeout(() => playTone(f, 'triangle', 0.12, 0.06), i * 55));
+    function sfxQuackPop() { playTone(680 + Math.random() * 250, 'triangle', 0.06, 0.04); }
+    function sfxCashFeed() { playTone(950 + Math.random() * 300, 'sine', 0.06, 0.045); }
+    function sfxLevelUp() {
+      [523, 659, 783, 1046].forEach((f, i) => setTimeout(() => playTone(f, 'triangle', 0.13, 0.07), i * 60));
     }
-    function sfxMeteor() { playTone(90, 'sawtooth', 0.26, 0.08); }
 
     function toggleSound() {
-      GAME.soundOn = !GAME.soundOn;
-      document.getElementById('btn-sound').textContent = GAME.soundOn ? '🔊' : '🔇';
+      STATE.soundOn = !STATE.soundOn;
+      document.getElementById('btn-sound').textContent = STATE.soundOn ? '🔊' : '🔇';
     }
 
     // ============================================================================
-    // 3. ESCENA 3D CON TRANSICIÓN DINÁMICA DE DÍA ☀️ Y NOCHE 🌙
+    // 3. MOTOR 3D TOON CON CONTORNOS NEGROS (EXACTO AL RENDER DE DUCK SURVIVAL)
     // ============================================================================
     const hostEl = document.getElementById('canvas-3d-host');
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x070b14);
-    scene.fog = new THREE.FogExp2(0x070b14, 0.015);
+    scene.background = new THREE.Color(0x38bdf8);
 
-    const camera = new THREE.PerspectiveCamera(46, 1, 0.1, 140);
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 140);
     const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.15;
     hostEl.appendChild(renderer.domElement);
 
     function resize3D() {
@@ -438,388 +458,479 @@
     }
     window.addEventListener('resize', resize3D);
 
-    const hemiLight = new THREE.HemisphereLight(0x93c5fd, 0x1e293b, 0.7);
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x334155, 0.95);
     scene.add(hemiLight);
 
-    const sunLight = new THREE.DirectionalLight(0xfff7ed, 1.35);
-    sunLight.position.set(16, 32, 18);
-    sunLight.castShadow = true;
-    sunLight.shadow.mapSize.width = 1024;
-    sunLight.shadow.mapSize.height = 1024;
-    const sd = 22;
-    sunLight.shadow.camera.left = -sd; sunLight.shadow.camera.right = sd;
-    sunLight.shadow.camera.top = sd;  sunLight.shadow.camera.bottom = -sd;
-    scene.add(sunLight);
+    const dirLight = new THREE.DirectionalLight(0xfffbeb, 1.3);
+    dirLight.position.set(15, 32, 18);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 1024;
+    dirLight.shadow.mapSize.height = 1024;
+    const d = 22;
+    dirLight.shadow.camera.left = -d; dirLight.shadow.camera.right = d;
+    dirLight.shadow.camera.top = d;  dirLight.shadow.camera.bottom = -d;
+    scene.add(dirLight);
 
-    // Textura empedrada táctica
-    function createCourtyardTexture() {
+    // Helper para agregar contorno negro Cartoon (Inverted Hull Outline) a cualquier malla 3D
+    const outlineMat = new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.BackSide });
+    function addToonMesh(geo, colorHex, outlineThickness = 1.07) {
+      const group = new THREE.Group();
+      const mainMesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.4, metalness: 0.1 }));
+      mainMesh.castShadow = true;
+      mainMesh.receiveShadow = true;
+      const outMesh = new THREE.Mesh(geo, outlineMat);
+      outMesh.scale.set(outlineThickness, outlineThickness, outlineThickness);
+      group.add(mainMesh, outMesh);
+      group.userData.mainMesh = mainMesh;
+      return group;
+    }
+
+    // Textura estilizada del Campamento (Pasto verde vibrante + camino de tierra central)
+    function createCampgroundTexture() {
       const c = document.createElement('canvas');
       c.width = 512; c.height = 512;
       const ctx = c.getContext('2d');
-      ctx.fillStyle = '#1c2430';
+      // Pasto verde vivo estilo Duck Survival
+      ctx.fillStyle = '#4d8c3a';
       ctx.fillRect(0, 0, 512, 512);
-      ctx.strokeStyle = '#111720';
-      ctx.lineWidth = 4;
-      for (let y = 0; y < 512; y += 64) {
-        for (let x = 0; x < 512; x += 64) {
-          const v = 25 + Math.floor(Math.random() * 14);
-          ctx.fillStyle = `rgb(${v}, ${v + 6}, ${v + 14})`;
-          ctx.fillRect(x + 2, y + 2, 60, 60);
-          ctx.strokeRect(x, y, 64, 64);
-        }
+      // Manchas de pasto claro
+      ctx.fillStyle = '#5da146';
+      for (let i = 0; i < 60; i++) {
+        ctx.beginPath();
+        ctx.arc(Math.random() * 512, Math.random() * 512, 12 + Math.random() * 20, 0, Math.PI * 2);
+        ctx.fill();
       }
-      const t = new THREE.CanvasTexture(c);
-      t.wrapS = THREE.RepeatWrapping; t.wrapT = THREE.RepeatWrapping;
-      t.repeat.set(6, 7);
-      return t;
+      // Camino central de tierra cálida para las hordas y la base
+      ctx.fillStyle = '#c29b61';
+      ctx.fillRect(96, 0, 320, 512);
+      ctx.strokeStyle = '#a37e49';
+      ctx.lineWidth = 8;
+      ctx.strokeRect(96, 0, 320, 512);
+      return new THREE.CanvasTexture(c);
     }
 
-    const ARENA_BOUNDS = { minX: -11.2, maxX: 11.2, minZ: -13.8, maxZ: 10.8 };
+    const ARENA_BOUNDS = { minX: -10.8, maxX: 10.8, minZ: -13.5, maxZ: 10.5 };
 
     const groundMesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(32, 36),
-      new THREE.MeshStandardMaterial({ map: createCourtyardTexture(), roughness: 0.8, metalness: 0.12 })
+      new THREE.PlaneGeometry(34, 38),
+      new THREE.MeshStandardMaterial({ map: createCampgroundTexture(), roughness: 0.85 })
     );
     groundMesh.rotation.x = -Math.PI / 2;
     groundMesh.receiveShadow = true;
     scene.add(groundMesh);
 
-    // Muros del Recinto Cerrado + 3 Puertas Norte
-    const wallMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.55, metalness: 0.35 });
-    const darkSteelMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.4, metalness: 0.7 });
-
-    function addBoxWall(x, y, z, w, h, d, mat = wallMat) {
-      const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
-      m.position.set(x, y, z);
-      m.castShadow = true; m.receiveShadow = true;
-      scene.add(m);
-      return m;
+    // Muros de Troncos de Madera y Sacos de Arena del Campamento Cerrado
+    for (let z = -14; z <= 11; z += 2.2) {
+      const logL = addToonMesh(new THREE.CylinderGeometry(0.45, 0.5, 2.8, 8), 0x78350f);
+      logL.position.set(-12.0, 1.4, z);
+      scene.add(logL);
+      const logR = addToonMesh(new THREE.CylinderGeometry(0.45, 0.5, 2.8, 8), 0x78350f);
+      logR.position.set(12.0, 1.4, z);
+      scene.add(logR);
     }
 
-    addBoxWall(-12.6, 2.2, -1.5, 1.6, 4.4, 30);
-    addBoxWall( 12.6, 2.2, -1.5, 1.6, 4.4, 30);
-    addBoxWall( 0.0,  2.0, 12.2, 26.8, 4.0, 1.6);
-    addBoxWall(-10.5, 2.4, -15.2, 4.2, 4.8, 1.8);
-    addBoxWall(-3.5,  2.4, -15.2, 3.8, 4.8, 1.8);
-    addBoxWall( 3.5,  2.4, -15.2, 3.8, 4.8, 1.8);
-    addBoxWall( 10.5, 2.4, -15.2, 4.2, 4.8, 1.8);
-    addBoxWall( 0,    4.2, -15.2, 26.0, 1.2, 2.0, darkSteelMat);
+    // Pinos Cartoon 3D decorativos en los bordes
+    [
+      { x: -10.2, z: 9.5 }, { x: 10.2, z: 9.5 },
+      { x: -10.2, z: -9.5 }, { x: 10.2, z: -9.5 }
+    ].forEach(p => {
+      const trunk = addToonMesh(new THREE.CylinderGeometry(0.35, 0.45, 1.4, 8), 0x78350f);
+      trunk.position.set(p.x, 0.7, p.z);
+      const leaves1 = addToonMesh(new THREE.ConeGeometry(1.6, 2.4, 8), 0x15803d);
+      leaves1.position.set(p.x, 2.2, p.z);
+      const leaves2 = addToonMesh(new THREE.ConeGeometry(1.2, 2.0, 8), 0x22c55e);
+      leaves2.position.set(p.x, 3.3, p.z);
+      scene.add(trunk, leaves1, leaves2);
+    });
 
-    // Valla Eléctrica Frontal (en Z = 1.6)
+    // Valla Eléctrica y Barricada Frontal (en Z = 1.6)
     const fenceGroup = new THREE.Group();
     fenceGroup.position.set(0, 0, 1.6);
     scene.add(fenceGroup);
 
-    for (let bx = -9.5; bx <= 9.5; bx += 3.8) {
-      const post = new THREE.Mesh(new THREE.BoxGeometry(3.2, 1.3, 0.9), darkSteelMat);
-      post.position.set(bx, 0.65, 0);
-      post.castShadow = true;
-      fenceGroup.add(post);
+    for (let x = -9.5; x <= 9.5; x += 3.2) {
+      const bag = addToonMesh(new THREE.BoxGeometry(2.6, 1.1, 0.9), 0xd97706);
+      bag.position.set(x, 0.55, 0);
+      fenceGroup.add(bag);
     }
-    const electricBeamMesh = new THREE.Mesh(
-      new THREE.BoxGeometry(22.5, 0.35, 0.25),
-      new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.75 })
+    const electricWire = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.12, 0.12, 22, 8),
+      new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
     );
-    electricBeamMesh.position.set(0, 1.15, 0);
-    fenceGroup.add(electricBeamMesh);
+    electricWire.rotation.z = Math.PI / 2;
+    electricWire.position.set(0, 1.25, 0);
+    fenceGroup.add(electricWire);
 
-    // Modelos 3D de las 6 Estructuras de la Base (Mina de Oro, Campamento, Torre EMP, Torretas, Cuartel)
-    // 1. Mina de Oro (-6.2, 8.2)
-    const mineRig = new THREE.Mesh(
-      new THREE.ConeGeometry(1.1, 2.4, 6),
-      new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xca8a04, emissiveIntensity: 0.35, metalness: 0.7 })
-    );
-    mineRig.position.set(-6.2, 1.2, 8.2);
-    scene.add(mineRig);
+    // ============================================================================
+    // 4. MODELO 3D DEL PATO SOLDADO ("DUKE") CON MOCHILA DE BILLETES 3D EN LA ESPALDA
+    // ============================================================================
+    function create3DDuckHero(bodyColor = 0xfacc15, helmetColor = 0x15803d, scale = 1.0) {
+      const duck = new THREE.Group();
+      duck.scale.set(scale, scale, scale);
 
-    // 2. Campamento de Supervivientes (6.2, 8.2)
-    const campTent = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.4, 1.6, 2.0, 6),
-      new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.5 })
-    );
-    campTent.position.set(6.2, 1.0, 8.2);
-    scene.add(campTent);
+      // Patitas naranjas
+      const lFoot = addToonMesh(new THREE.BoxGeometry(0.38, 0.25, 0.55), 0xf97316);
+      lFoot.position.set(-0.28, 0.15, 0.08);
+      const rFoot = addToonMesh(new THREE.BoxGeometry(0.38, 0.25, 0.55), 0xf97316);
+      rFoot.position.set(0.28, 0.15, 0.08);
 
-    // 3. Torre EMP (0, 5.2)
-    const empTowerCoil = new THREE.Mesh(
-      new THREE.OctahedronGeometry(0.95, 1),
-      new THREE.MeshStandardMaterial({ color: 0x818cf8, emissive: 0x4f46e5, emissiveIntensity: 0.7, wireframe: true })
-    );
-    empTowerCoil.position.set(0, 2.2, 5.2);
-    scene.add(empTowerCoil);
+      // Cuerpo gordito amarillo de Pato + Chaleco táctico
+      const body = addToonMesh(new THREE.SphereGeometry(0.68, 14, 14), bodyColor);
+      body.scale.set(1, 1.05, 1.15);
+      body.position.set(0, 0.82, 0);
 
-    // Pads Luminosos de Construcción en el suelo 3D
-    const padMeshes = {};
-    GAME.buildings.forEach(b => {
-      const ring = new THREE.Mesh(
-        new THREE.RingGeometry(1.4, 1.8, 28),
-        new THREE.MeshBasicMaterial({ color: b.color, side: THREE.DoubleSide, transparent: true, opacity: 0.85 })
+      const vest = addToonMesh(new THREE.CylinderGeometry(0.66, 0.68, 0.65, 12), 0x3f6212);
+      vest.position.set(0, 0.82, 0);
+
+      // Cabeza redonda de Pato + Pico Naranja + Ojos expresivos + Casco Militar
+      const head = addToonMesh(new THREE.SphereGeometry(0.58, 14, 14), bodyColor);
+      head.position.set(0, 1.72, 0.08);
+
+      // Pico de Pato Naranja (Duck Bill)
+      const bill = addToonMesh(new THREE.BoxGeometry(0.56, 0.24, 0.55), 0xf97316);
+      bill.position.set(0, 1.62, 0.62);
+
+      // Ojos negros con brillo blanco
+      const eyeMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+      const lEye = new THREE.Mesh(new THREE.SphereGeometry(0.11, 8, 8), eyeMat);
+      lEye.position.set(-0.24, 1.82, 0.52);
+      const rEye = new THREE.Mesh(new THREE.SphereGeometry(0.11, 8, 8), eyeMat);
+      rEye.position.set(0.24, 1.82, 0.52);
+
+      // Casco Militar Táctico
+      const helmet = addToonMesh(new THREE.SphereGeometry(0.62, 14, 12, 0, Math.PI * 2, 0, Math.PI * 0.55), helmetColor);
+      helmet.position.set(0, 1.78, 0.06);
+
+      // Arma Metralleta Gattling en el ala derecha
+      const gunGroup = new THREE.Group();
+      const gunBody = addToonMesh(new THREE.BoxGeometry(0.28, 0.32, 1.25), 0x334155);
+      const gunTip = addToonMesh(new THREE.CylinderGeometry(0.16, 0.16, 0.4, 8), 0xfacc15);
+      gunTip.rotation.x = Math.PI / 2;
+      gunTip.position.set(0, 0, 0.7);
+      gunGroup.add(gunBody, gunTip);
+      gunGroup.position.set(0.65, 1.0, 0.45);
+
+      // MOCHILA 3D EN LA ESPALDA DONDE SE APILAN LOS BILLETES VERDES (💵)
+      const backpackGroup = new THREE.Group();
+      backpackGroup.position.set(0, 0.9, -0.68);
+      const packBag = addToonMesh(new THREE.BoxGeometry(0.65, 0.7, 0.38), 0x78350f);
+      backpackGroup.add(packBag);
+
+      // Pila de hasta 12 fajos de billetes verdes 3D sobre la mochila
+      const cashStackMeshes = [];
+      for (let i = 0; i < 12; i++) {
+        const billMesh = addToonMesh(new THREE.BoxGeometry(0.55, 0.14, 0.34), 0x22c55e, 1.05);
+        billMesh.position.set(0, 0.45 + i * 0.15, 0);
+        backpackGroup.add(billMesh);
+        cashStackMeshes.push(billMesh);
+      }
+
+      duck.add(lFoot, rFoot, body, vest, head, bill, lEye, rEye, helmet, gunGroup, backpackGroup);
+      duck.userData = { lFoot, rFoot, cashStackMeshes };
+      return duck;
+    }
+
+    // Pato Principal ("Duke") y 2.º Pato Activo ("Cole") + Pollitos Soldados
+    const mainDuckMesh = create3DDuckHero(0xfacc15, 0x15803d, 1.15);
+    scene.add(mainDuckMesh);
+
+    const secondDuckMesh = create3DDuckHero(0xfef08a, 0xdc2626, 0.95);
+    scene.add(secondDuckMesh);
+
+    const chickSoldiers3D = [];
+    function syncChickSoldiers3D() {
+      const lv = STATE.pads.find(p => p.id === 'chick').level;
+      while (chickSoldiers3D.length < Math.min(4, lv)) {
+        const cMesh = create3DDuckHero(0xfde047, 0x0284c7, 0.62);
+        scene.add(cMesh);
+        chickSoldiers3D.push({ mesh: cMesh, timer: chickSoldiers3D.length * 0.25, angle: chickSoldiers3D.length * 1.57 });
+      }
+    }
+
+    // Círculos Blancos/Verdes de Construcción en el Suelo + Modelos de Estructuras
+    const padMeshes3D = {};
+    const turretMeshes3D = {};
+
+    STATE.pads.forEach(p => {
+      const group = new THREE.Group();
+      group.position.set(p.x, 0.04, p.z);
+
+      // Borde blanco estilo Duck Survival
+      const whiteRing = new THREE.Mesh(
+        new THREE.RingGeometry(1.45, 1.75, 32),
+        new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
       );
-      ring.rotation.x = -Math.PI / 2;
-      ring.position.set(b.x, 0.05, b.z);
-      scene.add(ring);
-      padMeshes[b.id] = ring;
+      whiteRing.rotation.x = -Math.PI / 2;
+
+      const innerFill = new THREE.Mesh(
+        new THREE.CircleGeometry(1.45, 32),
+        new THREE.MeshBasicMaterial({ color: p.color, transparent: true, opacity: 0.35 })
+      );
+      innerFill.rotation.x = -Math.PI / 2;
+
+      group.add(whiteRing, innerFill);
+      scene.add(group);
+      padMeshes3D[p.id] = group;
+
+      // Modelo 3D sobre cada Pad
+      if (p.id === 'turretL' || p.id === 'turretR') {
+        const tGroup = new THREE.Group();
+        tGroup.position.set(p.x, 0.9, p.z - 0.6);
+        const base = addToonMesh(new THREE.CylinderGeometry(0.55, 0.7, 0.8, 10), 0x475569);
+        const head = addToonMesh(new THREE.BoxGeometry(0.95, 0.65, 1.0), 0xfacc15);
+        head.position.y = 0.55;
+        const barrel = addToonMesh(new THREE.CylinderGeometry(0.16, 0.16, 1.3, 8), 0x1e293b);
+        barrel.rotation.x = Math.PI / 2;
+        barrel.position.set(0, 0.55, -0.75);
+        tGroup.add(base, head, barrel);
+        scene.add(tGroup);
+        turretMeshes3D[p.id] = { group: tGroup, timer: 0 };
+      } else if (p.id === 'mine') {
+        const mineModel = addToonMesh(new THREE.BoxGeometry(1.8, 1.4, 1.6), 0x16a34a);
+        mineModel.position.set(p.x, 0.7, p.z - 1.2);
+        scene.add(mineModel);
+      } else if (p.id === 'emp') {
+        const empModel = addToonMesh(new THREE.ConeGeometry(0.9, 2.3, 8), 0x9333ea);
+        empModel.position.set(p.x, 1.15, p.z - 1.0);
+        scene.add(empModel);
+      }
     });
 
-    // Torretas Gattling sobre la Valla
-    const turretSlots = [{ x: -4.8, z: 1.6 }, { x: 4.8, z: 1.6 }, { x: -8.6, z: 1.6 }, { x: 8.6, z: 1.6 }];
-    const turretEntities = [];
-    function syncTurrets3D() {
-      const count = Math.min(4, GAME.buildings.find(b => b.id === 'turret').level);
-      while (turretEntities.length < count) {
-        const idx = turretEntities.length;
-        const pos = turretSlots[idx];
-        const g = new THREE.Group();
-        g.position.set(pos.x, 1.4, pos.z);
-        const head = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.6, 1.1), new THREE.MeshStandardMaterial({ color: 0xf97316 }));
-        const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 1.4, 8), darkSteelMat);
-        barrel.rotation.x = Math.PI / 2;
-        barrel.position.set(0, 0, -0.75);
-        g.add(head, barrel);
-        scene.add(g);
-        turretEntities.push({ group: g, shootTimer: idx * 0.2 });
-      }
-    }
-
-    // Constructor de Personajes 3D Articulados (Héroe Principal + 2.º Héroe Activo + Tropas)
-    function createCommander3D(colorHex, scale = 1.15) {
-      const root = new THREE.Group();
-      root.scale.set(scale, scale, scale);
-      const armorMat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.35, metalness: 0.45 });
-      const legMat = new THREE.MeshStandardMaterial({ color: 0x1e293b });
-
-      const lLeg = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.75, 0.28), legMat);
-      lLeg.position.set(-0.2, 0.38, 0);
-      const rLeg = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.75, 0.28), legMat);
-      rLeg.position.set(0.2, 0.38, 0);
-
-      const torso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.95, 0.5), armorMat);
-      torso.position.set(0, 1.18, 0);
-      torso.castShadow = true;
-
-      const head = new THREE.Mesh(new THREE.SphereGeometry(0.42, 12, 12), armorMat);
-      head.position.set(0, 1.95, 0);
-      const visor = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.18, 0.25), new THREE.MeshBasicMaterial({ color: 0x38bdf8 }));
-      visor.position.set(0, 1.95, 0.28);
-
-      const gun = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.24, 1.2), darkSteelMat);
-      gun.position.set(0.45, 1.2, 0.45);
-
-      root.add(lLeg, rLeg, torso, head, visor, gun);
-      root.userData = { lLeg, rLeg, armorMat };
-      return root;
-    }
-
-    // Héroe Activo #1 (Cole - Fuego) y Héroe Activo #2 (Mir - Hielo) como en Duck Survival
-    const playerMesh = createCommander3D(0xf97316, 1.18);
-    scene.add(playerMesh);
-
-    const secondHeroMesh = createCommander3D(0x38bdf8, 1.02);
-    scene.add(secondHeroMesh);
-
-    // Rayo Láser Concentrado S-Tier 3D
-    const focusedLaserMesh = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.22, 0.22, 18, 10),
-      new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0.85 })
-    );
-    focusedLaserMesh.rotation.x = Math.PI / 2;
-    focusedLaserMesh.visible = false;
-    scene.add(focusedLaserMesh);
-
-    const player3D = { pos: { x: 0, z: 4.2 }, speed: 9.4, shootTimer: 0, padTimer: 0, empTimer: 0, meteorTimer: 0, mineTimer: 0 };
-
     // ============================================================================
-    // 4. CICLO DÍA ☀️ / NOCHE 🌙 Y OLEADAS 1 A 5
+    // 5. ZOMBIES CARTOON 3D (PIEL VERDE, CAMISA MORADA, CASCO CONO / JEFE GIGANTE)
     // ============================================================================
-    const enemies3D = [];
-    const cashDrops3D = [];
+    const zombies3D = [];
+    const groundBanknotes3D = [];
+    const flyingBanknotes3D = [];
     const bullets3D = [];
     const meteors3D = [];
-    const shockwaves3D = [];
 
-    const cashGeo = new THREE.BoxGeometry(0.75, 0.22, 0.42);
-    const cashMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x15803d, emissiveIntensity: 0.4 });
+    function createZombieMesh3D(isBoss = false) {
+      const zGroup = new THREE.Group();
+      const s = isBoss ? 2.35 : (0.95 + Math.random() * 0.2);
+      zGroup.scale.set(s, s, s);
 
-    function setDayNightLighting(isNight, isRedMoonBoss = false) {
-      GAME.isNight = isNight;
-      const badge = document.getElementById('phase-badge');
+      // Cuerpo con camisa rota morada/azul y cabeza verde zombie
+      const body = addToonMesh(new THREE.BoxGeometry(0.78, 0.95, 0.48), isBoss ? 0x991b1b : 0x6b21a8);
+      body.position.y = 0.85;
+
+      const head = addToonMesh(new THREE.BoxGeometry(0.68, 0.68, 0.68), 0x65a30d);
+      head.position.y = 1.68;
+
+      // Brazos extendidos de Zombie hacia adelante
+      const lArm = addToonMesh(new THREE.BoxGeometry(0.25, 0.25, 0.75), 0x65a30d);
+      lArm.position.set(-0.52, 1.15, 0.35);
+      const rArm = addToonMesh(new THREE.BoxGeometry(0.25, 0.25, 0.75), 0x65a30d);
+      rArm.position.set(0.52, 1.15, 0.35);
+
+      // Ojos rojos/amarillos saltones
+      const eyeMat = new THREE.MeshBasicMaterial({ color: isBoss ? 0xfacc15 : 0xef4444 });
+      const lEye = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 8), eyeMat);
+      lEye.position.set(-0.18, 1.72, 0.36);
+      const rEye = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 8), eyeMat);
+      rEye.position.set(0.18, 1.72, 0.36);
+
+      zGroup.add(body, head, lArm, rArm, lEye, rEye);
+
+      // Cono naranja en la cabeza o Casco de Jefe
+      if (isBoss || Math.random() < 0.4) {
+        const cone = addToonMesh(new THREE.ConeGeometry(0.38, 0.75, 8), isBoss ? 0xfacc15 : 0xf97316);
+        cone.position.set(0, 2.35, 0);
+        zGroup.add(cone);
+      }
+
+      zGroup.userData = { head, body };
+      return zGroup;
+    }
+
+    const duckPos = { x: 0, z: 4.5, speed: 9.2, shootTimer: 0, padTimer: 0, mineTimer: 0 };
+
+    function updateBackpackStackVisual() {
+      const stack = mainDuckMesh.userData.cashStackMeshes;
+      const visibleCount = Math.min(12, Math.floor(STATE.cash / 35));
+      stack.forEach((m, i) => { m.visible = (i < visibleCount); });
+      document.getElementById('duck-backpack-tag').textContent = `💵 $${Math.floor(STATE.cash)}`;
+    }
+
+    // ============================================================================
+    // 6. CICLO DÍA ☀️ (CONSTRUCCIÓN) Y NOCHE 🌙 (5 OLEADAS + JEFE FINAL)
+    // ============================================================================
+    function setDayNightVisuals(isNight, isBossWave = false) {
+      STATE.isNight = isNight;
+      const pill = document.getElementById('day-night-pill');
+      const dayBar = document.getElementById('day-action-bar');
+
       if (!isNight) {
-        // ☀️ FASE DE DÍA (Iluminación Cálida y Soleada para Construir Base)
-        scene.background.setHex(0x1e293b);
-        scene.fog.color.setHex(0x1e293b);
-        sunLight.color.setHex(0xfffbeb);
-        sunLight.intensity = 1.85;
-        hemiLight.intensity = 1.1;
-        badge.className = 'px-2 py-1 rounded-xl bg-amber-400 text-black font-black text-xs flex items-center gap-1 shadow';
-        badge.textContent = '☀️ DÍA (BASE)';
-      } else if (isRedMoonBoss) {
-        // 💀 NOCHE 5: LUNA ROJA (Jefe Final)
-        scene.background.setHex(0x1a060b);
-        scene.fog.color.setHex(0x1a060b);
-        sunLight.color.setHex(0xfda4af);
-        sunLight.intensity = 1.2;
-        badge.className = 'px-2 py-1 rounded-xl bg-rose-600 text-white font-black text-xs flex items-center gap-1 shadow';
-        badge.textContent = '💀 NOCHE 5';
+        scene.background.setHex(0x38bdf8);
+        dirLight.color.setHex(0xfffbeb);
+        dirLight.intensity = 1.35;
+        hemiLight.intensity = 0.95;
+        pill.className = 'px-2 py-0.5 rounded-lg bg-amber-400 text-black border border-black font-black text-xs';
+        pill.textContent = `☀️ DÍA ${STATE.stage} (CONSTRUIR)`;
+        dayBar.classList.remove('hidden');
+        dayBar.classList.add('flex');
+        document.getElementById('btn-start-night').textContent =
+          STATE.wave === 5 ? '💀 NOCHE 5/5 (JEFE)' : `🌙 OLEADA ${STATE.wave}/5`;
       } else {
-        // 🌙 NOCHE DE SUPERVIVENCIA (Azul Oscuro Táctico)
-        scene.background.setHex(0x060913);
-        scene.fog.color.setHex(0x060913);
-        sunLight.color.setHex(0x93c5fd);
-        sunLight.intensity = 1.15;
-        hemiLight.intensity = 0.6;
-        badge.className = 'px-2 py-1 rounded-xl bg-indigo-600 text-white font-black text-xs flex items-center gap-1 shadow';
-        badge.textContent = '🌙 NOCHE';
-      }
-    }
-
-    function createMutantMesh3D(isBoss) {
-      const g = new THREE.Group();
-      const s = isBoss ? 2.5 : (0.9 + Math.random() * 0.25);
-      g.scale.set(s, s, s);
-      const col = isBoss ? 0x991b1b : (Math.random() < 0.5 ? 0x3f6212 : 0x581c87);
-      const mat = new THREE.MeshStandardMaterial({ color: col, roughness: 0.45 });
-
-      const body = new THREE.Mesh(new THREE.BoxGeometry(0.85, 1.1, 0.55), mat);
-      body.position.y = 1.05; body.castShadow = true;
-      const head = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.55, 0.55), mat);
-      head.position.y = 1.85;
-      const eyes = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.14, 0.15), new THREE.MeshBasicMaterial({ color: isBoss ? 0xfacc15 : 0xef4444 }));
-      eyes.position.set(0, 1.88, 0.25);
-      g.add(body, head, eyes);
-      g.userData = { mat };
-      return g;
-    }
-
-    function startNightWaveNow() {
-      document.getElementById('day-phase-banner').classList.add('hidden');
-      document.getElementById('day-phase-banner').classList.remove('flex');
-
-      const isBossWave = (GAME.wave === 5);
-      setDayNightLighting(true, isBossWave);
-
-      const stageScale = Math.pow(1.35, GAME.stage - 1);
-      if (isBossWave) {
-        GAME.enemiesToSpawn = 6;
-        const bossMesh = createMutantMesh3D(true);
-        bossMesh.position.set(0, 0, -13.5);
-        scene.add(bossMesh);
-        const maxHp = Math.round(2800 * stageScale);
-        enemies3D.push({
-          mesh: bossMesh, x: 0, z: -13.5, hp: maxHp, maxHp,
-          atk: Math.round(60 * stageScale), speed: 2.35, radius: 1.9, isBoss: true, hitFlash: 0, slowTimer: 0
-        });
-        document.getElementById('boss-hp-banner').classList.remove('hidden');
-        document.getElementById('boss-hp-banner').classList.add('flex');
-        showToast('💀 ¡NOCHE 5: EL DEVASTADOR MUTANTE HA ENTRADO AL RECINTO!');
-      } else {
-        document.getElementById('boss-hp-banner').classList.add('hidden');
-        document.getElementById('boss-hp-banner').classList.remove('flex');
-        GAME.enemiesToSpawn = 6 + GAME.wave * 3;
+        scene.background.setHex(isBossWave ? 0x2a0812 : 0x0b132b);
+        dirLight.color.setHex(isBossWave ? 0xfda4af : 0x93c5fd);
+        dirLight.intensity = 1.05;
+        hemiLight.intensity = 0.65;
+        pill.className = 'px-2 py-0.5 rounded-lg bg-indigo-600 text-white border border-black font-black text-xs';
+        pill.textContent = isBossWave ? '💀 NOCHE 5 (JEFE)' : `🌙 NOCHE (OLEADA ${STATE.wave}/5)`;
+        dayBar.classList.add('hidden');
+        dayBar.classList.remove('flex');
       }
       updateHUD();
     }
 
-    function triggerDaybreakAndCashReward() {
-      setDayNightLighting(false, false);
-      sfxUpgrade();
+    function startNightWave() {
+      const isBoss = (STATE.wave === 5);
+      setDayNightVisuals(true, isBoss);
 
-      const mineLv = GAME.buildings.find(b => b.id === 'mine').level;
-      const campLv = GAME.buildings.find(b => b.id === 'camp').level;
-      const bundleCount = 10 + GAME.wave * 2;
-      const bundleVal = Math.round((25 + GAME.wave * 12) * (1 + (mineLv - 1) * 0.25 + (campLv - 1) * 0.2));
-
-      for (let i = 0; i < bundleCount; i++) {
-        const a = (i / bundleCount) * Math.PI * 2;
-        const r = 2.0 + (i % 3) * 1.5;
-        spawnCashDrop(player3D.pos.x + Math.cos(a) * r, Math.min(7.5, Math.max(-5, player3D.pos.z + Math.sin(a) * r)), bundleVal, true);
-      }
-
-      // El Campamento repara la Valla Eléctrica al amanecer
-      GAME.wallHp = Math.min(GAME.wallMaxHp, GAME.wallHp + 350 * campLv);
-
-      if (GAME.wave === 5) {
-        GAME.gems += 300;
-        GAME.blueprints += 8;
-        showToast(`🏆 ¡CAPÍTULO ${GAME.stage} COMPLETADO! +$${bundleCount * bundleVal}, +8 📜 Planos y +300 💎.`);
-        GAME.stage++;
-        GAME.wave = 1;
-        GAME.wallHp = GAME.wallMaxHp;
+      const scale = Math.pow(1.3, STATE.stage - 1);
+      if (isBoss) {
+        STATE.zombiesToSpawn = 6;
+        const bMesh = createZombieMesh3D(true);
+        bMesh.position.set(0, 0, -13.2);
+        scene.add(bMesh);
+        const maxHp = Math.round(2400 * scale);
+        zombies3D.push({ mesh: bMesh, x: 0, z: -13.2, hp: maxHp, maxHp, atk: 55, speed: 2.3, radius: 1.8, isBoss: true, slow: 0 });
+        document.getElementById('boss-bar-box').classList.remove('hidden');
+        document.getElementById('boss-bar-box').classList.add('flex');
+        showToast('💀 ¡OLEADA 5/5: EL JEFE ZOMBIE MUTANTE HA ENTRADO!');
       } else {
-        showToast(`☀️ ¡AMANECER! Noche ${GAME.wave}/5 superada. Recoge tu Dinero (💵) y mejora la Base.`);
-        GAME.wave++;
+        document.getElementById('boss-bar-box').classList.add('hidden');
+        document.getElementById('boss-bar-box').classList.remove('flex');
+        STATE.zombiesToSpawn = 6 + STATE.wave * 3;
       }
-
-      const banner = document.getElementById('day-phase-banner');
-      const btn = document.getElementById('btn-start-night');
-      btn.textContent = GAME.wave === 5 ? '💀 INICIAR NOCHE 5/5 (JEFE)' : `🌙 DEFENDER NOCHE ${GAME.wave}/5`;
-      banner.classList.remove('hidden');
-      banner.classList.add('flex');
       updateHUD();
-      renderQuickBasePads();
     }
 
-    function forceBossNight5() {
-      enemies3D.forEach(e => scene.remove(e.mesh));
-      enemies3D.length = 0;
-      GAME.wave = 5;
-      startNightWaveNow();
-    }
+    function onWaveClearedCashShower() {
+      sfxLevelUp();
+      const mineLv = STATE.pads.find(p => p.id === 'mine').level;
+      const count = 9 + STATE.wave * 2;
+      const val = Math.round((20 + STATE.wave * 10) * (1 + (mineLv - 1) * 0.25));
 
-    function spawnCashDrop(x, z, amount, autoMag = false) {
-      const m = new THREE.Mesh(cashGeo, cashMat);
-      m.position.set(x + (Math.random() - 0.5), 0.35, z + (Math.random() - 0.5));
-      scene.add(m);
-      cashDrops3D.push({ mesh: m, x: m.position.x, z: m.position.z, amount, magnetized: autoMag });
-    }
-
-    function spawnShockwave3D(x, z, maxR, colorHex) {
-      const m = new THREE.Mesh(
-        new THREE.RingGeometry(0.35, 0.8, 28),
-        new THREE.MeshBasicMaterial({ color: colorHex, side: THREE.DoubleSide, transparent: true, opacity: 0.9 })
-      );
-      m.rotation.x = -Math.PI / 2;
-      m.position.set(x, 0.12, z);
-      scene.add(m);
-      shockwaves3D.push({ mesh: m, scale: 1, maxScale: maxR, life: 0.45 });
-    }
-
-    // Lluvia de Meteoritos 3D (S-Tier Skill de Duck Survival)
-    function spawnMeteorStrike3D(tx, tz, dmg) {
-      const rock = new THREE.Mesh(
-        new THREE.DodecahedronGeometry(0.85, 0),
-        new THREE.MeshStandardMaterial({ color: 0xf97316, emissive: 0xdc2626, emissiveIntensity: 0.8 })
-      );
-      rock.position.set(tx - 4, 14, tz - 4);
-      scene.add(rock);
-      meteors3D.push({ mesh: rock, tx, tz, dmg, progress: 0 });
-    }
-
-    // ============================================================================
-    // 5. HABILIDADES META Y SELECTOR DE 3 CARTAS ROGUELITE
-    // ============================================================================
-    function addSkillXp(xp) {
-      GAME.skillXp += xp;
-      if (GAME.skillXp >= GAME.skillXpNext) {
-        GAME.skillXp -= GAME.skillXpNext;
-        GAME.skillLv++;
-        GAME.skillXpNext = Math.round(GAME.skillXpNext * 1.3);
-        sfxUpgrade();
-        openRogueliteDraft();
+      for (let i = 0; i < count; i++) {
+        const a = (i / count) * Math.PI * 2;
+        const r = 1.8 + (i % 3) * 1.4;
+        spawnBanknoteOnGround(duckPos.x + Math.cos(a) * r, Math.min(7.5, Math.max(-5, duckPos.z + Math.sin(a) * r)), val);
       }
+
+      if (STATE.wave === 5) {
+        STATE.gems += 300;
+        STATE.tickets += 10;
+        showToast(`🏆 ¡JEFE DERROTADO! +$${count * val}, +10 🎟️ y +300 💎. ¡Avanzas al Día ${STATE.stage + 1}!`);
+        STATE.stage++;
+        STATE.wave = 1;
+        STATE.fenceHp = STATE.fenceMaxHp;
+      } else {
+        showToast(`☀️ ¡OLEADA SUPERADA! Recoge los Billetes Verdes (💵) y mejora tu Base.`);
+        STATE.wave++;
+      }
+      setDayNightVisuals(false, false);
+      renderQuickPads();
     }
 
-    function openRogueliteDraft() {
-      const modal = document.getElementById('roguelite-draft-modal');
-      const grid = document.getElementById('draft-cards-grid');
-      const keys = Object.keys(GAME.rogueliteSkills).sort(() => Math.random() - 0.5).slice(0, 3);
+    function skipToBossWave5() {
+      zombies3D.forEach(z => scene.remove(z.mesh));
+      zombies3D.length = 0;
+      STATE.wave = 5;
+      startNightWave();
+    }
 
-      grid.innerHTML = keys.map(k => {
-        const sk = GAME.rogueliteSkills[k];
+    function spawnBanknoteOnGround(x, z, amount) {
+      const m = addToonMesh(new THREE.BoxGeometry(0.75, 0.2, 0.42), 0x22c55e, 1.06);
+      m.position.set(x + (Math.random() - 0.5), 0.3, z + (Math.random() - 0.5));
+      scene.add(m);
+      groundBanknotes3D.push({ mesh: m, x: m.position.x, z: m.position.z, amount });
+    }
+
+    // Efecto visual de billete volando en arco desde la mochila del Pato hacia el Pad del suelo
+    function spawnFlyingBillToPad(pad) {
+      const m = addToonMesh(new THREE.BoxGeometry(0.65, 0.16, 0.36), 0x22c55e, 1.05);
+      m.position.set(duckPos.x, 1.6, duckPos.z);
+      scene.add(m);
+      flyingBanknotes3D.push({
+        mesh: m,
+        sx: duckPos.x, sz: duckPos.z,
+        tx: pad.x, tz: pad.z,
+        progress: 0
+      });
+    }
+
+    function getPadCost(p) {
+      return Math.round(p.baseCost * Math.pow(1.28, p.level - 1));
+    }
+
+    function upgradePad(id, fromWalk = false) {
+      const p = STATE.pads.find(x => x.id === id);
+      const cost = getPadCost(p);
+      if (STATE.cash < cost) {
+        if (!fromWalk) showToast(`💵 Necesitas $${cost} en tu mochila. ¡Mata zombies o recoge billetes!`);
+        return;
+      }
+      STATE.cash -= cost;
+      p.level++;
+      sfxCashFeed();
+      spawnFlyingBillToPad(p);
+
+      // Rebote jugoso Cartoon en el edificio mejorado
+      if (id === 'fence') {
+        STATE.fenceMaxHp += 600;
+        STATE.fenceHp = STATE.fenceMaxHp;
+      } else if (id === 'chick') {
+        syncChickSoldiers3D();
+      }
+      spawnFloatingText(p.x, 2.2, p.z, `⬆️ ${p.short} NV.${p.level}!`, '#fde047');
+      updateBackpackStackVisual();
+      updateHUD();
+      renderQuickPads();
+    }
+
+    function renderQuickPads() {
+      const grid = document.getElementById('quick-pads-grid');
+      grid.innerHTML = STATE.pads.map(p => {
+        const cost = getPadCost(p);
+        const can = STATE.cash >= cost;
         return `
-          <button onclick="pickRogueliteCard('${k}')" class="btn-tactile bg-slate-900/95 border border-amber-400/60 rounded-xl p-2 flex flex-col items-center text-center gap-1">
-            <span class="px-1.5 py-0.5 rounded bg-rose-600 text-white font-black text-xs">${sk.tier}</span>
-            <span class="font-extrabold text-xs text-amber-300">${sk.name}</span>
-            <span class="text-xs text-emerald-300 font-bold">Nv.${sk.level} → ${sk.level + 1}</span>
+          <button onclick="upgradePad('${p.id}', false)" class="${can ? 'cartoon-btn-green' : 'cartoon-box opacity-80'} rounded-xl p-1 flex flex-col items-center text-center">
+            <span class="text-xs font-black">${p.icon}${p.level}</span>
+            <span class="text-xs font-black truncate w-full">${p.short}</span>
+            <span class="text-xs font-black">💵$${cost}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    // ============================================================================
+    // 7. CARTAS ROGUELITE Y HABILIDADES DE DUCK SURVIVAL
+    // ============================================================================
+    function addSkillXp(val) {
+      STATE.skillXp += val;
+      if (STATE.skillXp >= STATE.skillXpNext) {
+        STATE.skillXp -= STATE.skillXpNext;
+        STATE.skillLv++;
+        STATE.skillXpNext = Math.round(STATE.skillXpNext * 1.3);
+        sfxLevelUp();
+        openSkillDraftModal();
+      }
+    }
+
+    function openSkillDraftModal() {
+      const modal = document.getElementById('skill-draft-modal');
+      const box = document.getElementById('skill-cards-container');
+      const keys = Object.keys(STATE.skills).sort(() => Math.random() - 0.5).slice(0, 3);
+
+      box.innerHTML = keys.map(k => {
+        const s = STATE.skills[k];
+        return `
+          <button onclick="pickSkillCard('${k}')" class="cartoon-btn-yellow rounded-2xl p-2.5 flex flex-col items-center text-center gap-1">
+            <span class="text-2xl">${s.icon}</span>
+            <span class="font-black text-xs leading-tight">${s.name}</span>
+            <span class="px-1.5 py-0.5 rounded bg-black text-amber-300 font-black text-xs">Nv.${s.lv} → ${s.lv + 1}</span>
           </button>
         `;
       }).join('');
@@ -827,143 +938,90 @@
       modal.classList.add('flex');
     }
 
-    function pickRogueliteCard(key) {
-      GAME.rogueliteSkills[key].level++;
-      sfxUpgrade();
-      document.getElementById('roguelite-draft-modal').classList.add('hidden');
-      document.getElementById('roguelite-draft-modal').classList.remove('flex');
-      showToast(`🃏 ¡Evolucionaste [${GAME.rogueliteSkills[key].name}] a Nv.${GAME.rogueliteSkills[key].level}!`);
+    function pickSkillCard(key) {
+      STATE.skills[key].lv++;
+      if (key === 'angryChick') syncChickSoldiers3D();
+      sfxLevelUp();
+      document.getElementById('skill-draft-modal').classList.add('hidden');
+      document.getElementById('skill-draft-modal').classList.remove('flex');
+      showToast(`⚡ ¡Mejoraste [${STATE.skills[key].name}] a Nivel ${STATE.skills[key].lv}!`);
     }
 
-    function castMetaSkill(idx) {
-      if (GAME.activeCooldowns[idx] > 0) return;
-      const atk = getTotalSquadAtk();
+    function triggerActiveSkill(idx) {
+      if (STATE.cooldowns[idx] > 0) return;
+      const atk = getDuckAtk();
 
       if (idx === 0) {
-        // ☄️ Lluvia de Meteoritos S-Tier
-        GAME.activeCooldowns[0] = 8.0;
-        sfxMeteor();
+        // 🐥 Pollo Rayo (Angry Chicken)
+        STATE.cooldowns[0] = 7.0;
+        sfxLevelUp();
+        syncChickSoldiers3D();
+        zombies3D.forEach(z => {
+          const d = Math.round(atk * 3.5);
+          z.hp -= d;
+          spawnFloatingText(z.x, 2.2, z.z, `🐥⚡-${d}`, '#fde047');
+        });
+        showToast('🐥 ¡Escuadrón Pollo Rayo activado!');
+      } else if (idx === 1) {
+        // ☄️ Meteorito 3D
+        STATE.cooldowns[1] = 8.0;
         for (let i = 0; i < 4; i++) {
           setTimeout(() => {
             const tx = (Math.random() - 0.5) * 12;
             const tz = -2 - Math.random() * 8;
-            spawnMeteorStrike3D(tx, tz, Math.round(atk * 4.5));
-          }, i * 140);
+            const m = addToonMesh(new THREE.DodecahedronGeometry(0.9, 0), 0xf97316);
+            m.position.set(tx - 3, 14, tz - 3);
+            scene.add(m);
+            meteors3D.push({ mesh: m, tx, tz, dmg: Math.round(atk * 4.5), p: 0 });
+          }, i * 130);
         }
-        showToast('☄️ ¡Lluvia de Meteoritos S-Tier invocada!');
-      } else if (idx === 1) {
-        // ⚡ Láser Concentrado S-Tier
-        GAME.activeCooldowns[1] = 7.5;
-        GAME.laserBeamTimer = 2.2;
-        sfxUpgrade();
-        enemies3D.forEach(e => {
-          const d = Math.round(atk * 3.8);
-          e.hp -= d;
-          e.hitFlash = 0.25;
-          spawnFloatingText(e.x, 2.2, e.z, `⚡LÁSER -${d}`, '#22d3ee');
-        });
-        showToast('⚡ ¡Láser Concentrado S-Tier activado!');
+        showToast('☄️ ¡Lluvia de Meteoritos 3D!');
       } else if (idx === 2) {
-        // ❄️ Estalactitas de Hielo + Reparación de Valla
-        GAME.activeCooldowns[2] = 9.0;
-        sfxUpgrade();
-        GAME.wallHp = Math.min(GAME.wallMaxHp, GAME.wallHp + Math.round(GAME.wallMaxHp * 0.45));
-        spawnShockwave3D(0, 0, 10, 0x38bdf8);
-        enemies3D.forEach(e => {
-          e.slowTimer = 4.5;
-          e.hp -= Math.round(atk * 2.2);
-          spawnFloatingText(e.x, 2.0, e.z, '❄️CONGELADO', '#38bdf8');
+        // ❄️ Estalactitas de Hielo + Reparar Valla
+        STATE.cooldowns[2] = 9.0;
+        STATE.fenceHp = Math.min(STATE.fenceMaxHp, STATE.fenceHp + Math.round(STATE.fenceMaxHp * 0.5));
+        zombies3D.forEach(z => {
+          z.slow = 4.5;
+          z.hp -= Math.round(atk * 2.2);
+          spawnFloatingText(z.x, 2.0, z.z, '❄️HIELO', '#38bdf8');
         });
         updateHUD();
-        showToast('❄️ ¡Horda congelada y Valla Eléctrica reparada +45%!');
+        showToast('❄️ ¡Zombies congelados y Valla reparada +50%!');
       }
     }
 
-    // ============================================================================
-    // 6. CÁLCULOS DE PODER (6 SLOTS EQUIPO + GEMAS + VÍNCULO ELEMENTAL 2+2)
-    // ============================================================================
-    function getTotalSquadAtk() {
-      const gearSum = GAME.gearSlots.reduce((s, g) => s + g.bonusAtk * g.level * (1 + g.gemTier * 0.12), 0);
-      const heroSum = GAME.heroes.reduce((s, h) => s + h.level * 12 * h.stars, 0);
-      // Bono de Vínculo Elemental (+30% por 3 héroes de Fuego)
-      return Math.round((gearSum + heroSum) * 1.30);
-    }
-
-    function getBuildingCost(b) {
-      return Math.round(b.baseCost * Math.pow(1.28, b.level - 1));
-    }
-
-    function upgradeBuildingById(id, fromWalk = false) {
-      const b = GAME.buildings.find(x => x.id === id);
-      const cost = getBuildingCost(b);
-      if (GAME.cash < cost) {
-        if (!fromWalk) showToast(`💵 Necesitas $${cost}. ¡Las Minas de Oro y las oleadas te dan efectivo!`);
-        return;
-      }
-      GAME.cash -= cost;
-      b.level++;
-      sfxUpgrade();
-
-      if (id === 'fence') {
-        GAME.wallMaxHp += 700;
-        GAME.wallHp = GAME.wallMaxHp;
-      } else if (id === 'turret') {
-        syncTurrets3D();
-      }
-      spawnShockwave3D(b.x, b.z, 3.2, b.color);
-      spawnFloatingText(b.x, 2.3, b.z, `⬆️ ${b.short} NV.${b.level}`, '#4ade80');
-      updateHUD();
-      renderQuickBasePads();
-      if (GAME.activeDrawer === 'base') renderDrawer('base');
-    }
-
-    function renderQuickBasePads() {
-      const box = document.getElementById('quick-base-pads');
-      box.innerHTML = GAME.buildings.map(b => {
-        const cost = getBuildingCost(b);
-        const can = GAME.cash >= cost;
-        return `
-          <button onclick="upgradeBuildingById('${b.id}', false)" class="btn-tactile glass-hud rounded-xl p-1 flex flex-col items-center text-center border ${
-            can ? 'border-emerald-400 bg-emerald-500/20' : 'border-white/10 opacity-80'
-          }">
-            <span class="text-xs">${b.icon}<strong class="text-xs">${b.level}</strong></span>
-            <span class="text-xs font-bold truncate w-full">${b.short}</span>
-            <span class="text-xs font-black ${can ? 'text-emerald-300' : 'text-slate-400'}">$${cost}</span>
-          </button>
-        `;
-      }).join('');
+    function getDuckAtk() {
+      const gearLvSum = STATE.gear.reduce((s, g) => s + g.lv * 18, 0);
+      const duckLvSum = STATE.ducks.reduce((s, d) => s + d.lv * 14 * d.stars, 0);
+      return Math.round((gearLvSum + duckLvSum) * 1.3);
     }
 
     function updateHUD() {
-      document.getElementById('hud-skill-lv').textContent = `🔥 HABILIDAD NV.${GAME.skillLv}`;
-      document.getElementById('xp-bar-fill').style.width = `${Math.min(100, (GAME.skillXp / GAME.skillXpNext) * 100)}%`;
-      document.getElementById('hud-power-txt').textContent = `⚔️ ${(getTotalSquadAtk() * 12).toLocaleString()}`;
+      document.getElementById('hud-cash').textContent = `$${Math.floor(STATE.cash).toLocaleString()}`;
+      document.getElementById('hud-tickets').textContent = STATE.tickets;
+      document.getElementById('hud-gems').textContent = Math.floor(STATE.gems).toLocaleString();
+      document.getElementById('wave-counter-txt').textContent = `OLEADA ${STATE.wave} / 5`;
 
-      document.getElementById('wave-title-txt').textContent =
-        GAME.wave === 5 ? `CAP.${GAME.stage} • 💀 NOCHE 5/5` : `CAP.${GAME.stage} • OLEADA ${GAME.wave}/5`;
+      const fPct = Math.max(0, Math.min(100, Math.round((STATE.fenceHp / STATE.fenceMaxHp) * 100)));
+      document.getElementById('zombies-left-txt').textContent = `🧱 Valla: ${fPct}%`;
 
-      const left = enemies3D.length + GAME.enemiesToSpawn;
-      document.getElementById('enemies-left-txt').textContent =
-        !GAME.isNight ? '☀️ Construyendo' : `Zombies: ${left}`;
-
+      document.getElementById('wave-progress-line').style.width = `${(STATE.wave / 5) * 100}%`;
       for (let w = 1; w <= 4; w++) {
-        document.getElementById(`w-pill-${w}`).className =
-          w <= GAME.wave ? 'w-5 h-2 rounded-full bg-emerald-400' : 'w-5 h-2 rounded-full bg-slate-700';
+        document.getElementById(`node-w${w}`).className =
+          w <= STATE.wave
+            ? 'relative z-10 w-4 h-4 rounded-full bg-lime-400 border-2 border-black text-black font-black flex items-center justify-center text-xs'
+            : 'relative z-10 w-4 h-4 rounded-full bg-slate-700 border-2 border-black text-white font-black flex items-center justify-center text-xs';
       }
 
-      const wallPct = Math.max(0, Math.min(100, Math.round((GAME.wallHp / GAME.wallMaxHp) * 100)));
-      document.getElementById('hud-wall-hp').textContent = `${wallPct}%`;
-      document.getElementById('hud-wall-bar').style.width = `${wallPct}%`;
-
-      document.getElementById('res-cash').textContent = `$${Math.floor(GAME.cash).toLocaleString()}`;
-      document.getElementById('res-blueprints').textContent = GAME.blueprints;
-      document.getElementById('res-gems').textContent = Math.floor(GAME.gems).toLocaleString();
+      document.getElementById('xp-lv-txt').textContent = `⚡ NV. HABILIDAD ${STATE.skillLv}`;
+      document.getElementById('xp-bar-fill').style.width = `${Math.min(100, (STATE.skillXp / STATE.skillXpNext) * 100)}%`;
+      updateBackpackStackVisual();
     }
 
     // ============================================================================
-    // 7. JOYSTICK TÁCTIL Y BUCLE 3D (60 FPS)
+    // 8. JOYSTICK Y BUCLE DE JUEGO 3D (60 FPS)
     // ============================================================================
-    const inputState = { dx: 0, dz: 0, active: false };
+    const input = { dx: 0, dz: 0, active: false };
     const keys = {};
     window.addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; });
     window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
@@ -976,42 +1034,30 @@
       joyZone.setPointerCapture(e.pointerId);
       const r = joyZone.getBoundingClientRect();
       joyCenter = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
-      inputState.active = true;
+      input.active = true;
     });
     joyZone.addEventListener('pointermove', e => {
-      if (!inputState.active) return;
-      const dx = e.clientX - joyCenter.x;
-      const dy = e.clientY - joyCenter.y;
+      if (!input.active) return;
+      const dx = e.clientX - joyCenter.x; const dy = e.clientY - joyCenter.y;
       const dist = Math.hypot(dx, dy);
       const cl = Math.min(34, dist);
       const a = Math.atan2(dy, dx);
       joyKnob.style.transform = `translate(${Math.cos(a) * cl}px, ${Math.sin(a) * cl}px)`;
-      if (dist > 4) { inputState.dx = Math.cos(a); inputState.dz = Math.sin(a); }
-      else { inputState.dx = 0; inputState.dz = 0; }
+      if (dist > 4) { input.dx = Math.cos(a); input.dz = Math.sin(a); }
+      else { input.dx = 0; input.dz = 0; }
     });
-    const endJoy = () => { inputState.active = false; inputState.dx = 0; inputState.dz = 0; joyKnob.style.transform = 'translate(0px,0px)'; };
+    const endJoy = () => { input.active = false; input.dx = 0; input.dz = 0; joyKnob.style.transform = 'translate(0px,0px)'; };
     joyZone.addEventListener('pointerup', endJoy);
     joyZone.addEventListener('pointercancel', endJoy);
 
     function toggleAutoPilot() {
-      GAME.autoPilot = !GAME.autoPilot;
-      const btn = document.getElementById('btn-autopilot');
-      btn.textContent = GAME.autoPilot ? '🤖 IA: ON' : '🤖 IA: OFF';
+      STATE.autoPilot = !STATE.autoPilot;
+      document.getElementById('btn-autopilot').textContent = STATE.autoPilot ? '🤖 Auto' : '🕹️ Manual';
     }
 
-    function fireBullet3D(fx, fz, tx, tz, dmg, col = 0xfef08a) {
-      const dx = tx - fx; const dz = tz - fz;
-      const l = Math.hypot(dx, dz) || 1;
-      const m = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.16, 0.65), new THREE.MeshBasicMaterial({ color: col }));
-      m.position.set(fx, 1.25, fz);
-      m.lookAt(tx, 1.25, tz);
-      scene.add(m);
-      bullets3D.push({ mesh: m, x: fx, z: fz, vx: (dx / l) * 28, vz: (dz / l) * 28, dmg, life: 1.0 });
-    }
-
-    function spawnFloatingText(wx, wy, wz, text, color = '#fde047') {
-      const layer = document.getElementById('floating-dmg-layer');
-      if (layer.children.length > 20) return;
+    function spawnFloatingText(wx, wy, wz, text, col = '#fde047') {
+      const box = document.getElementById('floating-dmg-box');
+      if (box.children.length > 18) return;
       const v = new THREE.Vector3(wx, wy, wz);
       v.project(camera);
       const w = hostEl.clientWidth; const h = hostEl.clientHeight;
@@ -1019,13 +1065,38 @@
       if (sx < 0 || sx > w || sy < 0 || sy > h) return;
 
       const el = document.createElement('div');
-      el.className = 'absolute font-black text-xs pointer-events-none transition-all duration-500';
-      el.style.left = `${sx}px`; el.style.top = `${sy}px`; el.style.color = color;
-      el.style.textShadow = '0 2px 4px rgba(0,0,0,0.95)';
+      el.className = 'absolute font-black text-xs text-outline pointer-events-none transition-all duration-500';
+      el.style.left = `${sx}px`; el.style.top = `${sy}px`; el.style.color = col;
       el.textContent = text;
-      layer.appendChild(el);
-      requestAnimationFrame(() => { el.style.transform = 'translateY(-26px)'; el.style.opacity = '0'; });
+      box.appendChild(el);
+      requestAnimationFrame(() => { el.style.transform = 'translateY(-26px) scale(1.1)'; el.style.opacity = '0'; });
       setTimeout(() => el.remove(), 480);
+    }
+
+    // Proyectar la Barra de Vida flotante sobre la cabeza del Pato 3D y las etiquetas de los Pads
+    function syncFloatingWorldUI() {
+      const w = hostEl.clientWidth; const h = hostEl.clientHeight;
+      const duckVec = new THREE.Vector3(duckPos.x, 2.75, duckPos.z);
+      duckVec.project(camera);
+      const dx = (duckVec.x * 0.5 + 0.5) * w;
+      const dy = (-duckVec.y * 0.5 + 0.5) * h;
+      const hud = document.getElementById('duck-floating-hud');
+      hud.style.left = `${dx}px`;
+      hud.style.top = `${dy}px`;
+
+      const labelsBox = document.getElementById('ground-pads-labels');
+      labelsBox.innerHTML = STATE.pads.map(p => {
+        const pv = new THREE.Vector3(p.x, 0.3, p.z + 1.2);
+        pv.project(camera);
+        const px = (pv.x * 0.5 + 0.5) * w;
+        const py = (-pv.y * 0.5 + 0.5) * h;
+        const cost = getPadCost(p);
+        return `
+          <div class="absolute -translate-x-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded-lg bg-black/80 border border-white/40 text-xs font-black whitespace-nowrap" style="left:${px}px; top:${py}px;">
+            ${p.icon} <span class="text-lime-400">$${cost}</span>
+          </div>
+        `;
+      }).join('');
     }
 
     let lastTime = performance.now();
@@ -1033,273 +1104,247 @@
       const dt = Math.min(0.05, (now - lastTime) / 1000);
       lastTime = now;
 
-      // Cooldowns de habilidades
       for (let i = 0; i < 3; i++) {
-        if (GAME.activeCooldowns[i] > 0) {
-          GAME.activeCooldowns[i] = Math.max(0, GAME.activeCooldowns[i] - dt);
-          document.getElementById(`skill-cd-${i}`).textContent = `${GAME.activeCooldowns[i].toFixed(1)}s`;
+        if (STATE.cooldowns[i] > 0) {
+          STATE.cooldowns[i] = Math.max(0, STATE.cooldowns[i] - dt);
+          document.getElementById(`cd-txt-${i}`).textContent = `${STATE.cooldowns[i].toFixed(1)}s`;
         } else {
-          document.getElementById(`skill-cd-${i}`).textContent = 'LISTO';
+          document.getElementById(`cd-txt-${i}`).textContent = 'LISTO';
         }
       }
 
-      // Rayo Láser Concentrado S-Tier
-      if (GAME.laserBeamTimer > 0) {
-        GAME.laserBeamTimer -= dt;
-        focusedLaserMesh.visible = true;
-        focusedLaserMesh.position.set(player3D.pos.x, 1.3, player3D.pos.z - 9);
-      } else {
-        focusedLaserMesh.visible = false;
-      }
-
-      // 1. Movimiento del Héroe #1 y Compañero Activo #2 (2+2 Squad de Duck Survival)
-      let mx = inputState.dx; let mz = inputState.dz;
+      // 1. Movimiento del Pato Duke
+      let mx = input.dx; let mz = input.dz;
       if (keys['w'] || keys['arrowup']) mz -= 1;
       if (keys['s'] || keys['arrowdown']) mz += 1;
       if (keys['a'] || keys['arrowleft']) mx -= 1;
       if (keys['d'] || keys['arrowright']) mx += 1;
 
-      if (Math.hypot(mx, mz) < 0.05 && GAME.autoPilot) {
-        if (cashDrops3D.length > 0) {
-          const c = cashDrops3D[0];
-          const dx = c.x - player3D.pos.x; const dz = c.z - player3D.pos.z;
+      if (Math.hypot(mx, mz) < 0.05 && STATE.autoPilot) {
+        if (groundBanknotes3D.length > 0) {
+          const b = groundBanknotes3D[0];
+          const dx = b.x - duckPos.x; const dz = b.z - duckPos.z;
           const l = Math.hypot(dx, dz) || 1;
           mx = dx / l; mz = dz / l;
         } else {
-          const tx = Math.sin(now * 0.0012) * 5.2;
-          const tz = 3.2;
-          const dx = tx - player3D.pos.x; const dz = tz - player3D.pos.z;
+          const tx = Math.sin(now * 0.0014) * 4.8;
+          const tz = 3.6;
+          const dx = tx - duckPos.x; const dz = tz - duckPos.z;
           const l = Math.hypot(dx, dz) || 1;
-          if (l > 0.4) { mx = dx / l; mz = dz / l; }
+          if (l > 0.35) { mx = dx / l; mz = dz / l; }
         }
       }
 
-      const mLen = Math.hypot(mx, mz);
-      if (mLen > 0.02) {
-        player3D.pos.x += (mx / mLen) * player3D.speed * dt;
-        player3D.pos.z += (mz / mLen) * player3D.speed * dt;
-        const sw = Math.sin(now * 0.018) * 0.55;
-        playerMesh.userData.lLeg.rotation.x = sw;
-        playerMesh.userData.rLeg.rotation.x = -sw;
-      }
-      player3D.pos.x = Math.max(ARENA_BOUNDS.minX, Math.min(ARENA_BOUNDS.maxX, player3D.pos.x));
-      player3D.pos.z = Math.max(ARENA_BOUNDS.minZ, Math.min(ARENA_BOUNDS.maxZ, player3D.pos.z));
-      playerMesh.position.set(player3D.pos.x, 0, player3D.pos.z);
-
-      // El 2.º Héroe Activo (Mir - Hielo) escolta a tu Comandante en 3D
-      secondHeroMesh.position.x += (player3D.pos.x + 2.1 - secondHeroMesh.position.x) * 5 * dt;
-      secondHeroMesh.position.z += (player3D.pos.z + 0.8 - secondHeroMesh.position.z) * 5 * dt;
-
-      if (enemies3D.length > 0) {
-        playerMesh.lookAt(enemies3D[0].x, 0, enemies3D[0].z);
-        secondHeroMesh.lookAt(enemies3D[0].x, 0, enemies3D[0].z);
+      const len = Math.hypot(mx, mz);
+      if (len > 0.02) {
+        duckPos.x += (mx / len) * duckPos.speed * dt;
+        duckPos.z += (mz / len) * duckPos.speed * dt;
+        // Bamboleo cómico de pato al caminar (Waddle animation)
+        mainDuckMesh.rotation.z = Math.sin(now * 0.02) * 0.12;
+      } else {
+        mainDuckMesh.rotation.z = 0;
       }
 
-      camera.position.x += (player3D.pos.x * 0.42 - camera.position.x) * 5 * dt;
+      duckPos.x = Math.max(ARENA_BOUNDS.minX, Math.min(ARENA_BOUNDS.maxX, duckPos.x));
+      duckPos.z = Math.max(ARENA_BOUNDS.minZ, Math.min(ARENA_BOUNDS.maxZ, duckPos.z));
+      mainDuckMesh.position.set(duckPos.x, 0, duckPos.z);
+
+      // 2.º Pato Activo ("Cole") y Pollitos Soldados siguiendo a Duke
+      secondDuckMesh.position.x += (duckPos.x - 2.0 - secondDuckMesh.position.x) * 5 * dt;
+      secondDuckMesh.position.z += (duckPos.z + 0.7 - secondDuckMesh.position.z) * 5 * dt;
+
+      if (zombies3D.length > 0) {
+        mainDuckMesh.lookAt(zombies3D[0].x, 0, zombies3D[0].z);
+        secondDuckMesh.lookAt(zombies3D[0].x, 0, zombies3D[0].z);
+      } else if (len > 0.02) {
+        mainDuckMesh.rotation.y = Math.atan2(mx, mz);
+      }
+
+      chickSoldiers3D.forEach(c => {
+        const cx = duckPos.x + Math.cos(c.angle + now * 0.0015) * 2.2;
+        const cz = duckPos.z + Math.sin(c.angle + now * 0.0015) * 2.2;
+        c.mesh.position.set(cx, 0, cz);
+      });
+
+      camera.position.x += (duckPos.x * 0.42 - camera.position.x) * 5 * dt;
       camera.position.y = 21.5;
-      camera.position.z += (player3D.pos.z * 0.35 + 17.5 - camera.position.z) * 5 * dt;
-      camera.lookAt(player3D.pos.x * 0.3, 0.6, player3D.pos.z * 0.25 - 1.5);
+      camera.position.z += (duckPos.z * 0.35 + 17.5 - camera.position.z) * 5 * dt;
+      camera.lookAt(duckPos.x * 0.3, 0.5, duckPos.z * 0.25 - 1.5);
 
-      mineRig.rotation.y += 2.2 * dt;
-      empTowerCoil.rotation.y += 2.8 * dt;
+      syncFloatingWorldUI();
 
-      // 2. Producción de la Mina de Oro + Torre EMP + Meteorito Automático
-      const mineLv = GAME.buildings.find(b => b.id === 'mine').level;
-      player3D.mineTimer += dt;
-      if (player3D.mineTimer >= Math.max(1.8, 4.2 - mineLv * 0.25)) {
-        player3D.mineTimer = 0;
-        spawnCashDrop(-6.2, 7.2, 15 * mineLv, false);
+      // 2. Producción de la Mina de Billetes + Caminar sobre los Círculos del Suelo
+      const mineLv = STATE.pads.find(p => p.id === 'mine').level;
+      duckPos.mineTimer += dt;
+      if (duckPos.mineTimer >= Math.max(1.6, 3.8 - mineLv * 0.2)) {
+        duckPos.mineTimer = 0;
+        spawnBanknoteOnGround(-5.8, 6.2, 18 * mineLv);
       }
 
-      // Pulso automático de la Torre EMP cada 3.5s
-      player3D.empTimer += dt;
-      if (player3D.empTimer >= 3.5 && enemies3D.length > 0) {
-        player3D.empTimer = 0;
-        spawnShockwave3D(0, 5.2, 9.5, 0x818cf8);
-        enemies3D.forEach(e => { e.slowTimer = 2.5; });
-      }
-
-      // Meteorito pasivo de la carta Roguelite cada 3.8s
-      player3D.meteorTimer += dt;
-      if (player3D.meteorTimer >= 3.8 && enemies3D.length > 0) {
-        player3D.meteorTimer = 0;
-        const t = enemies3D[Math.floor(Math.random() * enemies3D.length)];
-        spawnMeteorStrike3D(t.x, t.z, Math.round(getTotalSquadAtk() * (1.8 + GAME.rogueliteSkills.meteor.level * 0.5)));
-      }
-
-      // 3. Caminar sobre los Pads 3D para mejorar con Dinero (💵)
-      player3D.padTimer = Math.max(0, player3D.padTimer - dt);
-      GAME.buildings.forEach(b => {
-        const ring = padMeshes[b.id];
-        if (ring) {
-          ring.rotation.z += 0.9 * dt;
-          if (Math.hypot(player3D.pos.x - b.x, player3D.pos.z - b.z) < 1.85 && GAME.cash >= getBuildingCost(b) && player3D.padTimer <= 0) {
-            player3D.padTimer = 0.75;
-            upgradeBuildingById(b.id, true);
-          }
+      duckPos.padTimer = Math.max(0, duckPos.padTimer - dt);
+      STATE.pads.forEach(p => {
+        if (Math.hypot(duckPos.x - p.x, duckPos.z - p.z) < 1.8 && STATE.cash >= getPadCost(p) && duckPos.padTimer <= 0) {
+          duckPos.padTimer = 0.65;
+          upgradePad(p.id, true);
         }
       });
 
-      // 4. Spawner de Zombies Nocturnos desde las 3 Puertas Norte
-      if (GAME.isNight && GAME.enemiesToSpawn > 0) {
-        GAME.spawnTimer -= dt;
-        if (GAME.spawnTimer <= 0) {
-          GAME.spawnTimer = 0.72;
-          GAME.enemiesToSpawn--;
-          const gates = [-7.0, 0.0, 7.0];
-          const gx = gates[Math.floor(Math.random() * 3)] + (Math.random() - 0.5) * 1.4;
-          const m = createMutantMesh3D(false);
-          m.position.set(gx, 0, -13.6);
-          scene.add(m);
-          const hp = Math.round((130 + GAME.wave * 38) * Math.pow(1.35, GAME.stage - 1));
-          enemies3D.push({ mesh: m, x: gx, z: -13.6, hp, maxHp: hp, atk: 18, speed: 3.5 + Math.random() * 0.8, radius: 0.85, isBoss: false, hitFlash: 0, slowTimer: 0 });
-          updateHUD();
+      // 3. Spawner de Zombies Nocturnos
+      if (STATE.isNight && STATE.zombiesToSpawn > 0) {
+        STATE.spawnTimer -= dt;
+        if (STATE.spawnTimer <= 0) {
+          STATE.spawnTimer = 0.7;
+          STATE.zombiesToSpawn--;
+          const gx = [-6.5, 0, 6.5][Math.floor(Math.random() * 3)] + (Math.random() - 0.5) * 1.6;
+          const zm = createZombieMesh3D(false);
+          zm.position.set(gx, 0, -13.2);
+          scene.add(zm);
+          const hp = Math.round((120 + STATE.wave * 35) * Math.pow(1.3, STATE.stage - 1));
+          zombies3D.push({ mesh: zm, x: gx, z: -13.2, hp, maxHp: hp, atk: 18, speed: 3.4 + Math.random() * 0.8, radius: 0.85, isBoss: false, slow: 0 });
         }
       }
 
-      // 5. Disparo de Héroe #1 (Fuego), Héroe #2 (Hielo) y Torretas Gattling
-      const atk = getTotalSquadAtk();
-      player3D.shootTimer += dt;
-      if (player3D.shootTimer >= 0.28 && enemies3D.length > 0) {
-        player3D.shootTimer = 0;
-        const t = enemies3D[0];
-        sfxShot();
-        fireBullet3D(player3D.pos.x, player3D.pos.z, t.x, t.z, atk, 0xf97316);
-        fireBullet3D(secondHeroMesh.position.x, secondHeroMesh.position.z, t.x, t.z, Math.round(atk * 0.7), 0x38bdf8);
+      // 4. Disparos del Pato Duke, Cole y Torretas Gattling
+      const atk = getDuckAtk();
+      duckPos.shootTimer += dt;
+      if (duckPos.shootTimer >= 0.25 && zombies3D.length > 0) {
+        duckPos.shootTimer = 0;
+        const t = zombies3D[0];
+        sfxQuackPop();
+        const bMesh1 = new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 8), new THREE.MeshBasicMaterial({ color: 0xfef08a }));
+        bMesh1.position.set(duckPos.x, 1.1, duckPos.z);
+        scene.add(bMesh1);
+        const dx = t.x - duckPos.x; const dz = t.z - duckPos.z;
+        const l = Math.hypot(dx, dz) || 1;
+        bullets3D.push({ mesh: bMesh1, x: duckPos.x, z: duckPos.z, vx: (dx / l) * 28, vz: (dz / l) * 28, dmg: atk, life: 1.0 });
       }
 
-      const turretLv = GAME.buildings.find(b => b.id === 'turret').level;
-      turretEntities.forEach(t => {
-        t.shootTimer += dt;
-        if (t.shootTimer >= 0.45 && enemies3D.length > 0) {
-          t.shootTimer = 0;
-          const target = enemies3D[Math.floor(Math.random() * enemies3D.length)];
-          t.group.lookAt(target.x, 1.4, target.z);
-          fireBullet3D(t.group.position.x, t.group.position.z, target.x, target.z, Math.round(atk * (0.45 + turretLv * 0.15)), 0xfacc15);
+      ['turretL', 'turretR'].forEach(tid => {
+        const tObj = turretMeshes3D[tid];
+        const lv = STATE.pads.find(p => p.id === tid).level;
+        tObj.timer += dt;
+        if (tObj.timer >= Math.max(0.22, 0.55 - lv * 0.04) && zombies3D.length > 0) {
+          tObj.timer = 0;
+          const target = zombies3D[Math.floor(Math.random() * zombies3D.length)];
+          tObj.group.lookAt(target.x, 0.9, target.z);
+          const bm = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), new THREE.MeshBasicMaterial({ color: 0xf97316 }));
+          bm.position.set(tObj.group.position.x, 1.2, tObj.group.position.z);
+          scene.add(bm);
+          const dx = target.x - tObj.group.position.x; const dz = target.z - tObj.group.position.z;
+          const l = Math.hypot(dx, dz) || 1;
+          bullets3D.push({ mesh: bm, x: bm.position.x, z: bm.position.z, vx: (dx / l) * 28, vz: (dz / l) * 28, dmg: Math.round(atk * (0.5 + lv * 0.15)), life: 1.0 });
         }
       });
 
-      // 6. Actualizar Enemigos y Jefe Final
-      const fenceLv = GAME.buildings.find(b => b.id === 'fence').level;
-      for (let i = enemies3D.length - 1; i >= 0; i--) {
-        const e = enemies3D[i];
-        if (e.slowTimer > 0) e.slowTimer -= dt;
-        const spdMult = e.slowTimer > 0 ? 0.45 : 1.0;
+      // 5. Actualizar Zombies
+      const fenceLv = STATE.pads.find(p => p.id === 'fence').level;
+      for (let i = zombies3D.length - 1; i >= 0; i--) {
+        const z = zombies3D[i];
+        if (z.slow > 0) z.slow -= dt;
+        const spd = z.speed * (z.slow > 0 ? 0.45 : 1.0);
 
-        const stopZ = GAME.wallHp > 0 ? 1.1 : player3D.pos.z;
-        const tx = GAME.wallHp > 0 ? e.x * 0.92 : player3D.pos.x;
-        const tz = Math.min(stopZ, player3D.pos.z);
-        const dx = tx - e.x; const dz = tz - e.z;
+        const stopZ = STATE.fenceHp > 0 ? 1.05 : duckPos.z;
+        const tx = STATE.fenceHp > 0 ? z.x * 0.92 : duckPos.x;
+        const tz = Math.min(stopZ, duckPos.z);
+        const dx = tx - z.x; const dz = tz - z.z;
         const dist = Math.hypot(dx, dz) || 1;
 
         if (dist > 0.45) {
-          e.x += (dx / dist) * e.speed * spdMult * dt;
-          e.z += (dz / dist) * e.speed * spdMult * dt;
-        } else if (GAME.wallHp > 0) {
-          GAME.wallHp = Math.max(0, GAME.wallHp - e.atk * dt);
-          e.hp -= (14 * fenceLv) * dt;
+          z.x += (dx / dist) * spd * dt;
+          z.z += (dz / dist) * spd * dt;
+        } else if (STATE.fenceHp > 0) {
+          STATE.fenceHp = Math.max(0, STATE.fenceHp - z.atk * dt);
+          z.hp -= (15 * fenceLv) * dt;
         }
 
-        e.mesh.position.set(e.x, 0, e.z);
-        e.mesh.lookAt(player3D.pos.x, 0, player3D.pos.z);
+        z.mesh.position.set(z.x, Math.abs(Math.sin(now * 0.015 + i)) * 0.15, z.z);
+        z.mesh.lookAt(duckPos.x, 0, duckPos.z);
 
-        if (e.isBoss) {
-          const pct = Math.max(0, (e.hp / e.maxHp) * 100);
+        if (z.isBoss) {
+          const pct = Math.max(0, (z.hp / z.maxHp) * 100);
           document.getElementById('boss-hp-fill').style.width = `${pct}%`;
-          document.getElementById('boss-bars-txt').textContent = `x${Math.ceil(pct / 20)} BARRAS`;
+          document.getElementById('boss-hp-bars').textContent = `x${Math.ceil(pct / 20)}`;
         }
 
-        if (e.hitFlash > 0) {
-          e.hitFlash -= dt;
-          e.mesh.userData.mat.emissive.setHex(0xffffff);
-          e.mesh.userData.mat.emissiveIntensity = 0.55;
-        } else {
-          e.mesh.userData.mat.emissive.setHex(e.slowTimer > 0 ? 0x0284c7 : 0x000000);
-          e.mesh.userData.mat.emissiveIntensity = e.slowTimer > 0 ? 0.4 : 0;
-        }
-
-        if (e.hp <= 0) {
-          scene.remove(e.mesh);
-          spawnCashDrop(e.x, e.z, Math.round((16 + GAME.wave * 6) * (e.isBoss ? 10 : 1)), false);
-          addSkillXp(e.isBoss ? 100 : 24);
-          spawnShockwave3D(e.x, e.z, e.isBoss ? 4.2 : 1.3, e.isBoss ? 0xfacc15 : 0xef4444);
-          enemies3D.splice(i, 1);
+        if (z.hp <= 0) {
+          scene.remove(z.mesh);
+          spawnBanknoteOnGround(z.x, z.z, Math.round((15 + STATE.wave * 6) * (z.isBoss ? 10 : 1)));
+          addSkillXp(z.isBoss ? 90 : 25);
+          zombies3D.splice(i, 1);
           updateHUD();
 
-          if (enemies3D.length === 0 && GAME.enemiesToSpawn === 0 && GAME.isNight) {
-            triggerDaybreakAndCashReward();
+          if (zombies3D.length === 0 && STATE.zombiesToSpawn === 0 && STATE.isNight) {
+            onWaveClearedCashShower();
           }
         }
       }
 
-      // 7. Actualizar Meteoritos 3D en caída
-      for (let i = meteors3D.length - 1; i >= 0; i--) {
-        const m = meteors3D[i];
-        m.progress += dt * 2.4;
-        m.mesh.position.x = (m.tx - 4) + 4 * m.progress;
-        m.mesh.position.y = 14 * (1 - m.progress);
-        m.mesh.position.z = (m.tz - 4) + 4 * m.progress;
-        m.mesh.rotation.x += 5 * dt;
-
-        if (m.progress >= 1) {
-          scene.remove(m.mesh);
-          spawnShockwave3D(m.tx, m.tz, 4.2, 0xf97316);
-          enemies3D.forEach(e => {
-            if (Math.hypot(e.x - m.tx, e.z - m.tz) < 4.5) {
-              e.hp -= m.dmg;
-              e.hitFlash = 0.2;
-              spawnFloatingText(e.x, 2.2, e.z, `☄️-${m.dmg}`, '#fb923c');
-            }
-          });
-          meteors3D.splice(i, 1);
-        }
-      }
-
-      // 8. Actualizar Balas y Billetes Magnéticos (💵)
+      // 6. Actualizar Balas, Meteoritos y Billetes volando a la Mochila
       for (let i = bullets3D.length - 1; i >= 0; i--) {
         const b = bullets3D[i];
         b.x += b.vx * dt; b.z += b.vz * dt; b.life -= dt;
-        b.mesh.position.set(b.x, 1.25, b.z);
+        b.mesh.position.set(b.x, 1.2, b.z);
         let hit = false;
-        for (let j = 0; j < enemies3D.length; j++) {
-          const e = enemies3D[j];
-          if (Math.hypot(e.x - b.x, e.z - b.z) < e.radius + 0.45) {
-            e.hp -= b.dmg; e.hitFlash = 0.08;
-            spawnFloatingText(e.x, 1.8, e.z, `${b.dmg}`, '#fde047');
+        for (let j = 0; j < zombies3D.length; j++) {
+          const z = zombies3D[j];
+          if (Math.hypot(z.x - b.x, z.z - b.z) < z.radius + 0.45) {
+            z.hp -= b.dmg;
+            spawnFloatingText(z.x, 1.9, z.z, `${b.dmg}`, '#fde047');
             hit = true; break;
           }
         }
         if (hit || b.life <= 0) { scene.remove(b.mesh); bullets3D.splice(i, 1); }
       }
 
-      for (let i = cashDrops3D.length - 1; i >= 0; i--) {
-        const c = cashDrops3D[i];
-        c.mesh.rotation.y += 3 * dt;
-        const dist = Math.hypot(player3D.pos.x - c.x, player3D.pos.z - c.z);
-        if (dist < 5.8) c.magnetized = true;
-        if (c.magnetized) {
-          const dx = player3D.pos.x - c.x; const dz = player3D.pos.z - c.z;
+      for (let i = meteors3D.length - 1; i >= 0; i--) {
+        const m = meteors3D[i];
+        m.p += dt * 2.5;
+        m.mesh.position.set((m.tx - 3) + 3 * m.p, 14 * (1 - m.p), (m.tz - 3) + 3 * m.p);
+        if (m.p >= 1) {
+          scene.remove(m.mesh);
+          zombies3D.forEach(z => {
+            if (Math.hypot(z.x - m.tx, z.z - m.tz) < 4.5) {
+              z.hp -= m.dmg;
+              spawnFloatingText(z.x, 2.2, z.z, `☄️-${m.dmg}`, '#fb923c');
+            }
+          });
+          meteors3D.splice(i, 1);
+        }
+      }
+
+      for (let i = groundBanknotes3D.length - 1; i >= 0; i--) {
+        const b = groundBanknotes3D[i];
+        b.mesh.rotation.y += 3 * dt;
+        const dist = Math.hypot(duckPos.x - b.x, duckPos.z - b.z);
+        if (dist < 6.0) {
+          const dx = duckPos.x - b.x; const dz = duckPos.z - b.z;
           const l = Math.hypot(dx, dz) || 1;
-          c.x += (dx / l) * 22 * dt; c.z += (dz / l) * 22 * dt;
-          c.mesh.position.set(c.x, 0.55, c.z);
+          b.x += (dx / l) * 24 * dt; b.z += (dz / l) * 24 * dt;
+          b.mesh.position.set(b.x, 0.7, b.z);
           if (dist < 1.1) {
-            sfxCash();
-            GAME.cash += c.amount;
-            spawnFloatingText(player3D.pos.x, 2.3, player3D.pos.z, `💵+$${c.amount}`, '#4ade80');
-            scene.remove(c.mesh);
-            cashDrops3D.splice(i, 1);
+            sfxCashFeed();
+            STATE.cash += b.amount;
+            scene.remove(b.mesh);
+            groundBanknotes3D.splice(i, 1);
             updateHUD();
-            renderQuickBasePads();
+            renderQuickPads();
           }
         }
       }
 
-      for (let i = shockwaves3D.length - 1; i >= 0; i--) {
-        const s = shockwaves3D[i];
-        s.life -= dt; s.scale += (s.maxScale - s.scale) * 10 * dt;
-        s.mesh.scale.set(s.scale, s.scale, 1);
-        s.mesh.material.opacity = Math.max(0, s.life * 2);
-        if (s.life <= 0) { scene.remove(s.mesh); shockwaves3D.splice(i, 1); }
+      for (let i = flyingBanknotes3D.length - 1; i >= 0; i--) {
+        const fb = flyingBanknotes3D[i];
+        fb.progress += dt * 4.0;
+        const p = Math.min(1, fb.progress);
+        fb.mesh.position.set(
+          fb.sx + (fb.tx - fb.sx) * p,
+          1.5 + Math.sin(p * Math.PI) * 2.2,
+          fb.sz + (fb.tz - fb.sz) * p
+        );
+        if (fb.progress >= 1) {
+          scene.remove(fb.mesh);
+          flyingBanknotes3D.splice(i, 1);
+        }
       }
 
       renderer.render(scene, camera);
@@ -1307,176 +1352,158 @@
     }
 
     // ============================================================================
-    // 8. INTERFACES DE MENÚ CLONADAS DE DUCK SURVIVAL (GEAR/GEMS, HÉROES 2+2, GACHA, BASE)
+    // 9. INTERFACES DE MENÚ 1:1 DE DUCK SURVIVAL (EQUIPO, PATOS 2+2, 777 DRAWS, TIENDA)
     // ============================================================================
-    function openDrawer(tab) {
-      GAME.activeDrawer = tab;
-      document.getElementById('bottom-drawer').classList.remove('translate-y-full');
-      renderDrawer(tab);
+    function openMenuTab(tab) {
+      STATE.openTab = tab;
+      document.getElementById('menu-modal-sheet').classList.remove('translate-y-full');
+      renderMenuTab(tab);
     }
-    function closeDrawer() {
-      GAME.activeDrawer = null;
-      document.getElementById('bottom-drawer').classList.add('translate-y-full');
+    function closeMenuTab() {
+      STATE.openTab = null;
+      document.getElementById('menu-modal-sheet').classList.add('translate-y-full');
     }
 
-    function renderDrawer(tab) {
-      const title = document.getElementById('drawer-title');
-      const box = document.getElementById('drawer-content');
+    function renderMenuTab(tab) {
+      const title = document.getElementById('menu-sheet-title');
+      const body = document.getElementById('menu-sheet-body');
 
       if (tab === 'gear') {
-        title.textContent = '🎒 6 Slots de Equipamiento + Engaste & Fusión de Gemas';
-        const slotsHtml = GAME.gearSlots.map((g, idx) => `
-          <div class="p-2.5 rounded-2xl bg-slate-900/95 border border-white/10 flex items-center justify-between gap-2">
-            <div>
-              <div class="flex items-center gap-1.5">
-                <span class="text-base">${g.icon}</span>
-                <strong class="text-xs text-white">${g.name} (Nv.${g.level})</strong>
+        title.textContent = '🎒 Equipamiento del Pato (6 Slots) y Gemas';
+        const slotsHtml = STATE.gear.map((g, i) => `
+          <div class="cartoon-box rounded-2xl p-2.5 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <div class="w-11 h-11 rounded-xl ${g.color} border-2 border-black flex items-center justify-center text-xl shadow">
+                ${g.icon}
               </div>
-              <span class="text-xs text-amber-300 block mt-0.5">💎 Engarzada: ${g.gemName}</span>
+              <div>
+                <span class="px-1.5 py-0.5 rounded bg-black text-amber-300 font-black text-xs">${g.rarity} • Nv.${g.lv}</span>
+                <strong class="text-sm block text-white text-outline">${g.name}</strong>
+                <span class="text-xs text-lime-300 font-bold">${g.gem}</span>
+              </div>
             </div>
-            <button onclick="upgradeGearSlot(${idx})" class="btn-tactile px-3 py-1.5 rounded-xl bg-amber-500 text-black font-black text-xs shrink-0">
-              Subir (📜1 + $80)
+            <button onclick="upgradeGear(${i})" class="cartoon-btn-yellow px-3 py-2 rounded-xl text-xs shrink-0">
+              ⬆️ Subir ($80)
             </button>
           </div>
         `).join('');
 
-        const gemsHtml = GAME.gemBag.map(gm => `
-          <span class="px-2.5 py-1 rounded-xl bg-slate-900 border ${gm.color} font-bold text-xs">${gm.name}</span>
-        `).join('');
-
-        box.innerHTML = `
-          <div class="flex items-center justify-between bg-indigo-950/80 border border-indigo-400/40 rounded-2xl p-2.5">
-            <div>
-              <strong class="text-xs text-indigo-200 block">🔮 Forja de Gemas (Sistema Duck Survival)</strong>
-              <span class="text-xs text-slate-300">Combina 3 Gemas en 1 de rareza superior para multiplicar tu daño elemental.</span>
-            </div>
-            <button onclick="mergeGemsNow()" class="btn-tactile px-3 py-2 rounded-xl bg-gradient-to-r from-purple-500 to-amber-400 text-black font-black text-xs shrink-0">
-              🔮 Fusionar 3→1
+        body.innerHTML = `
+          <div class="flex items-center justify-between gap-2">
+            <button onclick="upgradeAllGear()" class="cartoon-btn-green flex-1 py-2.5 rounded-2xl text-xs">
+              ⬆️ Mejorar Todos los Slots
+            </button>
+            <button onclick="mergeAllGems()" class="cartoon-btn-yellow flex-1 py-2.5 rounded-2xl text-xs">
+              🔮 Fusionar Gemas (3→1)
             </button>
           </div>
-          <div class="flex flex-wrap gap-1.5">${gemsHtml}</div>
-          <div class="space-y-1.5 pt-1">${slotsHtml}</div>
+          <div class="space-y-2 pt-1">${slotsHtml}</div>
         `;
       } else if (tab === 'heroes') {
-        title.textContent = '🌟 Escuadrón 2+2 y Vínculo Elemental (+30% Daño Fuego)';
-        const hHtml = GAME.heroes.map((h, i) => `
-          <div class="p-3 rounded-2xl bg-slate-900/95 border border-amber-400/30 flex items-center justify-between gap-2">
+        title.textContent = '🦆 Escuadrón de Patos (2 Activos + 2 Soporte)';
+        body.innerHTML = STATE.ducks.map((d, i) => `
+          <div class="cartoon-box rounded-2xl p-3 flex items-center justify-between gap-2">
             <div>
-              <div class="flex items-center gap-1.5">
-                <span class="px-1.5 py-0.5 rounded bg-rose-600 text-white font-black text-xs">${h.rarity}</span>
-                <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold text-xs">${h.role}</span>
-              </div>
-              <strong class="text-sm block mt-1">${h.name} • Nv.${h.level} (${'★'.repeat(h.stars)})</strong>
-              <span class="text-xs text-amber-300">Elemento: ${h.element}</span>
+              <span class="px-2 py-0.5 rounded bg-amber-400 text-black font-black text-xs border border-black">${d.role}</span>
+              <strong class="text-sm block mt-1 text-white text-outline">🦆 ${d.name} • Nv.${d.lv} (${'★'.repeat(d.stars)})</strong>
+              <span class="text-xs text-amber-300 font-bold">Sinergia Elemental: ${d.element} (+30% Daño)</span>
             </div>
-            <button onclick="levelUpSquadHero(${i})" class="btn-tactile px-3 py-2 rounded-xl bg-amber-500 text-black font-black text-xs shrink-0">
-              ⬆️ Subir Nv
+            <button onclick="levelUpDuck(${i})" class="cartoon-btn-yellow px-3 py-2 rounded-xl text-xs shrink-0">
+              ⬆️ Ascender
             </button>
           </div>
         `).join('');
-
-        box.innerHTML = `
-          <div class="p-2.5 rounded-2xl bg-orange-950/80 border border-orange-400/50 text-xs">
-            <strong class="text-amber-300">🔥 Bono de Vínculo Elemental Activo (3 Héroes de Fuego):</strong>
-            <span class="text-orange-100 block">+30% Daño a Impacto Ígneo, Meteorito 3D y Rifle Gattling.</span>
-          </div>
-          <div class="space-y-2">${hHtml}</div>
-        `;
       } else if (tab === 'gacha') {
-        title.textContent = '🎲 Cofres de Gemas S-Tier & Cápsula de Héroes';
-        box.innerHTML = `
-          <div class="p-3.5 rounded-2xl bg-gradient-to-r from-purple-950 via-indigo-900 to-amber-900 border border-amber-400/50 text-white space-y-2">
-            <h3 class="font-black text-sm">📦 Cofre de Gemas & Equipamiento S-Tier</h3>
-            <p class="text-xs text-slate-200">Obtén Gemas Épicas/Legendarias para engarzar y Planos (📜) para subir tus 6 slots.</p>
-            <button onclick="openGemChestGacha()" class="btn-tactile w-full py-2.5 rounded-xl bg-amber-400 text-black font-black text-xs">
-              🌟 Abrir 10 Cofres de Gemas & Planos (Gratis Test)
-            </button>
-          </div>
-          <div id="gacha-out" class="grid grid-cols-2 gap-2 pt-2"></div>
-        `;
-      } else if (tab === 'base') {
-        title.textContent = '🏰 Estructuras de la Base (Día/Noche) & Oferta $0.99';
-        const bHtml = GAME.buildings.map(b => `
-          <div class="p-2.5 rounded-2xl bg-slate-900/95 border border-white/10 flex items-center justify-between gap-2">
-            <div>
-              <strong class="text-xs text-white">${b.icon} ${b.name} (Nv.${b.level})</strong>
-              <p class="text-xs text-slate-400">${b.desc}</p>
+        title.textContent = '🎲 Reclutamiento Patos Míticos & Cofres S-Tier';
+        body.innerHTML = `
+          <div class="cartoon-box rounded-2xl p-4 bg-gradient-to-r from-indigo-900 to-purple-900 space-y-2.5">
+            <span class="px-2 py-0.5 rounded bg-amber-400 text-black font-black text-xs border border-black">🌟 EVENTO 777 TIRADAS GRATIS</span>
+            <h3 class="text-base font-black text-white text-outline">Cápsula de Héroes Patos & Armas Gattling S-Tier</h3>
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="pullDuckGacha(1)" class="cartoon-btn-blue py-2.5 rounded-xl text-xs">🎲 Tirada x1 (1 🎟️)</button>
+              <button onclick="pullDuckGacha(10)" class="cartoon-btn-yellow py-2.5 rounded-xl text-xs">🌟 Tirada x10 (10 🎟️)</button>
             </div>
-            <button onclick="upgradeBuildingById('${b.id}', false)" class="btn-tactile px-3 py-1.5 rounded-xl bg-emerald-500 text-black font-black text-xs shrink-0">
-              💵$${getBuildingCost(b)}
+          </div>
+          <div id="gacha-results-box" class="grid grid-cols-5 gap-1.5 pt-2"></div>
+        `;
+      } else if (tab === 'shop') {
+        title.textContent = '🛒 Tienda de Suministros & Pack $0.99';
+        body.innerHTML = `
+          <div class="cartoon-box rounded-2xl p-3.5 bg-gradient-to-r from-rose-900 to-amber-900 flex items-center justify-between gap-2">
+            <div>
+              <span class="px-2 py-0.5 rounded bg-amber-400 text-black font-black text-xs border border-black">🔥 PACK 1.ª COMPRA $0.99 (1200% VALOR)</span>
+              <strong class="text-sm block mt-1 text-white text-outline">Pato Mítico Cole 5★ + Gattling Dorada + 💵$2,500</strong>
+            </div>
+            <button onclick="claimStarterPack()" class="cartoon-btn-yellow px-3.5 py-2.5 rounded-xl text-xs shrink-0">
+              Gratis Test
             </button>
           </div>
-        `).join('');
-        box.innerHTML = `<div class="space-y-2">${bHtml}</div>`;
-      }
-    }
-
-    function upgradeGearSlot(idx) {
-      if (GAME.blueprints < 1 || GAME.cash < 80) {
-        GAME.blueprints += 10; GAME.cash += 300;
-      }
-      GAME.blueprints--; GAME.cash -= 80;
-      GAME.gearSlots[idx].level++;
-      sfxUpgrade();
-      updateHUD();
-      renderDrawer('gear');
-      showToast(`🎒 ¡[${GAME.gearSlots[idx].name}] subió a Nivel ${GAME.gearSlots[idx].level}!`);
-    }
-
-    function mergeGemsNow() {
-      sfxUpgrade();
-      GAME.gemBag.push({ tier: 4, name: '🔴 Gema MÍTICA Roja (Meteorito +45% Daño)', color: 'border-rose-500 text-rose-300' });
-      GAME.gearSlots[0].gemTier = 4;
-      GAME.gearSlots[0].gemName = '🔴 Gema MÍTICA Roja (+45% Daño Fuego)';
-      updateHUD();
-      renderDrawer('gear');
-      showToast('🔮 ¡Fusión 3→1 exitosa! Creaste una Gema MÍTICA Roja (+45% Daño).');
-    }
-
-    function levelUpSquadHero(idx) {
-      GAME.heroes[idx].level += 2;
-      GAME.heroes[idx].stars = Math.min(5, GAME.heroes[idx].stars + 1);
-      sfxUpgrade();
-      updateHUD();
-      renderDrawer('heroes');
-      showToast(`🌟 ¡${GAME.heroes[idx].name} ascendió a Nv.${GAME.heroes[idx].level}!`);
-    }
-
-    function openGemChestGacha() {
-      sfxUpgrade();
-      GAME.blueprints += 15;
-      GAME.gemBag.push({ tier: 3, name: '🟡 Gema Dorada (Láser +28%)', color: 'border-amber-400 text-amber-300' });
-      updateHUD();
-      const out = document.getElementById('gacha-out');
-      if (out) {
-        out.innerHTML = `
-          <div class="p-2.5 rounded-xl bg-slate-900 border border-amber-400 text-amber-300 font-bold text-xs">🟡 Gema Dorada Legendaria (+28% Láser)</div>
-          <div class="p-2.5 rounded-xl bg-slate-900 border border-emerald-400 text-emerald-300 font-bold text-xs">📜 +15 Planos de Equipamiento</div>
         `;
       }
-      showToast('🎲 ¡10 Cofres abiertos! Recibiste Gema Dorada y +15 Planos.');
     }
 
-    function claimVipSupply() {
-      GAME.cash += 1200;
-      GAME.blueprints += 10;
-      sfxUpgrade();
+    function upgradeGear(i) {
+      STATE.gear[i].lv++;
+      sfxLevelUp();
+      renderMenuTab('gear');
       updateHUD();
-      renderQuickBasePads();
-      showToast('💵 ¡Suministro recibido! +$1,200 en efectivo y +10 Planos.');
+      showToast(`🎒 ¡[${STATE.gear[i].name}] mejorado a Nv.${STATE.gear[i].lv}!`);
+    }
+    function upgradeAllGear() {
+      STATE.gear.forEach(g => g.lv++);
+      sfxLevelUp();
+      renderMenuTab('gear');
+      updateHUD();
+      showToast('⬆️ ¡Todos los 6 Slots de Equipo subieron de nivel!');
+    }
+    function mergeAllGems() {
+      STATE.gear[0].gem = '🔴 Gema MÍTICA Fuego +50%';
+      sfxLevelUp();
+      renderMenuTab('gear');
+      showToast('🔮 ¡Gemas fusionadas 3→1 en Gema Mítica Roja (+50% Daño)!');
+    }
+    function levelUpDuck(i) {
+      STATE.ducks[i].lv += 2;
+      STATE.ducks[i].stars = Math.min(5, STATE.ducks[i].stars + 1);
+      sfxLevelUp();
+      renderMenuTab('heroes');
+      showToast(`🦆 ¡${STATE.ducks[i].name} subió a ${STATE.ducks[i].stars}★!`);
+    }
+    function pullDuckGacha(n) {
+      sfxLevelUp();
+      const box = document.getElementById('gacha-results-box');
+      const items = ['🦆 Duke ★', '🚀 Cole UR', '🔫 Gattling S', '🔴 Gema Mítica', '❄️ Mir SSR'];
+      let html = '';
+      for (let i = 0; i < n; i++) {
+        const it = items[Math.floor(Math.random() * items.length)];
+        html += `<div class="cartoon-box rounded-xl p-2 text-center font-black text-xs text-amber-300">${it}</div>`;
+      }
+      if (box) box.innerHTML = html;
+      STATE.ducks[0].lv += n;
+      showToast(`🎲 ¡${n} Cápsulas abiertas! Poder del escuadrón aumentado.`);
+    }
+    function claimStarterPack() {
+      STATE.cash += 2500;
+      STATE.gems += 3000;
+      sfxLevelUp();
+      updateHUD();
+      renderQuickPads();
+      showToast('🔥 ¡Pack $0.99 activado! +💵$2,500 en tu mochila 3D.');
+    }
+    function claim777Draws() {
+      STATE.cash += 800;
+      STATE.tickets += 25;
+      sfxLevelUp();
+      updateHUD();
+      renderQuickPads();
+      showToast('🎁 ¡Recompensa 777 Draws! +💵$800 en tu mochila y +25 Tickets.');
     }
 
     function toggleFrameMode() {
-      GAME.framedMode = !GAME.framedMode;
+      STATE.framedMode = !STATE.framedMode;
       const f = document.getElementById('phone-container');
-      const b = document.getElementById('btn-frame-mode');
-      if (GAME.framedMode) {
-        f.classList.add('framed-mode'); f.classList.remove('fullscreen-mode');
-        b.textContent = '🖥️ Full';
-      } else {
-        f.classList.remove('framed-mode'); f.classList.add('fullscreen-mode');
-        b.textContent = '📱 9:16';
-      }
+      if (STATE.framedMode) { f.classList.add('framed-mode'); f.classList.remove('fullscreen-mode'); }
+      else { f.classList.remove('framed-mode'); f.classList.add('fullscreen-mode'); }
       setTimeout(resize3D, 60);
     }
 
@@ -1486,19 +1513,32 @@
       el.textContent = msg;
       el.classList.remove('hidden');
       clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => el.classList.add('hidden'), 2800);
+      toastTimer = setTimeout(() => el.classList.add('hidden'), 2600);
     }
 
+    // ============================================================================
+    // 10. INICIO DEL JUEGO 3D
+    // ============================================================================
     window.addEventListener('DOMContentLoaded', () => {
       resize3D();
-      syncTurrets3D();
-      renderQuickBasePads();
-      startNightWaveNow();
+      syncChickSoldiers3D();
+      renderQuickPads();
+      setDayNightVisuals(false, false);
+
+      // Generar algunos fajos de billetes iniciales en el suelo para ver la mochila llenarse
+      for (let i = 0; i < 6; i++) {
+        spawnBanknoteOnGround((Math.random() - 0.5) * 6, 3 + Math.random() * 3, 40);
+      }
+
+      // EIniciar la primera oleada automáticamente tras 2.5 segundos
+      setTimeout(() => {
+        if (!STATE.isNight) startNightWave();
+      }, 2500);
 
       const bar = document.getElementById('load-bar');
       const st = document.getElementById('load-status');
-      setTimeout(() => { bar.style.width = '80%'; st.textContent = 'Sincronizando 6 Slots de Equipo, Gemas y Ciclo Día/Noche...'; }, 160);
-      setTimeout(() => { bar.style.width = '100%'; st.textContent = '¡Listo!'; }, 320);
+      setTimeout(() => { bar.style.width = '85%'; st.textContent = 'Cargando Mochila de Billetes 3D y Zombies Toon...'; }, 160);
+      setTimeout(() => { bar.style.width = '100%'; st.textContent = '¡Cuac! ¡Listo para jugar!'; }, 320);
       setTimeout(() => {
         const ov = document.getElementById('loading-overlay');
         ov.style.opacity = '0';
