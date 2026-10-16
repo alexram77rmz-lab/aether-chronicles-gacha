@@ -3,7 +3,7 @@
 #include <cmath>
 #include <cstdint>
 #include <string>
-#include <unordered_map>
+#include <array>
 #include <algorithm>
 
 namespace AetherEngine3D {
@@ -26,111 +26,109 @@ namespace AetherEngine3D {
         }
     };
 
-    /**
-     * Ciclo de 5 Oleadas por Nivel (Estilo Duck Survival / Last War / Zombie Defense 3D):
-     * - Oleadas 1 a 4: Hordas normales -> Al matar la oleada cae Lluvia de Dinero ($$$) -> Mejora de Base.
-     * - Oleada 5: ¡Aparece el Jefe Final del Nivel!
-     */
-    enum class StagePhase : uint8_t {
-        WaveCombat        = 0,
-        WaveClearCashDrop = 1,
-        BaseUpgradeIntermission = 2,
-        FinalBossWave5    = 3,
-        StageVictory      = 4
+    // Elementos de Sinergia (Idénticos a la arquitectura de Duck Survival)
+    enum class ElementType : uint8_t {
+        Fire      = 0, // Impacto Ígneo / Meteorito
+        Frost     = 1, // Estalactitas de Hielo
+        Lightning = 2, // Cadena de Relámpagos / Torre EMP
+        Energy    = 3, // Láser Concentrado
+        Physical  = 4  // Ráfaga Gattling / Señuelo Explosivo
     };
 
-    enum class BuildingType : uint8_t {
-        CommandBunker    = 0, // Núcleo de mando y curación
-        FrontBarricade   = 1, // Muro defensivo con púas eléctricas
-        HeavyTurrets     = 2, // Torretas metralleta / misiles en flancos
-        CashArmory       = 3, // Fábrica de billetes y mejora de calibre
-        MercenarySquad   = 4  // Escuadrón de soldados defensores 3D
+    // Ciclo "Construir de Día / Defender de Noche" (5 Oleadas + Jefe Final)
+    enum class DayNightPhase : uint8_t {
+        DayBuildAndEconomy = 0, // Sol cálido, minas producen $$$, mejoras de base
+        NightHordeCombat   = 1, // Noche azul neón, hordas 1/5 a 4/5
+        NightFinalBossWave = 2  // Oleada 5/5: Luna Roja + Jefe Final Gigante
     };
 
-    struct BaseBuildingPad {
-        BuildingType type;
+    // Las 6 Estructuras de la Base en el Recinto Cerrado
+    enum class BaseStructureType : uint8_t {
+        GoldMine         = 0, // Economía Día: Genera billetes ($$$)
+        SurvivorCamp     = 1, // Economía/Soporte: Regenera muro y +ingreso
+        ElectricFence    = 2, // Defensa Frontal: Valla electrificada
+        MachineGunTurret = 3, // Defensa Activa: Torretas Gattling dobles
+        EMPTower         = 4, // Control de Masas: Pulsos EMP que ralentizan 55%
+        InfantryBarracks = 5  // Tropas 3D: Soldados aliados en el patio
+    };
+
+    // Los 6 Slots de Equipamiento del Comandante
+    enum class GearSlotType : uint8_t {
+        Weapon = 0,
+        Helmet = 1,
+        Armor  = 2,
+        Gloves = 3,
+        Boots  = 4,
+        Belt   = 5
+    };
+
+    // Rareza de Gemas Engarzables (Fusión 3 en 1: Blue -> Purple -> Gold -> MythicRed)
+    enum class GemTier : uint8_t {
+        BlueRare       = 1,
+        PurpleEpic     = 2,
+        GoldLegendary  = 3,
+        MythicRed      = 4
+    };
+
+    struct SocketGem {
+        uint32_t gemId;
+        GemTier tier;
+        ElementType element;
+        float damageBonusPct; // +8% (Azul) hasta +45% (Mítica Roja)
+    };
+
+    struct EquipmentSlot {
+        GearSlotType slot;
         int level = 1;
-        int maxLevel = 30;
-        Vec3 worldPos;
-        int cashInvestedInCurrentLevel = 0;
+        std::vector<SocketGem> socketedGems;
 
-        int getUpgradeCost() const {
-            return static_cast<int>(80.0 * std::pow(1.30, level - 1));
+        int getUpgradeCostCash() const { return 100 * level; }
+        float getStatMultiplier() const {
+            float mult = 1.0f + (level - 1) * 0.12f;
+            for (const auto& g : socketedGems) mult += g.damageBonusPct;
+            return mult;
         }
     };
 
-    struct ActiveSkill {
+    // Escuadrón 2+2 (2 Héroes Activos en 3D + 2 Héroes de Soporte Pasivo)
+    struct HeroUnit {
         std::string id;
         std::string name;
-        float cooldown = 10.0f;
-        float currentCooldown = 0.0f;
-        float damageMultiplier = 4.0f;
-
-        bool isReady() const { return currentCooldown <= 0.0f; }
+        ElementType element;
+        int level = 1;
+        int stars = 1;
+        bool isActiveOnField = false; // true = Camina y dispara en 3D (máx 2), false = Soporte Pasivo (máx 2)
     };
 
-    struct Enemy3D {
-        uint32_t id;
-        Vec3 pos;
-        float hp;
-        float maxHp;
-        float atk;
-        float speed;
-        float radius;
-        bool isFinalBoss;
-        bool alive = true;
-    };
-
-    struct CashBundle3D {
-        Vec3 pos;
-        int cashAmount;
-        bool magnetized = false;
-        bool collected = false;
-    };
-
-    /**
-     * Mapa Semi-Cerrado (Recinto Fortificado 3D):
-     * Limita el movimiento del jugador y los enemigos dentro de los muros perimetrales.
-     */
-    struct EnclosedArenaBounds {
-        float minX = -13.5f;
-        float maxX =  13.5f;
-        float minZ = -15.5f; // Puertas Norte de invasión
-        float maxZ =  13.5f; // Zona Sur de la Base
-
-        void clampPosition(Vec3& p, float entityRadius = 0.7f) const {
-            p.x = std::max(minX + entityRadius, std::min(maxX - entityRadius, p.x));
-            p.z = std::max(minZ + entityRadius, std::min(maxZ - entityRadius, p.z));
+    struct BaseStructurePad {
+        BaseStructureType type;
+        int level = 1;
+        Vec3 worldPos;
+        int getUpgradeCost() const {
+            return static_cast<int>(65.0 * std::pow(1.28, level - 1));
         }
     };
 
-    class AetherTacticalArenaSim {
+    class DuckSurvivalStyleEngine {
     public:
-        AetherTacticalArenaSim();
-        void update(float dt);
-        void startWave(int waveIdx);
-        void triggerWaveClearReward();
-        bool investCashIntoPad(BuildingType type, int amount);
-        bool castActiveSkill(int skillIndex);
+        DuckSurvivalStyleEngine();
+        void toggleDayNightPhase();
+        bool upgradeBaseStructure(BaseStructureType type);
+        bool upgradeGearSlot(GearSlotType slot);
+        bool mergeThreeGemsInInventory();
+        float calculateTotalElementalSynergyMultiplier() const;
 
-        EnclosedArenaBounds arenaBounds;
-        StagePhase currentPhase = StagePhase::WaveCombat;
-
+        DayNightPhase phase = DayNightPhase::DayBuildAndEconomy;
         int currentStage = 1;
-        int currentWave = 1; // 1..5 (5 = Jefe Final)
-        int enemiesRemainingInWave = 0;
-        int cashDollars = 300;
-        float barricadeHp = 1500.0f;
-        float barricadeMaxHp = 1500.0f;
+        int currentWave = 1; // 1..5
+        int cashDollars = 400;
+        int gemsCurrency = 5400;
+        int gearBlueprints = 25;
 
-        Vec3 playerPos{0.0f, 0.0f, 4.5f};
-        std::vector<BaseBuildingPad> basePads;
-        std::vector<ActiveSkill> skills;
-        std::vector<Enemy3D> enemies;
-        std::vector<CashBundle3D> cashDrops;
-
-    private:
-        uint32_t m_nextEnemyId = 1;
+        std::array<EquipmentSlot, 6> gearSlots;
+        std::vector<SocketGem> gemInventory;
+        std::vector<HeroUnit> squadRoster;
+        std::vector<BaseStructurePad> baseStructures;
     };
 
 } // namespace AetherEngine3D

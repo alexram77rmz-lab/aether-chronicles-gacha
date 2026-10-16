@@ -2,93 +2,44 @@
 
 namespace AetherEngine3D {
 
-    AetherTacticalArenaSim::AetherTacticalArenaSim() {
-        basePads.push_back({BuildingType::CommandBunker,  1, 30, { 0.0f, 0.0f,  8.5f}, 0});
-        basePads.push_back({BuildingType::FrontBarricade, 1, 30, { 0.0f, 0.0f,  1.5f}, 0});
-        basePads.push_back({BuildingType::HeavyTurrets,   1, 30, {-6.5f, 0.0f,  2.5f}, 0});
-        basePads.push_back({BuildingType::CashArmory,     1, 30, { 6.5f, 0.0f,  2.5f}, 0});
-        basePads.push_back({BuildingType::MercenarySquad, 1, 30, {-5.5f, 0.0f,  8.0f}, 0});
-
-        skills.push_back({"airstrike", "Ataque Aereo de Misiles", 12.0f, 0.0f, 5.5f});
-        skills.push_back({"overdrive", "Tormenta Electrica & Cadencia", 10.0f, 0.0f, 3.8f});
-        skills.push_back({"medshield", "Reparacion de Muro & Escudo", 14.0f, 0.0f, 2.0f});
-    }
-
-    void AetherTacticalArenaSim::startWave(int waveIdx) {
-        currentWave = waveIdx;
-        enemies.clear();
-
-        bool isFinalBossWave = (currentWave == 5);
-        currentPhase = isFinalBossWave ? StagePhase::FinalBossWave5 : StagePhase::WaveCombat;
-
-        int mobCount = isFinalBossWave ? 8 : (6 + currentWave * 3);
-        float stageScale = std::pow(1.35f, currentStage - 1);
-
-        // En Oleada 5 generamos el Jefe Final gigante en la Puerta Central Norte
-        if (isFinalBossWave) {
-            Enemy3D boss;
-            boss.id = m_nextEnemyId++;
-            boss.pos = {0.0f, 0.0f, -14.0f};
-            boss.maxHp = 2200.0f * stageScale;
-            boss.hp = boss.maxHp;
-            boss.atk = 65.0f * stageScale;
-            boss.speed = 2.6f;
-            boss.radius = 2.1f;
-            boss.isFinalBoss = true;
-            boss.alive = true;
-            enemies.push_back(boss);
+    DuckSurvivalStyleEngine::DuckSurvivalStyleEngine() {
+        for (int i = 0; i < 6; ++i) {
+            gearSlots[i].slot = static_cast<GearSlotType>(i);
+            gearSlots[i].level = 1;
         }
 
-        // Generar horda saliendo por las 3 puertas del recinto norte
-        const float gateX[3] = {-7.5f, 0.0f, 7.5f};
-        for (int i = 0; i < mobCount; ++i) {
-            Enemy3D e;
-            e.id = m_nextEnemyId++;
-            float gx = gateX[i % 3] + ((i % 2 == 0) ? -0.9f : 0.9f);
-            float gz = -14.2f - (i / 3) * 1.3f;
-            e.pos = {gx, 0.0f, gz};
-            e.maxHp = (140.0f + currentWave * 35.0f) * stageScale;
-            e.hp = e.maxHp;
-            e.atk = 18.0f * stageScale;
-            e.speed = 3.6f + (i % 3) * 0.45f;
-            e.radius = 0.75f;
-            e.isFinalBoss = false;
-            e.alive = true;
-            enemies.push_back(e);
-        }
+        // Las 6 Estructuras de la Base (Economía de Día + Defensa de Noche)
+        baseStructures.push_back({BaseStructureType::GoldMine,         1, {-6.0f, 0.0f,  8.2f}});
+        baseStructures.push_back({BaseStructureType::SurvivorCamp,     1, { 6.0f, 0.0f,  8.2f}});
+        baseStructures.push_back({BaseStructureType::ElectricFence,    1, { 0.0f, 0.0f,  1.6f}});
+        baseStructures.push_back({BaseStructureType::MachineGunTurret, 1, {-6.2f, 0.0f,  3.2f}});
+        baseStructures.push_back({BaseStructureType::EMPTower,         1, { 0.0f, 0.0f,  4.8f}});
+        baseStructures.push_back({BaseStructureType::InfantryBarracks, 1, { 6.2f, 0.0f,  3.2f}});
 
-        enemiesRemainingInWave = static_cast<int>(enemies.size());
+        // Escuadrón 2+2 inicial (2 Activos en campo + 2 de Apoyo Pasivo)
+        squadRoster.push_back({"H01", "Comandante Cole (Fuego)", ElementType::Fire,      10, 2, true});
+        squadRoster.push_back({"H02", "Vanguardia Mir (Hielo)",  ElementType::Frost,      8, 2, true});
+        squadRoster.push_back({"H03", "Artillera Emilie (Fuego)",ElementType::Fire,       8, 1, false});
+        squadRoster.push_back({"H04", "Especialista Rava (Fuego)",ElementType::Fire,      7, 1, false});
     }
 
-    void AetherTacticalArenaSim::triggerWaveClearReward() {
-        currentPhase = StagePhase::WaveClearCashDrop;
-        int armoryLv = basePads[3].level;
-        int packCount = 8 + currentWave * 2;
-        int packValue = static_cast<int>((35 + currentWave * 15) * (1.0f + (armoryLv - 1) * 0.25f));
-
-        for (int i = 0; i < packCount; ++i) {
-            float angle = (static_cast<float>(i) / packCount) * 6.283185f;
-            float r = 2.0f + (i % 3) * 1.4f;
-            cashDrops.push_back({{std::cos(angle) * r, 0.0f, -2.0f + std::sin(angle) * r}, packValue, true, false});
+    void DuckSurvivalStyleEngine::toggleDayNightPhase() {
+        if (phase == DayNightPhase::DayBuildAndEconomy) {
+            phase = (currentWave == 5)
+                ? DayNightPhase::NightFinalBossWave
+                : DayNightPhase::NightHordeCombat;
+        } else {
+            phase = DayNightPhase::DayBuildAndEconomy;
         }
     }
 
-    bool AetherTacticalArenaSim::investCashIntoPad(BuildingType type, int amount) {
-        for (auto& pad : basePads) {
-            if (pad.type == type && pad.level < pad.maxLevel) {
-                int needed = pad.getUpgradeCost() - pad.cashInvestedInCurrentLevel;
-                int spend = std::min(cashDollars, std::min(amount, needed));
-                if (spend <= 0) return false;
-
-                cashDollars -= spend;
-                pad.cashInvestedInCurrentLevel += spend;
-                if (pad.cashInvestedInCurrentLevel >= pad.getUpgradeCost()) {
-                    pad.cashInvestedInCurrentLevel = 0;
-                    pad.level++;
-                    if (type == BuildingType::FrontBarricade) {
-                        barricadeMaxHp += 600.0f;
-                        barricadeHp = barricadeMaxHp;
-                    }
+    bool DuckSurvivalStyleEngine::upgradeBaseStructure(BaseStructureType type) {
+        for (auto& b : baseStructures) {
+            if (b.type == type) {
+                int cost = b.getUpgradeCost();
+                if (cashDollars >= cost) {
+                    cashDollars -= cost;
+                    b.level++;
                     return true;
                 }
             }
@@ -96,42 +47,40 @@ namespace AetherEngine3D {
         return false;
     }
 
-    bool AetherTacticalArenaSim::castActiveSkill(int skillIndex) {
-        if (skillIndex < 0 || skillIndex >= static_cast<int>(skills.size())) return false;
-        auto& sk = skills[skillIndex];
-        if (!sk.isReady()) return false;
+    bool DuckSurvivalStyleEngine::upgradeGearSlot(GearSlotType slot) {
+        int idx = static_cast<int>(slot);
+        int cost = gearSlots[idx].getUpgradeCostCash();
+        if (cashDollars >= cost && gearBlueprints >= 1) {
+            cashDollars -= cost;
+            gearBlueprints -= 1;
+            gearSlots[idx].level++;
+            return true;
+        }
+        return false;
+    }
 
-        sk.currentCooldown = sk.cooldown;
+    bool DuckSurvivalStyleEngine::mergeThreeGemsInInventory() {
+        if (gemInventory.size() < 3) return false;
+        GemTier baseTier = gemInventory[0].tier;
+        if (baseTier == GemTier::MythicRed) return false;
+
+        ElementType elem = gemInventory[0].element;
+        gemInventory.erase(gemInventory.begin(), gemInventory.begin() + 3);
+
+        GemTier nextTier = static_cast<GemTier>(static_cast<uint8_t>(baseTier) + 1);
+        float nextBonus = (nextTier == GemTier::PurpleEpic) ? 0.16f :
+                          (nextTier == GemTier::GoldLegendary) ? 0.28f : 0.45f;
+        gemInventory.push_back({static_cast<uint32_t>(gemInventory.size() + 100), nextTier, elem, nextBonus});
         return true;
     }
 
-    void AetherTacticalArenaSim::update(float dt) {
-        arenaBounds.clampPosition(playerPos, 0.8f);
-
-        for (auto& sk : skills) {
-            if (sk.currentCooldown > 0.0f) {
-                sk.currentCooldown = std::max(0.0f, sk.currentCooldown - dt);
-            }
+    float DuckSurvivalStyleEngine::calculateTotalElementalSynergyMultiplier() const {
+        int fireCount = 0;
+        for (const auto& h : squadRoster) {
+            if (h.element == ElementType::Fire) fireCount++;
         }
-
-        int aliveCount = 0;
-        for (auto& e : enemies) {
-            if (!e.alive) continue;
-            aliveCount++;
-            Vec3 dir = (playerPos - e.pos).normalizedXZ();
-            e.pos = e.pos + dir * (e.speed * dt);
-            arenaBounds.clampPosition(e.pos, e.radius);
-        }
-        enemiesRemainingInWave = aliveCount;
-
-        if (aliveCount == 0 && (currentPhase == StagePhase::WaveCombat || currentPhase == StagePhase::FinalBossWave5)) {
-            if (currentWave == 5) {
-                currentPhase = StagePhase::StageVictory;
-                currentStage++;
-            } else {
-                triggerWaveClearReward();
-            }
-        }
+        // 3 o más héroes del mismo elemento activan +30% Daño Elemental como en Duck Survival
+        return (fireCount >= 3) ? 1.30f : 1.10f;
     }
 
 } // namespace AetherEngine3D

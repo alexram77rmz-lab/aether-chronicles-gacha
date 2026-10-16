@@ -3,51 +3,42 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#07090e" />
-  <title>Aether Outpost 3D — Beta 2.5 (Realistic Base Defense & 5-Wave Boss RPG)</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2310b981'/%3E%3Cpath d='M32 10l18 10v24L32 54 14 44V20z' fill='%23064e3b' stroke='%23fff' stroke-width='4'/%3E%3C/svg%3E" />
+  <meta name="theme-color" content="#060911" />
+  <title>Aether Outpost 3D — Beta 3.0 (Duck Survival Architecture & Day/Night Base RPG)</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23f59e0b'/%3E%3Cpath d='M32 8l20 12v24L32 56 12 44V20z' fill='%230f172a' stroke='%23fff' stroke-width='4'/%3E%3C/svg%3E" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
     html, body {
       margin: 0; padding: 0; width: 100%; height: 100%;
-      background: #05070b; color: #f8fafc;
+      background: #04060b; color: #f8fafc;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       overflow: hidden;
     }
     .phone-viewport-wrapper {
-      width: 100vw;
-      height: 100dvh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: radial-gradient(circle at center, #111827 0%, #030407 80%);
+      width: 100vw; height: 100dvh;
+      display: flex; align-items: center; justify-content: center;
+      background: radial-gradient(circle at center, #111827 0%, #030407 82%);
     }
     .phone-frame {
       position: relative;
-      width: 100%;
-      height: 100%;
-      max-width: 460px;
-      max-height: 930px;
-      background: #090d14;
+      width: 100%; height: 100%;
+      max-width: 465px; max-height: 940px;
+      background: #080c14;
       overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.9), 0 0 0 2px rgba(255, 255, 255, 0.08);
+      display: flex; flex-direction: column;
+      box-shadow: 0 25px 80px rgba(0,0,0,0.92), 0 0 0 2px rgba(255,255,255,0.08);
     }
     @media (min-width: 520px) {
       .phone-frame.framed-mode {
         height: 95dvh;
         border-radius: 36px;
-        border: 6px solid #1f2937;
+        border: 6px solid #1e293b;
       }
       .phone-frame.fullscreen-mode {
-        max-width: 100vw;
-        max-height: 100dvh;
-        height: 100dvh;
-        border-radius: 0;
-        border: none;
+        max-width: 100vw; max-height: 100dvh; height: 100dvh;
+        border-radius: 0; border: none;
       }
     }
     .btn-tactile {
@@ -57,40 +48,40 @@
     .btn-tactile:hover { filter: brightness(1.12); transform: translateY(-2px); }
     .btn-tactile:active { transform: scale(0.92); }
     .glass-hud {
-      background: rgba(10, 14, 23, 0.85);
+      background: rgba(9, 13, 22, 0.86);
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.14);
     }
     .drawer-sheet {
       transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    @keyframes pulseAlert {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.04); opacity: 0.88; }
+    @keyframes pulseBoss {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.03); }
     }
-    .boss-alert { animation: pulseAlert 1.1s ease-in-out infinite; }
+    .boss-pulse { animation: pulseBoss 1s ease-in-out infinite; }
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.25); border-radius: 999px; }
   </style>
 </head>
 <body>
 
-  <!-- PANTALLA DE CARGA REALISTA 3D -->
-  <div id="loading-overlay" class="fixed inset-0 z-50 bg-[#05070b] flex flex-col items-center justify-center p-6 transition-opacity duration-500">
-    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-600 to-amber-500 flex items-center justify-center text-3xl shadow-2xl mb-3 animate-bounce">
-      🏰
+  <!-- LOADING SCREEN -->
+  <div id="loading-overlay" class="fixed inset-0 z-50 bg-[#04060b] flex flex-col items-center justify-center p-6 transition-opacity duration-500">
+    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 via-orange-500 to-emerald-500 flex items-center justify-center text-3xl shadow-2xl mb-3 animate-bounce">
+      ☀️
     </div>
-    <span class="px-3 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-extrabold text-xs mb-1">
-      BETA 2.5 • REALISTIC 3D TACTICAL COMPOUND
+    <span class="px-3 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-extrabold text-xs mb-1">
+      BETA 3.0 • ARQUITECTURA COMPLETA DUCK SURVIVAL 3D
     </span>
     <h1 class="text-xl font-black tracking-wider text-white">AETHER OUTPOST 3D</h1>
     <p class="text-xs text-slate-400 mt-1 mb-5 text-center max-w-xs">
-      Mapa Cerrado Fortificado • 5 Oleadas por Nivel • Lluvia de Dinero (💵) para Mejorar Base • Jefe Final en Oleada 5
+      Construye de Día ☀️ • Defiende de Noche 🌙 • 6 Slots de Equipo + Fusión de Gemas • Escuadrón 2+2 Elemental
     </p>
     <div class="w-64 h-2.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
-      <div id="load-bar" class="h-full bg-gradient-to-r from-emerald-400 via-amber-400 to-rose-500 transition-all duration-300" style="width: 20%"></div>
+      <div id="load-bar" class="h-full bg-gradient-to-r from-amber-400 via-emerald-400 to-cyan-400 transition-all duration-300" style="width: 25%"></div>
     </div>
-    <p id="load-status" class="text-xs text-emerald-300 font-mono mt-2">Generando texturas PBR, muros 3D y torretas...</p>
+    <p id="load-status" class="text-xs text-amber-300 font-mono mt-2">Cargando ciclo Día/Noche, Torre EMP y Meteoritos 3D...</p>
   </div>
 
   <div class="phone-viewport-wrapper">
@@ -99,79 +90,87 @@
       <!-- ESCENA 3D THREE.JS -->
       <div id="canvas-3d-host" class="absolute inset-0 z-0"></div>
 
-      <!-- CAPA DE TEXTOS FLOTANTES 2D ($ DINERO, DAÑO, MEJORAS) -->
+      <!-- CAPA DE TEXTOS DE DAÑO Y DINERO FLOTANTE -->
       <div id="floating-dmg-layer" class="absolute inset-0 z-10 pointer-events-none overflow-hidden"></div>
 
       <!-- ====================================================
-           HUD SUPERIOR: PROGRESO DE LAS 5 OLEADAS + BARRA JEFE + DINERO
+           HUD SUPERIOR: DÍA/NOCHE + 5 OLEADAS + BARRA XP ROGUELITE
            ==================================================== -->
-      <header class="relative z-20 p-2.5 flex flex-col gap-1.5 pointer-events-auto">
+      <header class="relative z-20 p-2 flex flex-col gap-1.5 pointer-events-auto">
 
-        <!-- INDICADOR DE NIVEL Y PROGRESO DE LAS 5 OLEADAS (1-2-3-4-💀JEFE) -->
-        <div class="glass-hud rounded-2xl p-2 px-3 flex items-center justify-between gap-2 shadow-lg">
+        <!-- BARRA DE NIVEL DE HABILIDAD ROGUELITE EN PARTIDA -->
+        <div class="w-full h-4 bg-slate-950/90 rounded-full border border-white/15 overflow-hidden relative flex items-center px-2.5">
+          <div id="xp-bar-fill" class="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-amber-500 via-yellow-400 to-emerald-400 transition-all duration-200" style="width: 25%"></div>
+          <div class="relative z-10 w-full flex items-center justify-between text-xs font-black text-white drop-shadow">
+            <span id="hud-skill-lv">🔥 HABILIDAD NV.1</span>
+            <span id="hud-synergy-txt" class="text-amber-200">⚡ SINERGIA FUEGO +30%</span>
+            <span id="hud-power-txt" class="text-emerald-300">⚔️ 4,850</span>
+          </div>
+        </div>
+
+        <!-- RELOJ DÍA/NOCHE + MARCADOR DE 5 OLEADAS + VIDA VALLA ELÉCTRICA -->
+        <div class="glass-hud rounded-2xl p-2 px-2.5 flex items-center justify-between gap-2 shadow-lg">
           <div class="flex items-center gap-2">
-            <span id="stage-badge" class="px-2 py-0.5 rounded-lg bg-amber-500 text-black font-black text-xs">
-              NIVEL 1
+            <span id="phase-badge" class="px-2 py-1 rounded-xl bg-indigo-600 text-white font-black text-xs flex items-center gap-1 shadow">
+              🌙 NOCHE
             </span>
             <div>
               <div class="flex items-center gap-1 text-xs font-extrabold">
-                <span id="wave-title-txt" class="text-white">OLEADA 1 / 5</span>
+                <span id="wave-title-txt" class="text-white">CAP.1 • OLEADA 1/5</span>
                 <span class="text-slate-400">•</span>
-                <span id="enemies-left-txt" class="text-emerald-400">Enemigos: 8</span>
+                <span id="enemies-left-txt" class="text-amber-300">Horda: 8</span>
               </div>
-              <!-- Píldoras visuales de las 5 oleadas -->
               <div class="flex items-center gap-1 mt-1">
-                <div id="w-pill-1" class="w-6 h-2 rounded-full bg-emerald-400"></div>
-                <div id="w-pill-2" class="w-6 h-2 rounded-full bg-slate-700"></div>
-                <div id="w-pill-3" class="w-6 h-2 rounded-full bg-slate-700"></div>
-                <div id="w-pill-4" class="w-6 h-2 rounded-full bg-slate-700"></div>
-                <div id="w-pill-5" class="px-1.5 h-3.5 rounded bg-rose-950 border border-rose-500/50 text-rose-300 flex items-center text-xs font-black">
+                <div id="w-pill-1" class="w-5 h-2 rounded-full bg-emerald-400"></div>
+                <div id="w-pill-2" class="w-5 h-2 rounded-full bg-slate-700"></div>
+                <div id="w-pill-3" class="w-5 h-2 rounded-full bg-slate-700"></div>
+                <div id="w-pill-4" class="w-5 h-2 rounded-full bg-slate-700"></div>
+                <div id="w-pill-5" class="px-1.5 h-3.5 rounded bg-rose-950 border border-rose-500/60 text-rose-300 flex items-center text-xs font-black">
                   💀5
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- VIDA DEL MURO / BARRICADA DE LA BASE -->
           <div class="flex flex-col items-end">
-            <span class="text-xs font-bold text-slate-300">🧱 Muro Base: <strong id="hud-wall-hp" class="text-cyan-300">100%</strong></span>
+            <span class="text-xs font-bold text-slate-300">🧱 Valla Eléctrica: <strong id="hud-wall-hp" class="text-cyan-300">100%</strong></span>
             <div class="w-24 h-2 bg-slate-800 rounded-full overflow-hidden border border-white/15 mt-0.5">
               <div id="hud-wall-bar" class="h-full bg-gradient-to-r from-cyan-400 to-emerald-400 transition-all duration-200" style="width: 100%"></div>
             </div>
           </div>
         </div>
 
-        <!-- BARRA DE VIDA DEL JEFE FINAL (SOLO VISIBLE EN OLEADA 5) -->
-        <div id="boss-hp-banner" class="hidden boss-alert bg-rose-950/95 border-2 border-rose-500 rounded-2xl p-2 px-3 flex-col gap-1 shadow-2xl">
+        <!-- BARRA DE JEFE FINAL SEGMENTADA (x5 BARRAS ESTILO DUCK SURVIVAL) -->
+        <div id="boss-hp-banner" class="hidden boss-pulse bg-rose-950/95 border-2 border-rose-500 rounded-2xl p-2 px-3 flex-col gap-1 shadow-2xl">
           <div class="flex items-center justify-between text-xs font-black">
-            <span class="text-rose-200">👹 JEFE FINAL (OLEADA 5/5): TITÁN BLINDADO X-9</span>
-            <span id="boss-hp-num" class="text-amber-300">4,500 HP</span>
+            <span class="text-rose-200">👹 JEFE FINAL (NOCHE 5): DEVASTADOR MUTANTE</span>
+            <span id="boss-bars-txt" class="px-1.5 py-0.5 rounded bg-amber-400 text-black font-black text-xs">x5 BARRAS</span>
           </div>
           <div class="w-full h-3 bg-black/70 rounded-full overflow-hidden border border-rose-400/40">
             <div id="boss-hp-fill" class="h-full bg-gradient-to-r from-rose-600 via-orange-500 to-amber-400 transition-all duration-100" style="width: 100%"></div>
           </div>
         </div>
 
-        <!-- RECURSOS: DINERO EN EFECTIVO (💵), GEMAS, TICKETS + CONTROLES -->
-        <div class="flex items-center justify-between gap-1.5">
-          <div class="flex items-center gap-1.5">
-            <div class="glass-hud rounded-xl px-2.5 py-1 flex items-center gap-1 text-xs font-bold border border-emerald-500/40">
+        <!-- FILA DE MONEDAS: DINERO (💵), PLANOS DE EQUIPO (📜), GEMAS (💎) + CONTROLES -->
+        <div class="flex items-center justify-between gap-1">
+          <div class="flex items-center gap-1">
+            <div class="glass-hud rounded-xl px-2 py-1 flex items-center gap-1 text-xs font-bold border border-emerald-500/40">
               <span>💵</span>
-              <span id="res-cash" class="text-emerald-400 font-black text-sm">$320</span>
+              <span id="res-cash" class="text-emerald-400 font-black text-sm">$380</span>
             </div>
-            <div class="glass-hud rounded-xl px-2.5 py-1 flex items-center gap-1 text-xs font-bold">
+            <div class="glass-hud rounded-xl px-2 py-1 flex items-center gap-1 text-xs font-bold">
+              <span>📜</span>
+              <span id="res-blueprints" class="text-amber-300 font-extrabold">25</span>
+            </div>
+            <div class="glass-hud rounded-xl px-2 py-1 flex items-center gap-1 text-xs font-bold">
               <span>💎</span>
               <span id="res-gems" class="text-sky-400 font-extrabold">5,400</span>
-            </div>
-            <div class="glass-hud rounded-xl px-2.5 py-1 flex items-center gap-1 text-xs font-bold">
-              <span>🎟️</span>
-              <span id="res-tickets" class="text-purple-400 font-extrabold">20</span>
             </div>
           </div>
 
           <div class="flex items-center gap-1">
-            <button onclick="claimVipCash()" class="btn-tactile px-2 py-1 rounded-xl bg-emerald-600 text-white font-extrabold text-xs shadow">
-              💵 +$1,000
+            <button onclick="claimVipSupply()" class="btn-tactile px-2 py-1 rounded-xl bg-emerald-600 text-white font-extrabold text-xs shadow">
+              🎁 +$1,200
             </button>
             <button onclick="toggleAutoPilot()" id="btn-autopilot" class="btn-tactile px-2 py-1 rounded-xl bg-amber-500 text-black font-extrabold text-xs shadow">
               🤖 IA: ON
@@ -187,63 +186,70 @@
       </header>
 
       <!-- ====================================================
-           CARTEL DE FASE DE MEJORA ENTRE OLEADAS (ESTILO DUCK SURVIVAL)
+           CARTEL DE FASE DE DÍA ☀️ (CONSTRUCCIÓN Y ECONOMÍA)
            ==================================================== -->
-      <div id="intermission-banner" class="relative z-20 mx-2.5 mt-1 glass-hud border-2 border-emerald-400 rounded-2xl p-2.5 hidden flex-col gap-2 shadow-2xl pointer-events-auto">
-        <div class="flex items-center justify-between">
-          <div>
-            <span class="text-xs font-black text-emerald-300 uppercase block">💵 ¡OLEADA COMPLETADA! RECOGE EL DINERO Y MEJORA TU BASE</span>
-            <span id="intermission-sub" class="text-xs text-slate-300">Camina sobre las zonas verdes del mapa o toca los botones de abajo antes de la siguiente oleada.</span>
-          </div>
-          <button onclick="startNextWaveNow()" id="btn-next-wave" class="btn-tactile px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-black font-black text-xs shrink-0 shadow-lg">
-            ⚔️ LANZAR OLEADA 2/5
-          </button>
+      <div id="day-phase-banner" class="relative z-20 mx-2.5 mt-0.5 bg-gradient-to-r from-amber-500/90 via-orange-500/90 to-emerald-600/90 border-2 border-yellow-300 rounded-2xl p-2.5 hidden items-center justify-between gap-2 shadow-2xl pointer-events-auto">
+        <div>
+          <span class="text-xs font-black text-black uppercase block">☀️ FASE DE DÍA • RECOGE DINERO (💵) Y MEJORA TU BASE</span>
+          <span class="text-xs text-slate-950 font-semibold">Tus Minas de Oro produjeron efectivo. Mejora tus torretas antes del anochecer.</span>
         </div>
+        <button onclick="startNightWaveNow()" id="btn-start-night" class="btn-tactile px-3.5 py-2 rounded-xl bg-slate-950 text-amber-300 font-black text-xs shrink-0 shadow-lg border border-amber-400">
+          🌙 DEFENDER NOCHE 2/5
+        </button>
       </div>
 
       <!-- ====================================================
-           ZONA CENTRAL Y CONTROLES DE COMBATE / HABILIDADES / BASE
+           SELECTOR DE 3 CARTAS ROGUELITE (SKILL DRAFT DE DUCK SURVIVAL)
            ==================================================== -->
-      <div class="relative z-10 flex-1 pointer-events-none flex flex-col justify-end p-2.5">
+      <div id="roguelite-draft-modal" class="relative z-30 mx-2.5 mt-1 glass-hud border-2 border-amber-400 rounded-2xl p-2.5 hidden flex-col gap-2 shadow-2xl pointer-events-auto">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-black text-amber-300 uppercase">🃏 ¡SUBISTE DE NIVEL! ELIGE HABILIDAD (S-TIER META)</span>
+          <span class="text-xs text-emerald-300 font-bold">Toca 1 Carta</span>
+        </div>
+        <div id="draft-cards-grid" class="grid grid-cols-3 gap-1.5"></div>
+      </div>
 
-        <!-- BARRA RÁPIDA DE LAS 5 MEJORAS DE LA BASE CON DINERO ($) -->
-        <div class="pointer-events-auto mb-2">
+      <!-- ====================================================
+           ZONA INFERIOR DEL MAPA 3D: 6 PADS DE BASE + JOYSTICK + 3 SKILLS
+           ==================================================== -->
+      <div class="relative z-10 flex-1 pointer-events-none flex flex-col justify-end p-2">
+
+        <!-- LAS 6 ESTRUCTURAS DE LA BASE (MINA, CAMPAMENTO, VALLA, GATTLING, EMP, CUARTEL) -->
+        <div class="pointer-events-auto mb-1.5">
           <div class="flex items-center justify-between mb-1 px-1">
-            <span class="text-xs font-extrabold text-emerald-300 drop-shadow">
-              🏗️ MEJORAR BASE CON DINERO (💵 Párate en los Pads 3D o toca aquí)
+            <span class="text-xs font-extrabold text-amber-300 drop-shadow">
+              🏗️ BASE 3D (Camina a los Pads o toca para mejorar con 💵)
             </span>
-            <button onclick="forceBossWave5()" class="text-xs font-extrabold text-rose-400 hover:underline cursor-pointer drop-shadow">
-              💀 Saltar a Oleada 5 (Jefe) →
+            <button onclick="forceBossNight5()" class="text-xs font-extrabold text-rose-400 hover:underline cursor-pointer drop-shadow">
+              💀 Probar Noche 5 (Jefe) →
             </button>
           </div>
-          <div id="quick-base-pads" class="grid grid-cols-5 gap-1.5"></div>
+          <div id="quick-base-pads" class="grid grid-cols-6 gap-1"></div>
         </div>
 
-        <!-- FILA INFERIOR: JOYSTICK TÁCTIL + 3 HABILIDADES ACTIVAS CON COOLDOWN -->
-        <div class="flex items-end justify-between px-1 pb-1">
-          <!-- JOYSTICK TÁCTIL 3D -->
+        <!-- JOYSTICK TÁCTIL + 3 HABILIDADES META DE DUCK SURVIVAL -->
+        <div class="flex items-end justify-between px-1 pb-0.5">
           <div id="joystick-zone" class="pointer-events-auto w-24 h-24 rounded-full bg-black/55 border-2 border-white/25 backdrop-blur-sm relative flex items-center justify-center touch-none shadow-xl">
-            <div id="joystick-knob" class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-600 shadow-md border border-white/70 transition-transform duration-75"></div>
+            <div id="joystick-knob" class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-md border border-white/70 transition-transform duration-75"></div>
             <span class="absolute -top-5 text-xs font-bold text-white/80">MOVER</span>
           </div>
 
-          <!-- 3 HABILIDADES ACTIVAS (MISILES, TORMENTA ELÉCTRICA, REPARAR/ESCUDO) -->
-          <div class="pointer-events-auto flex items-center gap-2">
-            <button onclick="castSkill(0)" id="skill-btn-0" class="btn-tactile w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-600 to-orange-600 border-2 border-white/40 flex flex-col items-center justify-center shadow-xl relative overflow-hidden">
-              <span class="text-lg">💣</span>
-              <span class="text-xs font-black leading-tight">Misiles</span>
+          <div class="pointer-events-auto flex items-center gap-1.5">
+            <button onclick="castMetaSkill(0)" class="btn-tactile w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-600 to-rose-700 border-2 border-amber-300/60 flex flex-col items-center justify-center shadow-xl">
+              <span class="text-lg">☄️</span>
+              <span class="text-xs font-black leading-tight">Meteoro</span>
               <span id="skill-cd-0" class="text-xs font-mono text-amber-200">LISTO</span>
             </button>
 
-            <button onclick="castSkill(1)" id="skill-btn-1" class="btn-tactile w-16 h-16 rounded-2xl bg-gradient-to-br from-sky-600 to-indigo-600 border-2 border-white/40 flex flex-col items-center justify-center shadow-xl relative overflow-hidden">
+            <button onclick="castMetaSkill(1)" class="btn-tactile w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-600 to-blue-700 border-2 border-cyan-300/60 flex flex-col items-center justify-center shadow-xl">
               <span class="text-lg">⚡</span>
-              <span class="text-xs font-black leading-tight">Electro</span>
+              <span class="text-xs font-black leading-tight">Láser S</span>
               <span id="skill-cd-1" class="text-xs font-mono text-amber-200">LISTO</span>
             </button>
 
-            <button onclick="castSkill(2)" id="skill-btn-2" class="btn-tactile w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 border-2 border-white/40 flex flex-col items-center justify-center shadow-xl relative overflow-hidden">
-              <span class="text-lg">🛡️</span>
-              <span class="text-xs font-black leading-tight">Muro+HP</span>
+            <button onclick="castMetaSkill(2)" class="btn-tactile w-16 h-16 rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-700 border-2 border-sky-300/60 flex flex-col items-center justify-center shadow-xl">
+              <span class="text-lg">❄️</span>
+              <span class="text-xs font-black leading-tight">Hielo+HP</span>
               <span id="skill-cd-2" class="text-xs font-mono text-amber-200">LISTO</span>
             </button>
           </div>
@@ -252,11 +258,11 @@
       </div>
 
       <!-- ====================================================
-           CAJÓN DESLIZANTE (BASE, HÉROES/SKINS, GACHA, CLAN, TIENDA)
+           CAJÓN DESLIZANTE (INTERFACES CLONADAS DE DUCK SURVIVAL)
            ==================================================== -->
-      <div id="bottom-drawer" class="drawer-sheet translate-y-full absolute left-0 right-0 bottom-14 z-30 h-[66%] glass-hud rounded-t-3xl p-4 flex flex-col gap-3 shadow-2xl pointer-events-auto">
+      <div id="bottom-drawer" class="drawer-sheet translate-y-full absolute left-0 right-0 bottom-14 z-30 h-[70%] glass-hud rounded-t-3xl p-4 flex flex-col gap-3 shadow-2xl pointer-events-auto">
         <div class="flex items-center justify-between border-b border-white/10 pb-2">
-          <h2 id="drawer-title" class="font-extrabold text-base text-emerald-400">🏰 Comandancia de la Base</h2>
+          <h2 id="drawer-title" class="font-extrabold text-base text-amber-400">🎒 Equipamiento (6 Slots) y Gemas</h2>
           <button onclick="closeDrawer()" class="btn-tactile px-3 py-1 rounded-xl bg-white/10 text-xs font-bold">
             ✕ Volver al Mapa 3D
           </button>
@@ -264,27 +270,29 @@
         <div id="drawer-content" class="flex-1 overflow-y-auto pr-1 space-y-2.5 text-xs"></div>
       </div>
 
-      <!-- BARRA DE NAVEGACIÓN INFERIOR -->
-      <nav class="relative z-40 bg-[#060911] border-t border-white/15 grid grid-cols-5 py-1.5 px-1 pointer-events-auto">
-        <button onclick="closeDrawer()" class="btn-tactile flex flex-col items-center justify-center py-1 text-emerald-400 font-extrabold text-xs">
-          <span class="text-base">🕹️</span>
-          <span>Base 3D</span>
+      <!-- ====================================================
+           LAS 5 PESTAÑAS INFERIORES DE DUCK SURVIVAL
+           ==================================================== -->
+      <nav class="relative z-40 bg-[#05080f] border-t border-white/15 grid grid-cols-5 py-1.5 px-1 pointer-events-auto">
+        <button onclick="openDrawer('gear')" id="nav-gear" class="btn-tactile flex flex-col items-center justify-center py-1 text-slate-300 font-bold text-xs">
+          <span class="text-base">🎒</span>
+          <span>Equipo/Gemas</span>
         </button>
-        <button onclick="openDrawer('base')" class="btn-tactile flex flex-col items-center justify-center py-1 text-slate-300 font-bold text-xs">
-          <span class="text-base">🏗️</span>
-          <span>Mejoras $</span>
-        </button>
-        <button onclick="openDrawer('heroes')" class="btn-tactile flex flex-col items-center justify-center py-1 text-slate-300 font-bold text-xs">
+        <button onclick="openDrawer('heroes')" id="nav-heroes" class="btn-tactile flex flex-col items-center justify-center py-1 text-slate-300 font-bold text-xs">
           <span class="text-base">🌟</span>
-          <span>Héroes/Skin</span>
+          <span>Héroes 2+2</span>
         </button>
-        <button onclick="openDrawer('gacha')" class="btn-tactile flex flex-col items-center justify-center py-1 text-slate-300 font-bold text-xs">
+        <button onclick="closeDrawer()" id="nav-battle" class="btn-tactile flex flex-col items-center justify-center py-1 text-amber-400 font-black text-xs bg-amber-500/15 rounded-xl border border-amber-400/40">
+          <span class="text-base">⚔️</span>
+          <span>Batalla 3D</span>
+        </button>
+        <button onclick="openDrawer('gacha')" id="nav-gacha" class="btn-tactile flex flex-col items-center justify-center py-1 text-slate-300 font-bold text-xs">
           <span class="text-base">🎲</span>
-          <span>Gacha</span>
+          <span>Cofres/Gacha</span>
         </button>
-        <button onclick="openDrawer('shop')" class="btn-tactile flex flex-col items-center justify-center py-1 text-slate-300 font-bold text-xs">
-          <span class="text-base">💎</span>
-          <span>Clan/Tienda</span>
+        <button onclick="openDrawer('base')" id="nav-base" class="btn-tactile flex flex-col items-center justify-center py-1 text-slate-300 font-bold text-xs">
+          <span class="text-base">🏰</span>
+          <span>Base/Tienda</span>
         </button>
       </nav>
 
@@ -292,14 +300,15 @@
   </div>
 
   <!-- TOAST -->
-  <div id="toast-msg" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white border border-emerald-400 px-4 py-2 rounded-2xl shadow-2xl text-xs font-extrabold hidden"></div>
+  <div id="toast-msg" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white border border-amber-400 px-4 py-2 rounded-2xl shadow-2xl text-xs font-extrabold hidden"></div>
 
   <script>
     // ============================================================================
-    // 1. ESTADO DEL JUEGO: 5 OLEADAS -> DINERO ($) -> MEJORAR BASE -> JEFE FINAL
+    // 1. BASE DE DATOS DE DUCK SURVIVAL (DÍA/NOCHE, 6 EDIFICIOS, 6 SLOTS GEAR + GEMAS, 2+2 HÉROES)
     // ============================================================================
     const GAME = {
-      cash: 320,
+      cash: 380,
+      blueprints: 25,
       gems: 5400,
       tickets: 20,
       soundOn: true,
@@ -307,53 +316,77 @@
       framedMode: true,
       activeDrawer: null,
 
-      // Ciclo de 5 oleadas por Nivel
+      // Ciclo Día / Noche y 5 Oleadas
       stage: 1,
-      wave: 1, // 1, 2, 3, 4 = Hordas | 5 = Jefe Final
-      phase: 'combat', // 'combat' | 'intermission'
-      enemiesToSpawnInWave: 0,
-      spawnCooldown: 0,
+      wave: 1, // 1..5
+      isNight: true,
+      enemiesToSpawn: 0,
+      spawnTimer: 0,
 
-      wallHp: 1500,
-      wallMaxHp: 1500,
-      overdriveTimer: 0,
-      mercenaryActive: false,
+      // Nivel Roguelite en partida
+      skillLv: 1,
+      skillXp: 0,
+      skillXpNext: 90,
 
-      //Las 5 Instalaciones de la Base dentro del recinto fortificado
+      wallHp: 1800,
+      wallMaxHp: 1800,
+      laserBeamTimer: 0,
+
+      // Las 6 Estructuras de la Base (Economía de Día + Defensa de Noche)
       buildings: [
-        { id: 'wall',    name: '🧱 Barricada Frontal', icon: '🧱', level: 1, baseCost: 70,  x: 0,    z: 2.2, color: 0x38bdf8, desc: 'Aumenta la vida del muro defensivo +600 HP y electrifica a los enemigos que lo tocan.' },
-        { id: 'turrets', name: '🔫 Torretas Gattling', icon: '🔫', level: 1, baseCost: 90,  x: -6.2, z: 3.2, color: 0xf59e0b, desc: 'Instala y mejora hasta 4 torretas metralleta pesadas sobre la muralla.' },
-        { id: 'squad',   name: '🎖️ Marines 3D',        icon: '🎖️', level: 1, baseCost: 100, x: 6.2,  z: 3.2, color: 0x10b981, desc: 'Despliega soldados armados en 3D que defienden el patio y te escoltan.' },
-        { id: 'armory',  name: '💵 Armería & Bóveda',  icon: '💵', level: 1, baseCost: 85,  x: -5.5, z: 8.2, color: 0x22c55e, desc: 'Aumenta el Dinero (💵) que suelta cada oleada +30% y mejora el rifle de tu héroe.' },
-        { id: 'bunker',  name: '🏰 Búnker Central',    icon: '🏰', level: 1, baseCost: 110, x: 5.5,  z: 8.2, color: 0xa855f7, desc: 'Sube el daño global +25%, reduce cooldown de habilidades y activa el Dron Aéreo.' }
+        { id: 'mine',    name: '⛏️ Mina de Oro',     short: 'Mina',    icon: '⛏️', level: 1, baseCost: 60, x: -6.2, z: 8.2, color: 0xfacc15, desc: 'Economía Día: Genera fajos de billetes (💵) cada pocos segundos y al amanecer.' },
+        { id: 'camp',    name: '⛺ Campamento',      short: 'Camp',    icon: '⛺', level: 1, baseCost: 70, x:  6.2, z: 8.2, color: 0x4ade80, desc: 'Soporte: Aumenta el dinero por oleada +25% y repara la Valla Eléctrica.' },
+        { id: 'fence',   name: '🧱 Valla Eléctrica', short: 'Valla',   icon: '🧱', level: 1, baseCost: 75, x:  0.0, z: 2.0, color: 0x38bdf8, desc: 'Defensa Frontal: +700 HP al muro y electrocuta a los zombies al contacto.' },
+        { id: 'turret',  name: '🔫 Torreta Gattling',short: 'Gattling',icon: '🔫', level: 1, baseCost: 90, x: -6.2, z: 3.2, color: 0xf97316, desc: 'Instala hasta 4 torretas metralleta de doble cañón sobre la muralla.' },
+        { id: 'emp',     name: '📡 Torre EMP',       short: 'EMP',     icon: '📡', level: 1, baseCost: 85, x:  0.0, z: 5.2, color: 0x818cf8, desc: 'Emite ondas electromagnéticas 3D que ralentizan un 55% a toda la horda.' },
+        { id: 'barracks',name: '🎖️ Infantería 3D',   short: 'Tropas',  icon: '🎖️', level: 1, baseCost: 95, x:  6.2, z: 3.2, color: 0x10b981, desc: 'Despliega soldados aliados en 3D que patrullan y disparan contigo.' }
       ],
 
-      // 3 Habilidades Activas Tácticas
-      skills: [
-        { name: 'Ataque Aéreo', cooldown: 10, timer: 0 },
-        { name: 'Sobrecarga Electro', cooldown: 9, timer: 0 },
-        { name: 'Muro + Botiquín', cooldown: 11, timer: 0 }
+      // Las 6 Habilidades Meta de Duck Survival (S-Tier y A-Tier)
+      rogueliteSkills: {
+        flame:     { name: '🔥 Impacto Ígneo',     tier: 'S-Tier', level: 1, desc: 'Proyectiles explosivos de fuego con daño en área.' },
+        meteor:    { name: '☄️ Meteorito 3D',      tier: 'S-Tier', level: 1, desc: 'Caen meteoritos ardientes del cielo cada 3.5 segundos.' },
+        laser:     { name: '⚡ Láser Concentrado', tier: 'S-Tier', level: 1, desc: 'Rayo continuo de alta energía que barre la línea frontal.' },
+        ice:       { name: '❄️ Estalactitas Hielo',tier: 'A-Tier', level: 1, desc: 'Congela y ralentiza a las hordas que atacan el muro.' },
+        lightning: { name: '🌩️ Cadena Relámpago',  tier: 'A-Tier', level: 1, desc: 'Arco eléctrico que rebota entre múltiples enemigos.' },
+        decoy:     { name: '💣 Señuelo Explosivo', tier: 'B-Tier', level: 1, desc: 'Dron señuelo que explota al contacto en el patio.' }
+      },
+
+      // Los 6 Slots de Equipamiento + Gemas Engarzadas (Interfaz Equipo de Duck Survival)
+      gearSlots: [
+        { id: 'weapon', name: 'Rifle Gattling Volcán', icon: '🔫', level: 3, bonusAtk: 45, gemTier: 3, gemName: 'Gema Solar Legendaria (+28% Daño Fuego)' },
+        { id: 'helmet', name: 'Casco Visor Táctico',   icon: '🪖', level: 2, bonusAtk: 25, gemTier: 2, gemName: 'Gema Épica de Crítico (+16% Crítico)' },
+        { id: 'armor',  name: 'Coraza de Titanio',     icon: '🦺', level: 2, bonusAtk: 30, gemTier: 2, gemName: 'Gema Épica de Valla (+20% HP Muro)' },
+        { id: 'gloves', name: 'Guantes de Asalto',     icon: '🧤', level: 1, bonusAtk: 18, gemTier: 1, gemName: 'Gema Rara de Cadencia (+10% Vel. Ataque)' },
+        { id: 'boots',  name: 'Botas Propulsoras',     icon: '🥾', level: 1, bonusAtk: 18, gemTier: 1, gemName: 'Gema Rara de Velocidad (+12% Mov.)' },
+        { id: 'belt',   name: 'Reactor de Cinturón',   icon: '🔋', level: 2, bonusAtk: 28, gemTier: 2, gemName: 'Gema Épica EMP (+18% Daño Eléctrico)' }
       ],
 
-      selectedHeroId: 'H01',
+      // Bolsa de Gemas para Fusionar (3 en 1: Azul -> Púrpura -> Dorada -> Roja Mítica)
+      gemBag: [
+        { tier: 1, name: '🔷 Gema Azul (Fuego +8%)', color: 'border-sky-400 text-sky-300' },
+        { tier: 1, name: '🔷 Gema Azul (Hielo +8%)', color: 'border-sky-400 text-sky-300' },
+        { tier: 1, name: '🔷 Gema Azul (Rayo +8%)',  color: 'border-sky-400 text-sky-300' },
+        { tier: 2, name: '🟣 Gema Púrpura (Láser +16%)', color: 'border-purple-400 text-purple-300' },
+        { tier: 3, name: '🟡 Gema Dorada (Meteoro +28%)', color: 'border-amber-400 text-amber-300' }
+      ],
+
+      // Escuadrón 2+2 (2 Héroes Activos en 3D + 2 Héroes Pasivos de Vínculo Elemental)
       heroes: [
-        { id: 'H01', name: 'Comandante Seraphina', rarity: 'UR', icon: '☀️', level: 10, stars: 2, dupes: 1, unlocked: true, baseAtk: 65, color: 0xf59e0b, skin: 'default' },
-        { id: 'H02', name: 'General Malakor', rarity: 'UR', icon: '🌑', level: 1, stars: 1, dupes: 0, unlocked: false, baseAtk: 80, color: 0xa855f7, skin: 'default' },
-        { id: 'H03', name: 'Capitán Kaelen', rarity: 'SSR', icon: '🔥', level: 8, stars: 1, dupes: 0, unlocked: true, baseAtk: 52, color: 0xef4444, skin: 'default' },
-        { id: 'H04', name: 'Doctora Lyra', rarity: 'SSR', icon: '🌿', level: 8, stars: 2, dupes: 1, unlocked: true, baseAtk: 48, color: 0x10b981, skin: 'default' }
+        { id: 'H01', name: 'Cole (Artillero Ígneo)',   rarity: 'MÍTICO',     element: '🔥 Fuego', role: 'ACTIVO 3D #1', level: 12, stars: 3, color: 0xf97316, skin: 'default' },
+        { id: 'H02', name: 'Mir (Comandante Glacial)', rarity: 'LEGENDARIO', element: '❄️ Hielo', role: 'ACTIVO 3D #2', level: 10, stars: 2, color: 0x38bdf8, skin: 'default' },
+        { id: 'H03', name: 'Émilie (Bruja de Lava)',   rarity: 'ÉPICO',      element: '🔥 Fuego', role: 'SOPORTE PASIVO #1', level: 9, stars: 2, color: 0xef4444, skin: 'default' },
+        { id: 'H04', name: 'Rava (Martillo Magma)',    rarity: 'ÉPICO',      element: '🔥 Fuego', role: 'SOPORTE PASIVO #2', level: 8, stars: 2, color: 0xfacc15, skin: 'default' }
       ],
 
-      skins: [
-        { id: 'SK01', heroId: 'H01', name: 'Exotraje Cyber-Valquiria', unlocked: false, color: 0x06b6d4, visorColor: 0x22d3ee, bonusPct: 0.25, desc: '+25% Daño Global • Armadura táctica de neón cian y rifles de plasma.' },
-        { id: 'SK02', heroId: 'H02', name: 'Armadura Destructor Abisal', unlocked: false, color: 0xfacc15, visorColor: 0xa855f7, bonusPct: 0.30, desc: '+30% Daño Global • Placas doradas pesadas.' }
-      ]
+      activeCooldowns: [0, 0, 0]
     };
 
     // ============================================================================
-    // 2. SONIDO SINTETIZADO (DISPAROS REALISTAS, EXPLOSIONES, BILLETES, SIRENA JEFE)
+    // 2. SINTETIZADOR DE SONIDO
     // ============================================================================
     let audioCtx = null;
-    function playTone(freq, type = 'sine', dur = 0.09, vol = 0.05) {
+    function playTone(freq, type = 'sine', dur = 0.08, vol = 0.045) {
       if (!GAME.soundOn) return;
       try {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -363,24 +396,16 @@
         o.frequency.setValueAtTime(freq, audioCtx.currentTime);
         g.gain.setValueAtTime(vol, audioCtx.currentTime);
         g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
-        o.connect(g);
-        g.connect(audioCtx.destination);
-        o.start();
-        o.stop(audioCtx.currentTime + dur);
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start(); o.stop(audioCtx.currentTime + dur);
       } catch (e) {}
     }
-    function sfxRifle() { playTone(160 + Math.random() * 60, 'sawtooth', 0.05, 0.035); }
-    function sfxCash() { playTone(980 + Math.random() * 250, 'sine', 0.08, 0.045); }
+    function sfxShot() { playTone(180 + Math.random() * 60, 'sawtooth', 0.05, 0.03); }
+    function sfxCash() { playTone(980 + Math.random() * 240, 'sine', 0.07, 0.04); }
     function sfxUpgrade() {
-      [440, 554, 659, 880].forEach((f, i) => setTimeout(() => playTone(f, 'triangle', 0.13, 0.07), i * 60));
+      [440, 554, 659, 880].forEach((f, i) => setTimeout(() => playTone(f, 'triangle', 0.12, 0.06), i * 55));
     }
-    function sfxExplosion() {
-      playTone(85, 'sawtooth', 0.28, 0.09);
-      setTimeout(() => playTone(62, 'square', 0.32, 0.08), 50);
-    }
-    function sfxBossSiren() {
-      [220, 165, 220, 165].forEach((f, i) => setTimeout(() => playTone(f, 'sawtooth', 0.22, 0.08), i * 180));
-    }
+    function sfxMeteor() { playTone(90, 'sawtooth', 0.26, 0.08); }
 
     function toggleSound() {
       GAME.soundOn = !GAME.soundOn;
@@ -388,40 +413,12 @@
     }
 
     // ============================================================================
-    // 3. GENERADOR DE TEXTURAS PROCEDURALES PBR (SUELO EMPEDRADO, ACERO, HORMIGÓN)
-    // ============================================================================
-    function createGroundTexture() {
-      const c = document.createElement('canvas');
-      c.width = 512; c.height = 512;
-      const ctx = c.getContext('2d');
-      ctx.fillStyle = '#1b222c';
-      ctx.fillRect(0, 0, 512, 512);
-
-      // Baldosas de piedra táctica y grietas sutiles
-      ctx.strokeStyle = '#11161d';
-      ctx.lineWidth = 4;
-      for (let y = 0; y < 512; y += 64) {
-        for (let x = 0; x < 512; x += 64) {
-          const shade = 24 + Math.floor(Math.random() * 14);
-          ctx.fillStyle = `rgb(${shade}, ${shade + 5}, ${shade + 12})`;
-          ctx.fillRect(x + 2, y + 2, 60, 60);
-          ctx.strokeRect(x, y, 64, 64);
-        }
-      }
-      const tex = new THREE.CanvasTexture(c);
-      tex.wrapS = THREE.RepeatWrapping;
-      tex.wrapT = THREE.RepeatWrapping;
-      tex.repeat.set(6, 7);
-      return tex;
-    }
-
-    // ============================================================================
-    // 4. ESCENA 3D SEMI-CERRADA (FORTALEZA TÁCTICA CON MUROS, ANTORCHAS Y PUERTAS)
+    // 3. ESCENA 3D CON TRANSICIÓN DINÁMICA DE DÍA ☀️ Y NOCHE 🌙
     // ============================================================================
     const hostEl = document.getElementById('canvas-3d-host');
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x070a10);
-    scene.fog = new THREE.FogExp2(0x070a10, 0.016);
+    scene.background = new THREE.Color(0x070b14);
+    scene.fog = new THREE.FogExp2(0x070b14, 0.015);
 
     const camera = new THREE.PerspectiveCamera(46, 1, 0.1, 140);
     const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
@@ -441,8 +438,7 @@
     }
     window.addEventListener('resize', resize3D);
 
-    // Iluminación realista (Luz de luna + Sol táctico + Braseros cálidos en los muros + Fogón de disparo)
-    const hemiLight = new THREE.HemisphereLight(0x93c5fd, 0x1e293b, 0.65);
+    const hemiLight = new THREE.HemisphereLight(0x93c5fd, 0x1e293b, 0.7);
     scene.add(hemiLight);
 
     const sunLight = new THREE.DirectionalLight(0xfff7ed, 1.35);
@@ -451,600 +447,521 @@
     sunLight.shadow.mapSize.width = 1024;
     sunLight.shadow.mapSize.height = 1024;
     const sd = 22;
-    sunLight.shadow.camera.left = -sd;
-    sunLight.shadow.camera.right = sd;
-    sunLight.shadow.camera.top = sd;
-    sunLight.shadow.camera.bottom = -sd;
+    sunLight.shadow.camera.left = -sd; sunLight.shadow.camera.right = sd;
+    sunLight.shadow.camera.top = sd;  sunLight.shadow.camera.bottom = -sd;
     scene.add(sunLight);
 
-    const muzzleFlashLight = new THREE.PointLight(0xfbbf24, 0, 10);
-    scene.add(muzzleFlashLight);
+    // Textura empedrada táctica
+    function createCourtyardTexture() {
+      const c = document.createElement('canvas');
+      c.width = 512; c.height = 512;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#1c2430';
+      ctx.fillRect(0, 0, 512, 512);
+      ctx.strokeStyle = '#111720';
+      ctx.lineWidth = 4;
+      for (let y = 0; y < 512; y += 64) {
+        for (let x = 0; x < 512; x += 64) {
+          const v = 25 + Math.floor(Math.random() * 14);
+          ctx.fillStyle = `rgb(${v}, ${v + 6}, ${v + 14})`;
+          ctx.fillRect(x + 2, y + 2, 60, 60);
+          ctx.strokeRect(x, y, 64, 64);
+        }
+      }
+      const t = new THREE.CanvasTexture(c);
+      t.wrapS = THREE.RepeatWrapping; t.wrapT = THREE.RepeatWrapping;
+      t.repeat.set(6, 7);
+      return t;
+    }
 
-    // Límites del Mapa Semi-Cerrado (Patio Fortificado: X de -11.5 a +11.5, Z de -14.5 a +11.5)
     const ARENA_BOUNDS = { minX: -11.2, maxX: 11.2, minZ: -13.8, maxZ: 10.8 };
 
-    // Suelo empedrado realista
     const groundMesh = new THREE.Mesh(
       new THREE.PlaneGeometry(32, 36),
-      new THREE.MeshStandardMaterial({ map: createGroundTexture(), roughness: 0.82, metalness: 0.12 })
+      new THREE.MeshStandardMaterial({ map: createCourtyardTexture(), roughness: 0.8, metalness: 0.12 })
     );
     groundMesh.rotation.x = -Math.PI / 2;
     groundMesh.receiveShadow = true;
     scene.add(groundMesh);
 
-    // Construcción de los Muros Perimetrales del Recinto Cerrado
-    const wallMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.6, metalness: 0.35 });
+    // Muros del Recinto Cerrado + 3 Puertas Norte
+    const wallMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.55, metalness: 0.35 });
     const darkSteelMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.4, metalness: 0.7 });
 
-    function addPerimeterWall(x, y, z, w, h, d, mat = wallMat) {
+    function addBoxWall(x, y, z, w, h, d, mat = wallMat) {
       const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
       m.position.set(x, y, z);
-      m.castShadow = true;
-      m.receiveShadow = true;
+      m.castShadow = true; m.receiveShadow = true;
       scene.add(m);
       return m;
     }
 
-    // Muros Izquierdo, Derecho y Sur
-    addPerimeterWall(-12.6, 2.2, -1.5, 1.6, 4.4, 30);
-    addPerimeterWall( 12.6, 2.2, -1.5, 1.6, 4.4, 30);
-    addPerimeterWall( 0.0,  2.0, 12.2, 26.8, 4.0, 1.6);
+    addBoxWall(-12.6, 2.2, -1.5, 1.6, 4.4, 30);
+    addBoxWall( 12.6, 2.2, -1.5, 1.6, 4.4, 30);
+    addBoxWall( 0.0,  2.0, 12.2, 26.8, 4.0, 1.6);
+    addBoxWall(-10.5, 2.4, -15.2, 4.2, 4.8, 1.8);
+    addBoxWall(-3.5,  2.4, -15.2, 3.8, 4.8, 1.8);
+    addBoxWall( 3.5,  2.4, -15.2, 3.8, 4.8, 1.8);
+    addBoxWall( 10.5, 2.4, -15.2, 4.2, 4.8, 1.8);
+    addBoxWall( 0,    4.2, -15.2, 26.0, 1.2, 2.0, darkSteelMat);
 
-    // Muro Norte con 3 Portales de Invasión (Izquierda X=-7, Centro X=0, Derecha X=+7)
-    addPerimeterWall(-10.5, 2.4, -15.2, 4.2, 4.8, 1.8);
-    addPerimeterWall(-3.5,  2.4, -15.2, 3.8, 4.8, 1.8);
-    addPerimeterWall( 3.5,  2.4, -15.2, 3.8, 4.8, 1.8);
-    addPerimeterWall( 10.5, 2.4, -15.2, 4.2, 4.8, 1.8);
-    // Dintel superior sobre las 3 puertas norte
-    addPerimeterWall(0, 4.2, -15.2, 26.0, 1.2, 2.0, darkSteelMat);
-
-    // 4 Torres de Vigilancia en las esquinas + Braseros con luz cálida
-    const cornerCoords = [
-      { x: -12.2, z: -14.8 }, { x: 12.2, z: -14.8 },
-      { x: -12.2, z:  11.8 }, { x: 12.2, z:  11.8 }
-    ];
-    cornerCoords.forEach(c => {
-      addPerimeterWall(c.x, 3.2, c.z, 2.8, 6.4, 2.8, darkSteelMat);
-      const brazierLight = new THREE.PointLight(0xf97316, 1.2, 16);
-      brazierLight.position.set(c.x * 0.82, 3.5, c.z * 0.85);
-      scene.add(brazierLight);
-
-      const flame = new THREE.Mesh(
-        new THREE.ConeGeometry(0.45, 0.9, 8),
-        new THREE.MeshBasicMaterial({ color: 0xfb923c })
-      );
-      flame.position.set(c.x * 0.88, 3.6, c.z * 0.88);
-      scene.add(flame);
-    });
-
-    // Cajas de suministros y barriles tácticos dentro del mapa cerrado
-    const crateMat = new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.7 });
-    [
-      { x: -9.8, z: -4.5 }, { x: -9.2, z: -3.2 },
-      { x:  9.8, z: -4.5 }, { x:  9.3, z: -3.1 }
-    ].forEach(p => {
-      addPerimeterWall(p.x, 0.65, p.z, 1.3, 1.3, 1.3, crateMat);
-    });
-
-    // ============================================================================
-    // 5. BARRICADA DEFENSIVA E INSTALACIONES 3D DE LA BASE (ZONA SUR)
-    // ============================================================================
-    // Línea de Barricada Frontal (en Z = 1.6) que divide la Zona de Combate Norte y tu Base Sur
-    const barricadeGroup = new THREE.Group();
-    barricadeGroup.position.set(0, 0, 1.6);
-    scene.add(barricadeGroup);
-
-    const sandbagMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.6, metalness: 0.4 });
-    const laserFenceMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.65 });
+    // Valla Eléctrica Frontal (en Z = 1.6)
+    const fenceGroup = new THREE.Group();
+    fenceGroup.position.set(0, 0, 1.6);
+    scene.add(fenceGroup);
 
     for (let bx = -9.5; bx <= 9.5; bx += 3.8) {
-      if (Math.abs(bx) < 1.5) continue; // Paso central con barrera láser para el héroe
-      const block = new THREE.Mesh(new THREE.BoxGeometry(3.1, 1.35, 1.1), sandbagMat);
-      block.position.set(bx, 0.68, 0);
-      block.castShadow = true;
-      block.receiveShadow = true;
-      barricadeGroup.add(block);
+      const post = new THREE.Mesh(new THREE.BoxGeometry(3.2, 1.3, 0.9), darkSteelMat);
+      post.position.set(bx, 0.65, 0);
+      post.castShadow = true;
+      fenceGroup.add(post);
     }
-    const centerLaserGate = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.9, 0.25), laserFenceMat);
-    centerLaserGate.position.set(0, 0.5, 0);
-    barricadeGroup.add(centerLaserGate);
-
-    // Búnker de Comando Central (Sur)
-    const bunkerGroup = new THREE.Group();
-    bunkerGroup.position.set(5.5, 0, 8.2);
-    const bunkerBase = new THREE.Mesh(
-      new THREE.CylinderGeometry(1.6, 2.1, 2.2, 8),
-      new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.6, roughness: 0.35 })
+    const electricBeamMesh = new THREE.Mesh(
+      new THREE.BoxGeometry(22.5, 0.35, 0.25),
+      new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.75 })
     );
-    bunkerBase.position.y = 1.1;
-    bunkerBase.castShadow = true;
-    const bunkerRadar = new THREE.Mesh(
-      new THREE.OctahedronGeometry(0.95, 0),
-      new THREE.MeshStandardMaterial({ color: 0xa855f7, emissive: 0x7e22ce, emissiveIntensity: 0.7 })
-    );
-    bunkerRadar.position.y = 3.0;
-    bunkerGroup.add(bunkerBase, bunkerRadar);
-    scene.add(bunkerGroup);
+    electricBeamMesh.position.set(0, 1.15, 0);
+    fenceGroup.add(electricBeamMesh);
 
-    // Armería & Bóveda de Dinero (Sur-Oeste)
-    const armoryGroup = new THREE.Group();
-    armoryGroup.position.set(-5.5, 0, 8.2);
-    const vaultBox = new THREE.Mesh(
-      new THREE.BoxGeometry(2.6, 1.9, 2.2),
-      new THREE.MeshStandardMaterial({ color: 0x065f46, metalness: 0.5, roughness: 0.4 })
+    // Modelos 3D de las 6 Estructuras de la Base (Mina de Oro, Campamento, Torre EMP, Torretas, Cuartel)
+    // 1. Mina de Oro (-6.2, 8.2)
+    const mineRig = new THREE.Mesh(
+      new THREE.ConeGeometry(1.1, 2.4, 6),
+      new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xca8a04, emissiveIntensity: 0.35, metalness: 0.7 })
     );
-    vaultBox.position.y = 0.95;
-    vaultBox.castShadow = true;
-    armoryGroup.add(vaultBox);
-    scene.add(armoryGroup);
+    mineRig.position.set(-6.2, 1.2, 8.2);
+    scene.add(mineRig);
 
-    // Pads luminosos en el suelo para mejorar con Dinero ($)
+    // 2. Campamento de Supervivientes (6.2, 8.2)
+    const campTent = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.4, 1.6, 2.0, 6),
+      new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.5 })
+    );
+    campTent.position.set(6.2, 1.0, 8.2);
+    scene.add(campTent);
+
+    // 3. Torre EMP (0, 5.2)
+    const empTowerCoil = new THREE.Mesh(
+      new THREE.OctahedronGeometry(0.95, 1),
+      new THREE.MeshStandardMaterial({ color: 0x818cf8, emissive: 0x4f46e5, emissiveIntensity: 0.7, wireframe: true })
+    );
+    empTowerCoil.position.set(0, 2.2, 5.2);
+    scene.add(empTowerCoil);
+
+    // Pads Luminosos de Construcción en el suelo 3D
     const padMeshes = {};
     GAME.buildings.forEach(b => {
-      const padGroup = new THREE.Group();
-      padGroup.position.set(b.x, 0.04, b.z);
-
-      const outerRing = new THREE.Mesh(
-        new THREE.RingGeometry(1.55, 1.95, 32),
+      const ring = new THREE.Mesh(
+        new THREE.RingGeometry(1.4, 1.8, 28),
         new THREE.MeshBasicMaterial({ color: b.color, side: THREE.DoubleSide, transparent: true, opacity: 0.85 })
       );
-      outerRing.rotation.x = -Math.PI / 2;
-
-      const innerPlate = new THREE.Mesh(
-        new THREE.CircleGeometry(1.5, 32),
-        new THREE.MeshBasicMaterial({ color: b.color, transparent: true, opacity: 0.18 })
-      );
-      innerPlate.rotation.x = -Math.PI / 2;
-
-      padGroup.add(outerRing, innerPlate);
-      scene.add(padGroup);
-      padMeshes[b.id] = { group: padGroup, ring: outerRing };
+      ring.rotation.x = -Math.PI / 2;
+      ring.position.set(b.x, 0.05, b.z);
+      scene.add(ring);
+      padMeshes[b.id] = ring;
     });
 
-    // Torretas Gattling 3D sobre la Barricada
-    const turretSlots = [
-      { x: -4.8, z: 1.6 },
-      { x:  4.8, z: 1.6 },
-      { x: -8.6, z: 1.6 },
-      { x:  8.6, z: 1.6 }
-    ];
+    // Torretas Gattling sobre la Valla
+    const turretSlots = [{ x: -4.8, z: 1.6 }, { x: 4.8, z: 1.6 }, { x: -8.6, z: 1.6 }, { x: 8.6, z: 1.6 }];
     const turretEntities = [];
-
     function syncTurrets3D() {
-      const lv = GAME.buildings.find(b => b.id === 'turrets').level;
-      const count = Math.min(4, lv);
+      const count = Math.min(4, GAME.buildings.find(b => b.id === 'turret').level);
       while (turretEntities.length < count) {
         const idx = turretEntities.length;
         const pos = turretSlots[idx];
-        const tGroup = new THREE.Group();
-        tGroup.position.set(pos.x, 1.35, pos.z);
-
-        const mount = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.55, 0.7, 0.6, 10),
-          darkSteelMat
-        );
-        const head = new THREE.Mesh(
-          new THREE.BoxGeometry(0.95, 0.65, 1.1),
-          new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.6, roughness: 0.3 })
-        );
-        head.position.y = 0.5;
-
-        // Doble cañón Gattling
-        const b1 = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 1.4, 8), darkSteelMat);
-        b1.rotation.x = Math.PI / 2;
-        b1.position.set(-0.22, 0.5, -0.8);
-        const b2 = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 1.4, 8), darkSteelMat);
-        b2.rotation.x = Math.PI / 2;
-        b2.position.set(0.22, 0.5, -0.8);
-
-        tGroup.add(mount, head, b1, b2);
-        scene.add(tGroup);
-        turretEntities.push({ group: tGroup, shootTimer: idx * 0.18 });
+        const g = new THREE.Group();
+        g.position.set(pos.x, 1.4, pos.z);
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.6, 1.1), new THREE.MeshStandardMaterial({ color: 0xf97316 }));
+        const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 1.4, 8), darkSteelMat);
+        barrel.rotation.x = Math.PI / 2;
+        barrel.position.set(0, 0, -0.75);
+        g.add(head, barrel);
+        scene.add(g);
+        turretEntities.push({ group: g, shootTimer: idx * 0.2 });
       }
     }
 
-    // Marines Defensores 3D (Articulados)
-    const marineEntities = [];
-    function createArticulatedSoldierMesh(armorColorHex, visorColorHex = 0x38bdf8, scale = 1.0) {
+    // Constructor de Personajes 3D Articulados (Héroe Principal + 2.º Héroe Activo + Tropas)
+    function createCommander3D(colorHex, scale = 1.15) {
       const root = new THREE.Group();
       root.scale.set(scale, scale, scale);
+      const armorMat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.35, metalness: 0.45 });
+      const legMat = new THREE.MeshStandardMaterial({ color: 0x1e293b });
 
-      const armorMat = new THREE.MeshStandardMaterial({ color: armorColorHex, roughness: 0.35, metalness: 0.45 });
-      const limbMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.6 });
-      const skinMat = new THREE.MeshStandardMaterial({ color: 0xfde68a, roughness: 0.4 });
+      const lLeg = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.75, 0.28), legMat);
+      lLeg.position.set(-0.2, 0.38, 0);
+      const rLeg = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.75, 0.28), legMat);
+      rLeg.position.set(0.2, 0.38, 0);
 
-      // Piernas
-      const leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.75, 0.28), limbMat);
-      leftLeg.position.set(-0.2, 0.38, 0);
-      const rightLeg = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.75, 0.28), limbMat);
-      rightLeg.position.set(0.2, 0.38, 0);
-
-      // Torso + Hombreras
-      const torso = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.95, 0.48), armorMat);
+      const torso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.95, 0.5), armorMat);
       torso.position.set(0, 1.18, 0);
       torso.castShadow = true;
 
-      const pLeft = new THREE.Mesh(new THREE.SphereGeometry(0.26, 10, 10), armorMat);
-      pLeft.position.set(-0.52, 1.52, 0);
-      const pRight = new THREE.Mesh(new THREE.SphereGeometry(0.26, 10, 10), armorMat);
-      pRight.position.set(0.52, 1.52, 0);
-
-      // Cabeza + Casco + Visor táctico
-      const head = new THREE.Mesh(new THREE.SphereGeometry(0.36, 12, 12), skinMat);
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.42, 12, 12), armorMat);
       head.position.set(0, 1.95, 0);
-      head.castShadow = true;
-      const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.39, 12, 12, 0, Math.PI * 2, 0, Math.PI * 0.65), armorMat);
-      helmet.position.set(0, 1.98, 0);
-      const visor = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.16, 0.25), new THREE.MeshBasicMaterial({ color: visorColorHex }));
+      const visor = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.18, 0.25), new THREE.MeshBasicMaterial({ color: 0x38bdf8 }));
       visor.position.set(0, 1.95, 0.28);
 
-      // Rifle de Asalto 3D
-      const rifle = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.22, 1.15), darkSteelMat);
-      rifle.position.set(0.42, 1.22, 0.45);
+      const gun = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.24, 1.2), darkSteelMat);
+      gun.position.set(0.45, 1.2, 0.45);
 
-      root.add(leftLeg, rightLeg, torso, pLeft, pRight, head, helmet, visor, rifle);
-      root.userData = { leftLeg, rightLeg, torso, helmet, visor, armorMat };
+      root.add(lLeg, rLeg, torso, head, visor, gun);
+      root.userData = { lLeg, rLeg, armorMat };
       return root;
     }
 
-    function syncMarineSquad3D() {
-      const lv = GAME.buildings.find(b => b.id === 'squad').level;
-      const desired = Math.min(4, lv + (GAME.mercenaryActive ? 1 : 0));
-      while (marineEntities.length < desired) {
-        const idx = marineEntities.length;
-        const isMerc = (idx === 0 && GAME.mercenaryActive);
-        const mesh = createArticulatedSoldierMesh(isMerc ? 0xfacc15 : 0x10b981, 0x38bdf8, isMerc ? 1.12 : 0.92);
-        scene.add(mesh);
-        marineEntities.push({
-          mesh,
-          shootTimer: idx * 0.25,
-          offsetAngle: idx * 1.6
-        });
-      }
-    }
-
-    // ============================================================================
-    // 6. HÉROE COMANDANTE 3D ARTICULADO
-    // ============================================================================
-    const playerMesh = createArticulatedSoldierMesh(0xf59e0b, 0x38bdf8, 1.18);
+    // Héroe Activo #1 (Cole - Fuego) y Héroe Activo #2 (Mir - Hielo) como en Duck Survival
+    const playerMesh = createCommander3D(0xf97316, 1.18);
     scene.add(playerMesh);
 
-    const playerAuraRing = new THREE.Mesh(
-      new THREE.RingGeometry(0.95, 1.2, 28),
-      new THREE.MeshBasicMaterial({ color: 0x10b981, side: THREE.DoubleSide, transparent: true, opacity: 0.7 })
+    const secondHeroMesh = createCommander3D(0x38bdf8, 1.02);
+    scene.add(secondHeroMesh);
+
+    // Rayo Láser Concentrado S-Tier 3D
+    const focusedLaserMesh = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.22, 0.22, 18, 10),
+      new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0.85 })
     );
-    playerAuraRing.rotation.x = -Math.PI / 2;
-    playerAuraRing.position.y = 0.04;
-    playerMesh.add(playerAuraRing);
+    focusedLaserMesh.rotation.x = Math.PI / 2;
+    focusedLaserMesh.visible = false;
+    scene.add(focusedLaserMesh);
 
-    const player3D = {
-      pos: { x: 0, z: 4.5 },
-      speed: 9.2,
-      shootTimer: 0,
-      padInvestTimer: 0
-    };
-
-    function applyHeroSkinVisuals3D() {
-      const h = GAME.heroes.find(x => x.id === GAME.selectedHeroId) || GAME.heroes[0];
-      const sk = GAME.skins.find(s => s.id === h.skin && s.unlocked);
-      playerMesh.userData.armorMat.color.setHex(sk ? sk.color : h.color);
-      playerMesh.userData.visor.material.color.setHex(sk ? sk.visorColor : 0x38bdf8);
-    }
+    const player3D = { pos: { x: 0, z: 4.2 }, speed: 9.4, shootTimer: 0, padTimer: 0, empTimer: 0, meteorTimer: 0, mineTimer: 0 };
 
     // ============================================================================
-    // 7. ENEMIGOS 3D ARTICULADOS, JEFE FINAL (OLEADA 5) Y BILLETES DE DINERO (💵)
+    // 4. CICLO DÍA ☀️ / NOCHE 🌙 Y OLEADAS 1 A 5
     // ============================================================================
     const enemies3D = [];
-    const cashBundles3D = [];
+    const cashDrops3D = [];
     const bullets3D = [];
+    const meteors3D = [];
     const shockwaves3D = [];
 
-    // Modelo de Billete de Dinero 3D (Fajo de dólares verde con banda dorada)
     const cashGeo = new THREE.BoxGeometry(0.75, 0.22, 0.42);
-    const cashMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x15803d, emissiveIntensity: 0.35, roughness: 0.4 });
+    const cashMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x15803d, emissiveIntensity: 0.4 });
 
-    function createEnemyMesh3D(isFinalBoss) {
-      const g = new THREE.Group();
-      const scale = isFinalBoss ? 2.45 : (0.92 + Math.random() * 0.22);
-      g.scale.set(scale, scale, scale);
-
-      const skinColor = isFinalBoss ? 0x991b1b : (Math.random() < 0.5 ? 0x4c1d95 : 0x7f1d1d);
-      const bodyMat = new THREE.MeshStandardMaterial({ color: skinColor, roughness: 0.45, metalness: 0.3 });
-
-      const torso = new THREE.Mesh(new THREE.BoxGeometry(0.85, 1.05, 0.55), bodyMat);
-      torso.position.y = 1.1;
-      torso.castShadow = true;
-
-      const head = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.55, 0.55), bodyMat);
-      head.position.y = 1.9;
-
-      const eyes = new THREE.Mesh(
-        new THREE.BoxGeometry(0.46, 0.14, 0.15),
-        new THREE.MeshBasicMaterial({ color: isFinalBoss ? 0xfacc15 : 0xf43f5e })
-      );
-      eyes.position.set(0, 1.92, 0.25);
-
-      const leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.85, 0.26), bodyMat);
-      leftArm.position.set(-0.6, 1.15, 0.2);
-      leftArm.rotation.x = -0.6;
-      const rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.85, 0.26), bodyMat);
-      rightArm.position.set(0.6, 1.15, 0.2);
-      rightArm.rotation.x = -0.6;
-
-      g.add(torso, head, eyes, leftArm, rightArm);
-
-      if (isFinalBoss) {
-        // Cuernos y Martillo Demoledor del Jefe Final (Oleada 5)
-        const hornMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.8 });
-        const hL = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.75, 6), hornMat);
-        hL.position.set(-0.35, 2.35, 0);
-        hL.rotation.z = 0.4;
-        const hR = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.75, 6), hornMat);
-        hR.position.set(0.35, 2.35, 0);
-        hR.rotation.z = -0.4;
-        g.add(hL, hR);
+    function setDayNightLighting(isNight, isRedMoonBoss = false) {
+      GAME.isNight = isNight;
+      const badge = document.getElementById('phase-badge');
+      if (!isNight) {
+        // ☀️ FASE DE DÍA (Iluminación Cálida y Soleada para Construir Base)
+        scene.background.setHex(0x1e293b);
+        scene.fog.color.setHex(0x1e293b);
+        sunLight.color.setHex(0xfffbeb);
+        sunLight.intensity = 1.85;
+        hemiLight.intensity = 1.1;
+        badge.className = 'px-2 py-1 rounded-xl bg-amber-400 text-black font-black text-xs flex items-center gap-1 shadow';
+        badge.textContent = '☀️ DÍA (BASE)';
+      } else if (isRedMoonBoss) {
+        // 💀 NOCHE 5: LUNA ROJA (Jefe Final)
+        scene.background.setHex(0x1a060b);
+        scene.fog.color.setHex(0x1a060b);
+        sunLight.color.setHex(0xfda4af);
+        sunLight.intensity = 1.2;
+        badge.className = 'px-2 py-1 rounded-xl bg-rose-600 text-white font-black text-xs flex items-center gap-1 shadow';
+        badge.textContent = '💀 NOCHE 5';
+      } else {
+        // 🌙 NOCHE DE SUPERVIVENCIA (Azul Oscuro Táctico)
+        scene.background.setHex(0x060913);
+        scene.fog.color.setHex(0x060913);
+        sunLight.color.setHex(0x93c5fd);
+        sunLight.intensity = 1.15;
+        hemiLight.intensity = 0.6;
+        badge.className = 'px-2 py-1 rounded-xl bg-indigo-600 text-white font-black text-xs flex items-center gap-1 shadow';
+        badge.textContent = '🌙 NOCHE';
       }
+    }
 
-      g.userData = { torso, bodyMat };
+    function createMutantMesh3D(isBoss) {
+      const g = new THREE.Group();
+      const s = isBoss ? 2.5 : (0.9 + Math.random() * 0.25);
+      g.scale.set(s, s, s);
+      const col = isBoss ? 0x991b1b : (Math.random() < 0.5 ? 0x3f6212 : 0x581c87);
+      const mat = new THREE.MeshStandardMaterial({ color: col, roughness: 0.45 });
+
+      const body = new THREE.Mesh(new THREE.BoxGeometry(0.85, 1.1, 0.55), mat);
+      body.position.y = 1.05; body.castShadow = true;
+      const head = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.55, 0.55), mat);
+      head.position.y = 1.85;
+      const eyes = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.14, 0.15), new THREE.MeshBasicMaterial({ color: isBoss ? 0xfacc15 : 0xef4444 }));
+      eyes.position.set(0, 1.88, 0.25);
+      g.add(body, head, eyes);
+      g.userData = { mat };
       return g;
     }
 
-    function startWave(waveNum) {
-      GAME.wave = waveNum;
-      GAME.phase = 'combat';
-      document.getElementById('intermission-banner').classList.add('hidden');
-      document.getElementById('intermission-banner').classList.remove('flex');
+    function startNightWaveNow() {
+      document.getElementById('day-phase-banner').classList.add('hidden');
+      document.getElementById('day-phase-banner').classList.remove('flex');
 
       const isBossWave = (GAME.wave === 5);
-      const stageMult = Math.pow(1.35, GAME.stage - 1);
+      setDayNightLighting(true, isBossWave);
 
+      const stageScale = Math.pow(1.35, GAME.stage - 1);
       if (isBossWave) {
-        sfxBossSiren();
-        GAME.enemiesToSpawnInWave = 6;
-        // Generar al Jefe Final en la Puerta Norte Central
-        const bossMesh = createEnemyMesh3D(true);
+        GAME.enemiesToSpawn = 6;
+        const bossMesh = createMutantMesh3D(true);
         bossMesh.position.set(0, 0, -13.5);
         scene.add(bossMesh);
-
-        const bossMaxHp = Math.round(2400 * stageMult);
+        const maxHp = Math.round(2800 * stageScale);
         enemies3D.push({
-          mesh: bossMesh,
-          x: 0,
-          z: -13.5,
-          hp: bossMaxHp,
-          maxHp: bossMaxHp,
-          atk: Math.round(55 * stageMult),
-          speed: 2.3,
-          radius: 1.9,
-          isBoss: true,
-          hitFlash: 0,
-          slamTimer: 0
+          mesh: bossMesh, x: 0, z: -13.5, hp: maxHp, maxHp,
+          atk: Math.round(60 * stageScale), speed: 2.35, radius: 1.9, isBoss: true, hitFlash: 0, slowTimer: 0
         });
         document.getElementById('boss-hp-banner').classList.remove('hidden');
         document.getElementById('boss-hp-banner').classList.add('flex');
-        showToast('👹 ¡OLEADA 5/5: EL JEFE FINAL HA ROTO LA PUERTA NORTE!');
+        showToast('💀 ¡NOCHE 5: EL DEVASTADOR MUTANTE HA ENTRADO AL RECINTO!');
       } else {
         document.getElementById('boss-hp-banner').classList.add('hidden');
         document.getElementById('boss-hp-banner').classList.remove('flex');
-        GAME.enemiesToSpawnInWave = 6 + GAME.wave * 3;
+        GAME.enemiesToSpawn = 6 + GAME.wave * 3;
       }
-
       updateHUD();
     }
 
-    function spawnRegularEnemyFromGates() {
-      const gatesX = [-7.0, 0.0, 7.0];
-      const gx = gatesX[Math.floor(Math.random() * gatesX.length)] + (Math.random() - 0.5) * 1.5;
-      const gz = -13.6;
-
-      const stageMult = Math.pow(1.35, GAME.stage - 1);
-      const hp = Math.round((130 + GAME.wave * 35) * stageMult);
-      const mesh = createEnemyMesh3D(false);
-      mesh.position.set(gx, 0, gz);
-      scene.add(mesh);
-
-      enemies3D.push({
-        mesh,
-        x: gx,
-        z: gz,
-        hp,
-        maxHp: hp,
-        atk: Math.round(16 * stageMult),
-        speed: 3.4 + Math.random() * 0.9,
-        radius: 0.85,
-        isBoss: false,
-        hitFlash: 0
-      });
-    }
-
-    function spawnCashBundle3D(x, z, dollarAmount, autoMagnet = false) {
-      const mesh = new THREE.Mesh(cashGeo, cashMat);
-      mesh.position.set(x + (Math.random() - 0.5) * 1.4, 0.35, z + (Math.random() - 0.5) * 1.4);
-      mesh.rotation.y = Math.random() * Math.PI;
-      mesh.castShadow = true;
-      scene.add(mesh);
-
-      cashBundles3D.push({
-        mesh,
-        x: mesh.position.x,
-        z: mesh.position.z,
-        amount: dollarAmount,
-        magnetized: autoMagnet
-      });
-    }
-
-    function triggerWaveClearCashShower() {
-      GAME.phase = 'intermission';
+    function triggerDaybreakAndCashReward() {
+      setDayNightLighting(false, false);
       sfxUpgrade();
 
-      const armoryLv = GAME.buildings.find(b => b.id === 'armory').level;
+      const mineLv = GAME.buildings.find(b => b.id === 'mine').level;
+      const campLv = GAME.buildings.find(b => b.id === 'camp').level;
       const bundleCount = 10 + GAME.wave * 2;
-      const bundleVal = Math.round((22 + GAME.wave * 10) * (1 + (armoryLv - 1) * 0.3));
+      const bundleVal = Math.round((25 + GAME.wave * 12) * (1 + (mineLv - 1) * 0.25 + (campLv - 1) * 0.2));
 
       for (let i = 0; i < bundleCount; i++) {
-        const angle = (i / bundleCount) * Math.PI * 2;
-        const r = 2.2 + (i % 3) * 1.5;
-        spawnCashBundle3D(
-          player3D.pos.x + Math.cos(angle) * r,
-          Math.min(7.5, Math.max(-6, player3D.pos.z + Math.sin(angle) * r)),
-          bundleVal,
-          true
-        );
+        const a = (i / bundleCount) * Math.PI * 2;
+        const r = 2.0 + (i % 3) * 1.5;
+        spawnCashDrop(player3D.pos.x + Math.cos(a) * r, Math.min(7.5, Math.max(-5, player3D.pos.z + Math.sin(a) * r)), bundleVal, true);
       }
 
+      // El Campamento repara la Valla Eléctrica al amanecer
+      GAME.wallHp = Math.min(GAME.wallMaxHp, GAME.wallHp + 350 * campLv);
+
       if (GAME.wave === 5) {
-        // ¡Jefe Final derrotado! Pasa al siguiente Nivel
-        GAME.gems += 250;
-        GAME.tickets += 3;
-        showToast(`🏆 ¡JEFE FINAL DERROTADO! +$${bundleCount * bundleVal}, +250 💎 y +3 🎟️. ¡Avanzas al NIVEL ${GAME.stage + 1}!`);
+        GAME.gems += 300;
+        GAME.blueprints += 8;
+        showToast(`🏆 ¡CAPÍTULO ${GAME.stage} COMPLETADO! +$${bundleCount * bundleVal}, +8 📜 Planos y +300 💎.`);
         GAME.stage++;
         GAME.wave = 1;
         GAME.wallHp = GAME.wallMaxHp;
       } else {
-        showToast(`💵 ¡OLEADA ${GAME.wave}/5 ELIMINADA! +$${bundleCount * bundleVal} en efectivo para mejorar tu Base.`);
+        showToast(`☀️ ¡AMANECER! Noche ${GAME.wave}/5 superada. Recoge tu Dinero (💵) y mejora la Base.`);
         GAME.wave++;
       }
 
-      const banner = document.getElementById('intermission-banner');
-      const nextBtn = document.getElementById('btn-next-wave');
-      nextBtn.textContent = GAME.wave === 5 ? `👹 ¡LANZAR OLEADA 5/5 (JEFE FINAL)!` : `⚔️ LANZAR OLEADA ${GAME.wave}/5`;
+      const banner = document.getElementById('day-phase-banner');
+      const btn = document.getElementById('btn-start-night');
+      btn.textContent = GAME.wave === 5 ? '💀 INICIAR NOCHE 5/5 (JEFE)' : `🌙 DEFENDER NOCHE ${GAME.wave}/5`;
       banner.classList.remove('hidden');
       banner.classList.add('flex');
       updateHUD();
       renderQuickBasePads();
     }
 
-    function startNextWaveNow() {
-      startWave(GAME.wave);
-    }
-
-    function forceBossWave5() {
-      // Limpiar enemigos actuales y saltar directo al Jefe Final (Oleada 5/5)
+    function forceBossNight5() {
       enemies3D.forEach(e => scene.remove(e.mesh));
       enemies3D.length = 0;
-      startWave(5);
+      GAME.wave = 5;
+      startNightWaveNow();
     }
 
-    // ============================================================================
-    // 8. HABILIDADES ACTIVAS CON COOLDOWN (MISILES, TORMENTA ELECTRO, MURO+HP)
-    // ============================================================================
-    function castSkill(idx) {
-      const sk = GAME.skills[idx];
-      if (sk.timer > 0) {
-        showToast(`⏳ [${sk.name}] en enfriamiento (${sk.timer.toFixed(1)}s)`);
-        return;
-      }
-      sk.timer = sk.cooldown;
-      const atk = getHeroTotalAtk();
-
-      if (idx === 0) {
-        // 💣 Ataque Aéreo de Misiles
-        sfxExplosion();
-        for (let m = 0; m < 5; m++) {
-          setTimeout(() => {
-            const tx = (Math.random() - 0.5) * 14;
-            const tz = -2 - Math.random() * 9;
-            spawnShockwave3D(tx, tz, 4.5, 0xf97316);
-            enemies3D.forEach(en => {
-              if (Math.hypot(en.x - tx, en.z - tz) < 5.0) {
-                const dmg = Math.round(atk * 4.2);
-                en.hp -= dmg;
-                en.hitFlash = 0.22;
-                spawnFloatingText(en.x, 2.2, en.z, `💣-${dmg}`, '#fb923c');
-              }
-            });
-          }, m * 120);
-        }
-        showToast('💣 ¡Ataque Aéreo de Misiles desplegado!');
-      } else if (idx === 1) {
-        // ⚡ Sobrecarga Eléctrica
-        sfxUpgrade();
-        GAME.overdriveTimer = 6.0;
-        spawnShockwave3D(player3D.pos.x, player3D.pos.z, 9.0, 0x38bdf8);
-        enemies3D.forEach(en => {
-          const dmg = Math.round(atk * 3.1);
-          en.hp -= dmg;
-          en.hitFlash = 0.25;
-          spawnFloatingText(en.x, 2.4, en.z, `⚡-${dmg}`, '#38bdf8');
-        });
-        showToast('⚡ ¡Sobrecarga Electro! Cadencia x2 durante 6 segundos.');
-      } else if (idx === 2) {
-        // 🛡️ Reparar Muro + Botiquín
-        sfxUpgrade();
-        GAME.wallHp = Math.min(GAME.wallMaxHp, GAME.wallHp + Math.round(GAME.wallMaxHp * 0.5));
-        spawnShockwave3D(0, 1.6, 8.0, 0x10b981);
-        enemies3D.forEach(en => {
-          if (en.z > -3) en.z -= 3.2; // Empujar enemigos hacia atrás
-        });
-        updateHUD();
-        showToast('🛡️ ¡Barricada reparada +50% HP y onda de empuje activada!');
-      }
+    function spawnCashDrop(x, z, amount, autoMag = false) {
+      const m = new THREE.Mesh(cashGeo, cashMat);
+      m.position.set(x + (Math.random() - 0.5), 0.35, z + (Math.random() - 0.5));
+      scene.add(m);
+      cashDrops3D.push({ mesh: m, x: m.position.x, z: m.position.z, amount, magnetized: autoMag });
     }
 
     function spawnShockwave3D(x, z, maxR, colorHex) {
-      const mesh = new THREE.Mesh(
-        new THREE.RingGeometry(0.4, 0.85, 32),
+      const m = new THREE.Mesh(
+        new THREE.RingGeometry(0.35, 0.8, 28),
         new THREE.MeshBasicMaterial({ color: colorHex, side: THREE.DoubleSide, transparent: true, opacity: 0.9 })
       );
-      mesh.rotation.x = -Math.PI / 2;
-      mesh.position.set(x, 0.12, z);
-      scene.add(mesh);
-      shockwaves3D.push({ mesh, scale: 1, maxScale: maxR, life: 0.45 });
+      m.rotation.x = -Math.PI / 2;
+      m.position.set(x, 0.12, z);
+      scene.add(m);
+      shockwaves3D.push({ mesh: m, scale: 1, maxScale: maxR, life: 0.45 });
     }
 
-    function fireBullet3D(fromX, fromZ, toX, toZ, dmg, colorHex = 0xfef08a, speed = 28) {
-      const dx = toX - fromX;
-      const dz = toZ - fromZ;
-      const len = Math.hypot(dx, dz) || 1;
-      const mesh = new THREE.Mesh(
-        new THREE.BoxGeometry(0.14, 0.14, 0.65),
-        new THREE.MeshBasicMaterial({ color: colorHex })
+    // Lluvia de Meteoritos 3D (S-Tier Skill de Duck Survival)
+    function spawnMeteorStrike3D(tx, tz, dmg) {
+      const rock = new THREE.Mesh(
+        new THREE.DodecahedronGeometry(0.85, 0),
+        new THREE.MeshStandardMaterial({ color: 0xf97316, emissive: 0xdc2626, emissiveIntensity: 0.8 })
       );
-      mesh.position.set(fromX, 1.25, fromZ);
-      mesh.lookAt(toX, 1.25, toZ);
-      scene.add(mesh);
-
-      bullets3D.push({
-        mesh,
-        x: fromX,
-        z: fromZ,
-        vx: (dx / len) * speed,
-        vz: (dz / len) * speed,
-        dmg,
-        life: 1.1
-      });
-    }
-
-    function spawnFloatingText(wx, wy, wz, text, color = '#fde047') {
-      const layer = document.getElementById('floating-dmg-layer');
-      if (layer.children.length > 20) return;
-
-      const v = new THREE.Vector3(wx, wy, wz);
-      v.project(camera);
-      const w = hostEl.clientWidth;
-      const h = hostEl.clientHeight;
-      const sx = (v.x * 0.5 + 0.5) * w;
-      const sy = (-v.y * 0.5 + 0.5) * h;
-      if (sx < 0 || sx > w || sy < 0 || sy > h) return;
-
-      const el = document.createElement('div');
-      el.className = 'absolute font-black text-xs pointer-events-none transition-all duration-500';
-      el.style.left = `${sx}px`;
-      el.style.top = `${sy}px`;
-      el.style.color = color;
-      el.style.textShadow = '0 2px 4px rgba(0,0,0,0.95)';
-      el.textContent = text;
-      layer.appendChild(el);
-
-      requestAnimationFrame(() => {
-        el.style.transform = 'translateY(-26px) scale(1.08)';
-        el.style.opacity = '0';
-      });
-      setTimeout(() => el.remove(), 480);
+      rock.position.set(tx - 4, 14, tz - 4);
+      scene.add(rock);
+      meteors3D.push({ mesh: rock, tx, tz, dmg, progress: 0 });
     }
 
     // ============================================================================
-    // 9. JOYSTICK TÁCTIL Y TECLADO
+    // 5. HABILIDADES META Y SELECTOR DE 3 CARTAS ROGUELITE
+    // ============================================================================
+    function addSkillXp(xp) {
+      GAME.skillXp += xp;
+      if (GAME.skillXp >= GAME.skillXpNext) {
+        GAME.skillXp -= GAME.skillXpNext;
+        GAME.skillLv++;
+        GAME.skillXpNext = Math.round(GAME.skillXpNext * 1.3);
+        sfxUpgrade();
+        openRogueliteDraft();
+      }
+    }
+
+    function openRogueliteDraft() {
+      const modal = document.getElementById('roguelite-draft-modal');
+      const grid = document.getElementById('draft-cards-grid');
+      const keys = Object.keys(GAME.rogueliteSkills).sort(() => Math.random() - 0.5).slice(0, 3);
+
+      grid.innerHTML = keys.map(k => {
+        const sk = GAME.rogueliteSkills[k];
+        return `
+          <button onclick="pickRogueliteCard('${k}')" class="btn-tactile bg-slate-900/95 border border-amber-400/60 rounded-xl p-2 flex flex-col items-center text-center gap-1">
+            <span class="px-1.5 py-0.5 rounded bg-rose-600 text-white font-black text-xs">${sk.tier}</span>
+            <span class="font-extrabold text-xs text-amber-300">${sk.name}</span>
+            <span class="text-xs text-emerald-300 font-bold">Nv.${sk.level} → ${sk.level + 1}</span>
+          </button>
+        `;
+      }).join('');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function pickRogueliteCard(key) {
+      GAME.rogueliteSkills[key].level++;
+      sfxUpgrade();
+      document.getElementById('roguelite-draft-modal').classList.add('hidden');
+      document.getElementById('roguelite-draft-modal').classList.remove('flex');
+      showToast(`🃏 ¡Evolucionaste [${GAME.rogueliteSkills[key].name}] a Nv.${GAME.rogueliteSkills[key].level}!`);
+    }
+
+    function castMetaSkill(idx) {
+      if (GAME.activeCooldowns[idx] > 0) return;
+      const atk = getTotalSquadAtk();
+
+      if (idx === 0) {
+        // ☄️ Lluvia de Meteoritos S-Tier
+        GAME.activeCooldowns[0] = 8.0;
+        sfxMeteor();
+        for (let i = 0; i < 4; i++) {
+          setTimeout(() => {
+            const tx = (Math.random() - 0.5) * 12;
+            const tz = -2 - Math.random() * 8;
+            spawnMeteorStrike3D(tx, tz, Math.round(atk * 4.5));
+          }, i * 140);
+        }
+        showToast('☄️ ¡Lluvia de Meteoritos S-Tier invocada!');
+      } else if (idx === 1) {
+        // ⚡ Láser Concentrado S-Tier
+        GAME.activeCooldowns[1] = 7.5;
+        GAME.laserBeamTimer = 2.2;
+        sfxUpgrade();
+        enemies3D.forEach(e => {
+          const d = Math.round(atk * 3.8);
+          e.hp -= d;
+          e.hitFlash = 0.25;
+          spawnFloatingText(e.x, 2.2, e.z, `⚡LÁSER -${d}`, '#22d3ee');
+        });
+        showToast('⚡ ¡Láser Concentrado S-Tier activado!');
+      } else if (idx === 2) {
+        // ❄️ Estalactitas de Hielo + Reparación de Valla
+        GAME.activeCooldowns[2] = 9.0;
+        sfxUpgrade();
+        GAME.wallHp = Math.min(GAME.wallMaxHp, GAME.wallHp + Math.round(GAME.wallMaxHp * 0.45));
+        spawnShockwave3D(0, 0, 10, 0x38bdf8);
+        enemies3D.forEach(e => {
+          e.slowTimer = 4.5;
+          e.hp -= Math.round(atk * 2.2);
+          spawnFloatingText(e.x, 2.0, e.z, '❄️CONGELADO', '#38bdf8');
+        });
+        updateHUD();
+        showToast('❄️ ¡Horda congelada y Valla Eléctrica reparada +45%!');
+      }
+    }
+
+    // ============================================================================
+    // 6. CÁLCULOS DE PODER (6 SLOTS EQUIPO + GEMAS + VÍNCULO ELEMENTAL 2+2)
+    // ============================================================================
+    function getTotalSquadAtk() {
+      const gearSum = GAME.gearSlots.reduce((s, g) => s + g.bonusAtk * g.level * (1 + g.gemTier * 0.12), 0);
+      const heroSum = GAME.heroes.reduce((s, h) => s + h.level * 12 * h.stars, 0);
+      // Bono de Vínculo Elemental (+30% por 3 héroes de Fuego)
+      return Math.round((gearSum + heroSum) * 1.30);
+    }
+
+    function getBuildingCost(b) {
+      return Math.round(b.baseCost * Math.pow(1.28, b.level - 1));
+    }
+
+    function upgradeBuildingById(id, fromWalk = false) {
+      const b = GAME.buildings.find(x => x.id === id);
+      const cost = getBuildingCost(b);
+      if (GAME.cash < cost) {
+        if (!fromWalk) showToast(`💵 Necesitas $${cost}. ¡Las Minas de Oro y las oleadas te dan efectivo!`);
+        return;
+      }
+      GAME.cash -= cost;
+      b.level++;
+      sfxUpgrade();
+
+      if (id === 'fence') {
+        GAME.wallMaxHp += 700;
+        GAME.wallHp = GAME.wallMaxHp;
+      } else if (id === 'turret') {
+        syncTurrets3D();
+      }
+      spawnShockwave3D(b.x, b.z, 3.2, b.color);
+      spawnFloatingText(b.x, 2.3, b.z, `⬆️ ${b.short} NV.${b.level}`, '#4ade80');
+      updateHUD();
+      renderQuickBasePads();
+      if (GAME.activeDrawer === 'base') renderDrawer('base');
+    }
+
+    function renderQuickBasePads() {
+      const box = document.getElementById('quick-base-pads');
+      box.innerHTML = GAME.buildings.map(b => {
+        const cost = getBuildingCost(b);
+        const can = GAME.cash >= cost;
+        return `
+          <button onclick="upgradeBuildingById('${b.id}', false)" class="btn-tactile glass-hud rounded-xl p-1 flex flex-col items-center text-center border ${
+            can ? 'border-emerald-400 bg-emerald-500/20' : 'border-white/10 opacity-80'
+          }">
+            <span class="text-xs">${b.icon}<strong class="text-xs">${b.level}</strong></span>
+            <span class="text-xs font-bold truncate w-full">${b.short}</span>
+            <span class="text-xs font-black ${can ? 'text-emerald-300' : 'text-slate-400'}">$${cost}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function updateHUD() {
+      document.getElementById('hud-skill-lv').textContent = `🔥 HABILIDAD NV.${GAME.skillLv}`;
+      document.getElementById('xp-bar-fill').style.width = `${Math.min(100, (GAME.skillXp / GAME.skillXpNext) * 100)}%`;
+      document.getElementById('hud-power-txt').textContent = `⚔️ ${(getTotalSquadAtk() * 12).toLocaleString()}`;
+
+      document.getElementById('wave-title-txt').textContent =
+        GAME.wave === 5 ? `CAP.${GAME.stage} • 💀 NOCHE 5/5` : `CAP.${GAME.stage} • OLEADA ${GAME.wave}/5`;
+
+      const left = enemies3D.length + GAME.enemiesToSpawn;
+      document.getElementById('enemies-left-txt').textContent =
+        !GAME.isNight ? '☀️ Construyendo' : `Zombies: ${left}`;
+
+      for (let w = 1; w <= 4; w++) {
+        document.getElementById(`w-pill-${w}`).className =
+          w <= GAME.wave ? 'w-5 h-2 rounded-full bg-emerald-400' : 'w-5 h-2 rounded-full bg-slate-700';
+      }
+
+      const wallPct = Math.max(0, Math.min(100, Math.round((GAME.wallHp / GAME.wallMaxHp) * 100)));
+      document.getElementById('hud-wall-hp').textContent = `${wallPct}%`;
+      document.getElementById('hud-wall-bar').style.width = `${wallPct}%`;
+
+      document.getElementById('res-cash').textContent = `$${Math.floor(GAME.cash).toLocaleString()}`;
+      document.getElementById('res-blueprints').textContent = GAME.blueprints;
+      document.getElementById('res-gems').textContent = Math.floor(GAME.gems).toLocaleString();
+    }
+
+    // ============================================================================
+    // 7. JOYSTICK TÁCTIL Y BUCLE 3D (60 FPS)
     // ============================================================================
     const inputState = { dx: 0, dz: 0, active: false };
     const keys = {};
@@ -1066,18 +983,13 @@
       const dx = e.clientX - joyCenter.x;
       const dy = e.clientY - joyCenter.y;
       const dist = Math.hypot(dx, dy);
-      const maxR = 34;
-      const cl = Math.min(maxR, dist);
+      const cl = Math.min(34, dist);
       const a = Math.atan2(dy, dx);
       joyKnob.style.transform = `translate(${Math.cos(a) * cl}px, ${Math.sin(a) * cl}px)`;
       if (dist > 4) { inputState.dx = Math.cos(a); inputState.dz = Math.sin(a); }
       else { inputState.dx = 0; inputState.dz = 0; }
     });
-    const endJoy = () => {
-      inputState.active = false;
-      inputState.dx = 0; inputState.dz = 0;
-      joyKnob.style.transform = 'translate(0px, 0px)';
-    };
+    const endJoy = () => { inputState.active = false; inputState.dx = 0; inputState.dz = 0; joyKnob.style.transform = 'translate(0px,0px)'; };
     joyZone.addEventListener('pointerup', endJoy);
     joyZone.addEventListener('pointercancel', endJoy);
 
@@ -1085,152 +997,78 @@
       GAME.autoPilot = !GAME.autoPilot;
       const btn = document.getElementById('btn-autopilot');
       btn.textContent = GAME.autoPilot ? '🤖 IA: ON' : '🤖 IA: OFF';
-      btn.className = GAME.autoPilot
-        ? 'btn-tactile px-2 py-1 rounded-xl bg-amber-500 text-black font-extrabold text-xs shadow'
-        : 'btn-tactile px-2 py-1 rounded-xl bg-slate-700 text-white font-extrabold text-xs shadow';
     }
 
-    // ============================================================================
-    // 10. CÁLCULOS Y MEJORAS DE LA BASE CON DINERO (💵)
-    // ============================================================================
-    function getHeroTotalAtk() {
-      const h = GAME.heroes.find(x => x.id === GAME.selectedHeroId) || GAME.heroes[0];
-      const armoryLv = GAME.buildings.find(b => b.id === 'armory').level;
-      const bunkerLv = GAME.buildings.find(b => b.id === 'bunker').level;
-      let skinB = 0;
-      GAME.skins.forEach(s => { if (s.unlocked) skinB += s.bonusPct; });
-
-      return Math.round(h.baseAtk * (1 + (h.level - 1) * 0.15) * (1 + (h.stars - 1) * 0.3) * (1 + (armoryLv - 1) * 0.2 + (bunkerLv - 1) * 0.25 + skinB));
+    function fireBullet3D(fx, fz, tx, tz, dmg, col = 0xfef08a) {
+      const dx = tx - fx; const dz = tz - fz;
+      const l = Math.hypot(dx, dz) || 1;
+      const m = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.16, 0.65), new THREE.MeshBasicMaterial({ color: col }));
+      m.position.set(fx, 1.25, fz);
+      m.lookAt(tx, 1.25, tz);
+      scene.add(m);
+      bullets3D.push({ mesh: m, x: fx, z: fz, vx: (dx / l) * 28, vz: (dz / l) * 28, dmg, life: 1.0 });
     }
 
-    function getBuildingCost(b) {
-      return Math.round(b.baseCost * Math.pow(1.30, b.level - 1));
+    function spawnFloatingText(wx, wy, wz, text, color = '#fde047') {
+      const layer = document.getElementById('floating-dmg-layer');
+      if (layer.children.length > 20) return;
+      const v = new THREE.Vector3(wx, wy, wz);
+      v.project(camera);
+      const w = hostEl.clientWidth; const h = hostEl.clientHeight;
+      const sx = (v.x * 0.5 + 0.5) * w; const sy = (-v.y * 0.5 + 0.5) * h;
+      if (sx < 0 || sx > w || sy < 0 || sy > h) return;
+
+      const el = document.createElement('div');
+      el.className = 'absolute font-black text-xs pointer-events-none transition-all duration-500';
+      el.style.left = `${sx}px`; el.style.top = `${sy}px`; el.style.color = color;
+      el.style.textShadow = '0 2px 4px rgba(0,0,0,0.95)';
+      el.textContent = text;
+      layer.appendChild(el);
+      requestAnimationFrame(() => { el.style.transform = 'translateY(-26px)'; el.style.opacity = '0'; });
+      setTimeout(() => el.remove(), 480);
     }
 
-    function upgradeBuildingById(id, fromPadWalk = false) {
-      const b = GAME.buildings.find(x => x.id === id);
-      const cost = getBuildingCost(b);
-      if (GAME.cash < cost) {
-        if (!fromPadWalk) showToast(`💵 Necesitas $${cost} para mejorar [${b.name}]. ¡Elimina la oleada!`);
-        return;
-      }
-      GAME.cash -= cost;
-      b.level++;
-      sfxUpgrade();
-
-      if (id === 'wall') {
-        GAME.wallMaxHp += 600;
-        GAME.wallHp = GAME.wallMaxHp;
-      } else if (id === 'turrets') {
-        syncTurrets3D();
-      } else if (id === 'squad') {
-        syncMarineSquad3D();
-      } else if (id === 'bunker') {
-        bunkerBase.scale.y = 1 + (b.level - 1) * 0.16;
-      }
-
-      spawnShockwave3D(b.x, b.z, 3.2, b.color);
-      spawnFloatingText(b.x, 2.3, b.z, `⬆️ ${b.name} NV.${b.level}!`, '#4ade80');
-      updateHUD();
-      renderQuickBasePads();
-      if (GAME.activeDrawer === 'base') renderDrawer('base');
-    }
-
-    function renderQuickBasePads() {
-      const box = document.getElementById('quick-base-pads');
-      box.innerHTML = GAME.buildings.map(b => {
-        const cost = getBuildingCost(b);
-        const can = GAME.cash >= cost;
-        return `
-          <button onclick="upgradeBuildingById('${b.id}', false)" class="btn-tactile glass-hud rounded-xl p-1.5 flex flex-col items-center text-center border ${
-            can ? 'border-emerald-400 bg-emerald-500/20' : 'border-white/10 opacity-80'
-          }">
-            <span class="text-sm">${b.icon} <strong class="text-xs">Nv.${b.level}</strong></span>
-            <span class="text-xs font-bold truncate w-full">${b.name.split(' ')[1]}</span>
-            <span class="text-xs font-black ${can ? 'text-emerald-300' : 'text-slate-400'}">💵$${cost}</span>
-          </button>
-        `;
-      }).join('');
-    }
-
-    function updateHUD() {
-      document.getElementById('stage-badge').textContent = `NIVEL ${GAME.stage}`;
-      document.getElementById('wave-title-txt').textContent =
-        GAME.wave === 5 ? `💀 OLEADA 5 / 5 (JEFE FINAL)` : `OLEADA ${GAME.wave} / 5`;
-
-      const totalLeft = enemies3D.length + GAME.enemiesToSpawnInWave;
-      document.getElementById('enemies-left-txt').textContent =
-        GAME.phase === 'intermission' ? '¡Fase de Mejora ($)!' : `Restantes: ${totalLeft}`;
-
-      for (let w = 1; w <= 4; w++) {
-        const pill = document.getElementById(`w-pill-${w}`);
-        pill.className = w <= GAME.wave ? 'w-6 h-2 rounded-full bg-emerald-400' : 'w-6 h-2 rounded-full bg-slate-700';
-      }
-
-      const wallPct = Math.max(0, Math.min(100, Math.round((GAME.wallHp / GAME.wallMaxHp) * 100)));
-      document.getElementById('hud-wall-hp').textContent = `${wallPct}%`;
-      document.getElementById('hud-wall-bar').style.width = `${wallPct}%`;
-
-      document.getElementById('res-cash').textContent = `$${Math.floor(GAME.cash).toLocaleString()}`;
-      document.getElementById('res-gems').textContent = Math.floor(GAME.gems).toLocaleString();
-      document.getElementById('res-tickets').textContent = GAME.tickets;
-    }
-
-    // ============================================================================
-    // 11. BUCLE PRINCIPAL DE ACTUALIZACIÓN 3D (60 FPS)
-    // ============================================================================
     let lastTime = performance.now();
-
     function animate3D(now) {
       const dt = Math.min(0.05, (now - lastTime) / 1000);
       lastTime = now;
 
-      if (GAME.overdriveTimer > 0) GAME.overdriveTimer = Math.max(0, GAME.overdriveTimer - dt);
-      muzzleFlashLight.intensity = Math.max(0, muzzleFlashLight.intensity - 18 * dt);
-
-      // Cooldowns de las 3 habilidades
-      GAME.skills.forEach((sk, idx) => {
-        if (sk.timer > 0) {
-          sk.timer = Math.max(0, sk.timer - dt);
-          document.getElementById(`skill-cd-${idx}`).textContent = `${sk.timer.toFixed(1)}s`;
+      // Cooldowns de habilidades
+      for (let i = 0; i < 3; i++) {
+        if (GAME.activeCooldowns[i] > 0) {
+          GAME.activeCooldowns[i] = Math.max(0, GAME.activeCooldowns[i] - dt);
+          document.getElementById(`skill-cd-${i}`).textContent = `${GAME.activeCooldowns[i].toFixed(1)}s`;
         } else {
-          document.getElementById(`skill-cd-${idx}`).textContent = 'LISTO';
+          document.getElementById(`skill-cd-${i}`).textContent = 'LISTO';
         }
-      });
+      }
 
-      // 1. Movimiento del Héroe dentro del Recinto Cerrado
-      let mx = inputState.dx;
-      let mz = inputState.dz;
+      // Rayo Láser Concentrado S-Tier
+      if (GAME.laserBeamTimer > 0) {
+        GAME.laserBeamTimer -= dt;
+        focusedLaserMesh.visible = true;
+        focusedLaserMesh.position.set(player3D.pos.x, 1.3, player3D.pos.z - 9);
+      } else {
+        focusedLaserMesh.visible = false;
+      }
+
+      // 1. Movimiento del Héroe #1 y Compañero Activo #2 (2+2 Squad de Duck Survival)
+      let mx = inputState.dx; let mz = inputState.dz;
       if (keys['w'] || keys['arrowup']) mz -= 1;
       if (keys['s'] || keys['arrowdown']) mz += 1;
       if (keys['a'] || keys['arrowleft']) mx -= 1;
       if (keys['d'] || keys['arrowright']) mx += 1;
 
-      const hasManual = Math.hypot(mx, mz) > 0.05;
-
-      if (!hasManual && GAME.autoPilot) {
-        // Si hay billetes de dinero en el suelo, el héroe corre a recogerlos
-        if (cashBundles3D.length > 0) {
-          const targetCash = cashBundles3D[0];
-          const dx = targetCash.x - player3D.pos.x;
-          const dz = targetCash.z - player3D.pos.z;
+      if (Math.hypot(mx, mz) < 0.05 && GAME.autoPilot) {
+        if (cashDrops3D.length > 0) {
+          const c = cashDrops3D[0];
+          const dx = c.x - player3D.pos.x; const dz = c.z - player3D.pos.z;
           const l = Math.hypot(dx, dz) || 1;
           mx = dx / l; mz = dz / l;
-        } else if (GAME.phase === 'intermission') {
-          // Si estamos en fase de mejora y nos alcanza el dinero para un edificio, camina al Pad 3D
-          const affordable = GAME.buildings.find(b => GAME.cash >= getBuildingCost(b));
-          if (affordable) {
-            const dx = affordable.x - player3D.pos.x;
-            const dz = affordable.z - player3D.pos.z;
-            const l = Math.hypot(dx, dz) || 1;
-            mx = dx / l; mz = dz / l;
-          }
         } else {
-          // En combate, patrulla detrás o delante de la línea de barricada disparando
-          const tx = Math.sin(now * 0.0012) * 5.5;
+          const tx = Math.sin(now * 0.0012) * 5.2;
           const tz = 3.2;
-          const dx = tx - player3D.pos.x;
-          const dz = tz - player3D.pos.z;
+          const dx = tx - player3D.pos.x; const dz = tz - player3D.pos.z;
           const l = Math.hypot(dx, dz) || 1;
           if (l > 0.4) { mx = dx / l; mz = dz / l; }
         }
@@ -1240,239 +1078,228 @@
       if (mLen > 0.02) {
         player3D.pos.x += (mx / mLen) * player3D.speed * dt;
         player3D.pos.z += (mz / mLen) * player3D.speed * dt;
-
-        // Animar piernas al correr
-        const swing = Math.sin(now * 0.018) * 0.55;
-        playerMesh.userData.leftLeg.rotation.x = swing;
-        playerMesh.userData.rightLeg.rotation.x = -swing;
-      } else {
-        playerMesh.userData.leftLeg.rotation.x = 0;
-        playerMesh.userData.rightLeg.rotation.x = 0;
+        const sw = Math.sin(now * 0.018) * 0.55;
+        playerMesh.userData.lLeg.rotation.x = sw;
+        playerMesh.userData.rLeg.rotation.x = -sw;
       }
-
-      // Colisión estricta con los muros del recinto cerrado
       player3D.pos.x = Math.max(ARENA_BOUNDS.minX, Math.min(ARENA_BOUNDS.maxX, player3D.pos.x));
       player3D.pos.z = Math.max(ARENA_BOUNDS.minZ, Math.min(ARENA_BOUNDS.maxZ, player3D.pos.z));
       playerMesh.position.set(player3D.pos.x, 0, player3D.pos.z);
 
-      // Mirar hacia el enemigo más cercano al disparar, o hacia la dirección de movimiento
+      // El 2.º Héroe Activo (Mir - Hielo) escolta a tu Comandante en 3D
+      secondHeroMesh.position.x += (player3D.pos.x + 2.1 - secondHeroMesh.position.x) * 5 * dt;
+      secondHeroMesh.position.z += (player3D.pos.z + 0.8 - secondHeroMesh.position.z) * 5 * dt;
+
       if (enemies3D.length > 0) {
         playerMesh.lookAt(enemies3D[0].x, 0, enemies3D[0].z);
-      } else if (mLen > 0.02) {
-        playerMesh.rotation.y = Math.atan2(mx, mz);
+        secondHeroMesh.lookAt(enemies3D[0].x, 0, enemies3D[0].z);
       }
 
-      // Cámara 3D Táctica enfocando el recinto cerrado
       camera.position.x += (player3D.pos.x * 0.42 - camera.position.x) * 5 * dt;
       camera.position.y = 21.5;
       camera.position.z += (player3D.pos.z * 0.35 + 17.5 - camera.position.z) * 5 * dt;
       camera.lookAt(player3D.pos.x * 0.3, 0.6, player3D.pos.z * 0.25 - 1.5);
 
-      bunkerRadar.rotation.y += 1.8 * dt;
+      mineRig.rotation.y += 2.2 * dt;
+      empTowerCoil.rotation.y += 2.8 * dt;
 
-      // 2. Caminar sobre los Pads 3D de la Base para invertir Dinero ($)
-      player3D.padInvestTimer = Math.max(0, player3D.padInvestTimer - dt);
+      // 2. Producción de la Mina de Oro + Torre EMP + Meteorito Automático
+      const mineLv = GAME.buildings.find(b => b.id === 'mine').level;
+      player3D.mineTimer += dt;
+      if (player3D.mineTimer >= Math.max(1.8, 4.2 - mineLv * 0.25)) {
+        player3D.mineTimer = 0;
+        spawnCashDrop(-6.2, 7.2, 15 * mineLv, false);
+      }
+
+      // Pulso automático de la Torre EMP cada 3.5s
+      player3D.empTimer += dt;
+      if (player3D.empTimer >= 3.5 && enemies3D.length > 0) {
+        player3D.empTimer = 0;
+        spawnShockwave3D(0, 5.2, 9.5, 0x818cf8);
+        enemies3D.forEach(e => { e.slowTimer = 2.5; });
+      }
+
+      // Meteorito pasivo de la carta Roguelite cada 3.8s
+      player3D.meteorTimer += dt;
+      if (player3D.meteorTimer >= 3.8 && enemies3D.length > 0) {
+        player3D.meteorTimer = 0;
+        const t = enemies3D[Math.floor(Math.random() * enemies3D.length)];
+        spawnMeteorStrike3D(t.x, t.z, Math.round(getTotalSquadAtk() * (1.8 + GAME.rogueliteSkills.meteor.level * 0.5)));
+      }
+
+      // 3. Caminar sobre los Pads 3D para mejorar con Dinero (💵)
+      player3D.padTimer = Math.max(0, player3D.padTimer - dt);
       GAME.buildings.forEach(b => {
-        const pm = padMeshes[b.id];
-        if (pm) {
-          pm.ring.rotation.z += 0.9 * dt;
-          const d = Math.hypot(player3D.pos.x - b.x, player3D.pos.z - b.z);
-          if (d < 1.95 && GAME.cash >= getBuildingCost(b) && player3D.padInvestTimer <= 0) {
-            player3D.padInvestTimer = 0.75;
+        const ring = padMeshes[b.id];
+        if (ring) {
+          ring.rotation.z += 0.9 * dt;
+          if (Math.hypot(player3D.pos.x - b.x, player3D.pos.z - b.z) < 1.85 && GAME.cash >= getBuildingCost(b) && player3D.padTimer <= 0) {
+            player3D.padTimer = 0.75;
             upgradeBuildingById(b.id, true);
           }
         }
       });
 
-      // 3. Spawner de Enemigos de la Oleada Actual desde las 3 Puertas Norte
-      if (GAME.phase === 'combat' && GAME.enemiesToSpawnInWave > 0) {
-        GAME.spawnCooldown -= dt;
-        if (GAME.spawnCooldown <= 0) {
-          GAME.spawnCooldown = 0.75;
-          GAME.enemiesToSpawnInWave--;
-          spawnRegularEnemyFromGates();
+      // 4. Spawner de Zombies Nocturnos desde las 3 Puertas Norte
+      if (GAME.isNight && GAME.enemiesToSpawn > 0) {
+        GAME.spawnTimer -= dt;
+        if (GAME.spawnTimer <= 0) {
+          GAME.spawnTimer = 0.72;
+          GAME.enemiesToSpawn--;
+          const gates = [-7.0, 0.0, 7.0];
+          const gx = gates[Math.floor(Math.random() * 3)] + (Math.random() - 0.5) * 1.4;
+          const m = createMutantMesh3D(false);
+          m.position.set(gx, 0, -13.6);
+          scene.add(m);
+          const hp = Math.round((130 + GAME.wave * 38) * Math.pow(1.35, GAME.stage - 1));
+          enemies3D.push({ mesh: m, x: gx, z: -13.6, hp, maxHp: hp, atk: 18, speed: 3.5 + Math.random() * 0.8, radius: 0.85, isBoss: false, hitFlash: 0, slowTimer: 0 });
           updateHUD();
         }
       }
 
-      // 4. Disparo del Héroe, Torretas Gattling y Marines 3D
-      const atk = getHeroTotalAtk();
-      const speedBoost = GAME.overdriveTimer > 0 ? 2.2 : 1.0;
-
-      player3D.shootTimer += dt * speedBoost;
-      const armoryLv = GAME.buildings.find(b => b.id === 'armory').level;
-      const fireDelay = Math.max(0.16, 0.38 - armoryLv * 0.02);
-
-      if (player3D.shootTimer >= fireDelay && enemies3D.length > 0) {
+      // 5. Disparo de Héroe #1 (Fuego), Héroe #2 (Hielo) y Torretas Gattling
+      const atk = getTotalSquadAtk();
+      player3D.shootTimer += dt;
+      if (player3D.shootTimer >= 0.28 && enemies3D.length > 0) {
         player3D.shootTimer = 0;
-        const target = enemies3D[0];
-        sfxRifle();
-        muzzleFlashLight.position.set(player3D.pos.x, 1.8, player3D.pos.z - 0.5);
-        muzzleFlashLight.intensity = 2.2;
-
-        const pellets = Math.min(4, 1 + Math.floor(armoryLv / 2));
-        for (let p = 0; p < pellets; p++) {
-          const spread = (p - (pellets - 1) / 2) * 0.55;
-          fireBullet3D(player3D.pos.x, player3D.pos.z, target.x + spread, target.z, atk, 0xfef08a, 30);
-        }
+        const t = enemies3D[0];
+        sfxShot();
+        fireBullet3D(player3D.pos.x, player3D.pos.z, t.x, t.z, atk, 0xf97316);
+        fireBullet3D(secondHeroMesh.position.x, secondHeroMesh.position.z, t.x, t.z, Math.round(atk * 0.7), 0x38bdf8);
       }
 
-      // Disparo de Torretas Gattling en la Barricada
-      const turretLv = GAME.buildings.find(b => b.id === 'turrets').level;
+      const turretLv = GAME.buildings.find(b => b.id === 'turret').level;
       turretEntities.forEach(t => {
-        t.shootTimer += dt * speedBoost;
+        t.shootTimer += dt;
         if (t.shootTimer >= 0.45 && enemies3D.length > 0) {
           t.shootTimer = 0;
           const target = enemies3D[Math.floor(Math.random() * enemies3D.length)];
-          t.group.lookAt(target.x, 1.35, target.z);
-          fireBullet3D(
-            t.group.position.x,
-            t.group.position.z,
-            target.x,
-            target.z,
-            Math.round(atk * (0.45 + turretLv * 0.15)),
-            0xf97316,
-            28
-          );
+          t.group.lookAt(target.x, 1.4, target.z);
+          fireBullet3D(t.group.position.x, t.group.position.z, target.x, target.z, Math.round(atk * (0.45 + turretLv * 0.15)), 0xfacc15);
         }
       });
 
-      // Marines Defensores 3D
-      marineEntities.forEach((m, idx) => {
-        const tx = player3D.pos.x + Math.cos(m.offsetAngle + now * 0.0008) * 2.2;
-        const tz = Math.max(2.2, player3D.pos.z + Math.sin(m.offsetAngle + now * 0.0008) * 1.8);
-        m.mesh.position.x += (tx - m.mesh.position.x) * 4 * dt;
-        m.mesh.position.z += (tz - m.mesh.position.z) * 4 * dt;
-
-        if (enemies3D.length > 0) {
-          const target = enemies3D[0];
-          m.mesh.lookAt(target.x, 0, target.z);
-          m.shootTimer += dt * speedBoost;
-          if (m.shootTimer >= 0.65) {
-            m.shootTimer = 0;
-            fireBullet3D(m.mesh.position.x, m.mesh.position.z, target.x, target.z, Math.round(atk * 0.5), 0x38bdf8, 26);
-          }
-        }
-      });
-
-      // 5. Actualizar Enemigos y Jefe Final (Colisión con la Barricada en Z = 1.6)
-      const wallLv = GAME.buildings.find(b => b.id === 'wall').level;
+      // 6. Actualizar Enemigos y Jefe Final
+      const fenceLv = GAME.buildings.find(b => b.id === 'fence').level;
       for (let i = enemies3D.length - 1; i >= 0; i--) {
-        const en = enemies3D[i];
+        const e = enemies3D[i];
+        if (e.slowTimer > 0) e.slowTimer -= dt;
+        const spdMult = e.slowTimer > 0 ? 0.45 : 1.0;
 
-        // Si el muro sigue en pie, los enemigos chocan contra la barricada en Z = 1.2
-        const stopZ = GAME.wallHp > 0 ? 1.15 : player3D.pos.z;
-        const targetX = GAME.wallHp > 0 ? en.x * 0.92 : player3D.pos.x;
-        const targetZ = Math.min(stopZ, player3D.pos.z);
-
-        const dx = targetX - en.x;
-        const dz = targetZ - en.z;
+        const stopZ = GAME.wallHp > 0 ? 1.1 : player3D.pos.z;
+        const tx = GAME.wallHp > 0 ? e.x * 0.92 : player3D.pos.x;
+        const tz = Math.min(stopZ, player3D.pos.z);
+        const dx = tx - e.x; const dz = tz - e.z;
         const dist = Math.hypot(dx, dz) || 1;
 
         if (dist > 0.45) {
-          en.x += (dx / dist) * en.speed * dt;
-          en.z += (dz / dist) * en.speed * dt;
+          e.x += (dx / dist) * e.speed * spdMult * dt;
+          e.z += (dz / dist) * e.speed * spdMult * dt;
         } else if (GAME.wallHp > 0) {
-          // Golpeando el muro defensivo (y recibiendo daño eléctrico del muro)
-          GAME.wallHp = Math.max(0, GAME.wallHp - en.atk * dt);
-          en.hp -= (10 * wallLv) * dt;
+          GAME.wallHp = Math.max(0, GAME.wallHp - e.atk * dt);
+          e.hp -= (14 * fenceLv) * dt;
         }
 
-        en.mesh.position.set(en.x, 0, en.z);
-        en.mesh.lookAt(player3D.pos.x, 0, player3D.pos.z);
+        e.mesh.position.set(e.x, 0, e.z);
+        e.mesh.lookAt(player3D.pos.x, 0, player3D.pos.z);
 
-        if (en.isBoss) {
-          document.getElementById('boss-hp-num').textContent = `${Math.max(0, Math.round(en.hp))} HP`;
-          document.getElementById('boss-hp-fill').style.width = `${Math.max(0, (en.hp / en.maxHp) * 100)}%`;
+        if (e.isBoss) {
+          const pct = Math.max(0, (e.hp / e.maxHp) * 100);
+          document.getElementById('boss-hp-fill').style.width = `${pct}%`;
+          document.getElementById('boss-bars-txt').textContent = `x${Math.ceil(pct / 20)} BARRAS`;
         }
 
-        if (en.hitFlash > 0) {
-          en.hitFlash -= dt;
-          en.mesh.userData.bodyMat.emissive.setHex(0xffffff);
-          en.mesh.userData.bodyMat.emissiveIntensity = 0.55;
+        if (e.hitFlash > 0) {
+          e.hitFlash -= dt;
+          e.mesh.userData.mat.emissive.setHex(0xffffff);
+          e.mesh.userData.mat.emissiveIntensity = 0.55;
         } else {
-          en.mesh.userData.bodyMat.emissive.setHex(0x000000);
-          en.mesh.userData.bodyMat.emissiveIntensity = 0;
+          e.mesh.userData.mat.emissive.setHex(e.slowTimer > 0 ? 0x0284c7 : 0x000000);
+          e.mesh.userData.mat.emissiveIntensity = e.slowTimer > 0 ? 0.4 : 0;
         }
 
-        if (en.hp <= 0) {
-          scene.remove(en.mesh);
-          const cashDrop = Math.round((15 + GAME.wave * 6) * (en.isBoss ? 10 : 1));
-          spawnCashBundle3D(en.x, en.z, cashDrop, false);
-          spawnShockwave3D(en.x, en.z, en.isBoss ? 4.0 : 1.3, en.isBoss ? 0xfacc15 : 0xef4444);
+        if (e.hp <= 0) {
+          scene.remove(e.mesh);
+          spawnCashDrop(e.x, e.z, Math.round((16 + GAME.wave * 6) * (e.isBoss ? 10 : 1)), false);
+          addSkillXp(e.isBoss ? 100 : 24);
+          spawnShockwave3D(e.x, e.z, e.isBoss ? 4.2 : 1.3, e.isBoss ? 0xfacc15 : 0xef4444);
           enemies3D.splice(i, 1);
           updateHUD();
 
-          // ¿Se terminó la oleada?
-          if (enemies3D.length === 0 && GAME.enemiesToSpawnInWave === 0 && GAME.phase === 'combat') {
-            triggerWaveClearCashShower();
+          if (enemies3D.length === 0 && GAME.enemiesToSpawn === 0 && GAME.isNight) {
+            triggerDaybreakAndCashReward();
           }
         }
       }
 
-      // 6. Actualizar Proyectiles 3D
+      // 7. Actualizar Meteoritos 3D en caída
+      for (let i = meteors3D.length - 1; i >= 0; i--) {
+        const m = meteors3D[i];
+        m.progress += dt * 2.4;
+        m.mesh.position.x = (m.tx - 4) + 4 * m.progress;
+        m.mesh.position.y = 14 * (1 - m.progress);
+        m.mesh.position.z = (m.tz - 4) + 4 * m.progress;
+        m.mesh.rotation.x += 5 * dt;
+
+        if (m.progress >= 1) {
+          scene.remove(m.mesh);
+          spawnShockwave3D(m.tx, m.tz, 4.2, 0xf97316);
+          enemies3D.forEach(e => {
+            if (Math.hypot(e.x - m.tx, e.z - m.tz) < 4.5) {
+              e.hp -= m.dmg;
+              e.hitFlash = 0.2;
+              spawnFloatingText(e.x, 2.2, e.z, `☄️-${m.dmg}`, '#fb923c');
+            }
+          });
+          meteors3D.splice(i, 1);
+        }
+      }
+
+      // 8. Actualizar Balas y Billetes Magnéticos (💵)
       for (let i = bullets3D.length - 1; i >= 0; i--) {
         const b = bullets3D[i];
-        b.x += b.vx * dt;
-        b.z += b.vz * dt;
-        b.life -= dt;
+        b.x += b.vx * dt; b.z += b.vz * dt; b.life -= dt;
         b.mesh.position.set(b.x, 1.25, b.z);
-
         let hit = false;
         for (let j = 0; j < enemies3D.length; j++) {
-          const en = enemies3D[j];
-          if (Math.hypot(en.x - b.x, en.z - b.z) < en.radius + 0.45) {
-            en.hp -= b.dmg;
-            en.hitFlash = 0.09;
-            spawnFloatingText(en.x, 1.8, en.z, `${b.dmg}`, '#fde047');
-            hit = true;
-            break;
+          const e = enemies3D[j];
+          if (Math.hypot(e.x - b.x, e.z - b.z) < e.radius + 0.45) {
+            e.hp -= b.dmg; e.hitFlash = 0.08;
+            spawnFloatingText(e.x, 1.8, e.z, `${b.dmg}`, '#fde047');
+            hit = true; break;
           }
         }
-        if (hit || b.life <= 0) {
-          scene.remove(b.mesh);
-          bullets3D.splice(i, 1);
-        }
+        if (hit || b.life <= 0) { scene.remove(b.mesh); bullets3D.splice(i, 1); }
       }
 
-      // 7. Recolección Magnética de Billetes de Dinero 3D (💵)
-      for (let i = cashBundles3D.length - 1; i >= 0; i--) {
-        const c = cashBundles3D[i];
-        c.mesh.rotation.y += 3.0 * dt;
+      for (let i = cashDrops3D.length - 1; i >= 0; i--) {
+        const c = cashDrops3D[i];
+        c.mesh.rotation.y += 3 * dt;
         const dist = Math.hypot(player3D.pos.x - c.x, player3D.pos.z - c.z);
-        if (dist < 5.5) c.magnetized = true;
-
+        if (dist < 5.8) c.magnetized = true;
         if (c.magnetized) {
-          const dx = player3D.pos.x - c.x;
-          const dz = player3D.pos.z - c.z;
+          const dx = player3D.pos.x - c.x; const dz = player3D.pos.z - c.z;
           const l = Math.hypot(dx, dz) || 1;
-          c.x += (dx / l) * 22 * dt;
-          c.z += (dz / l) * 22 * dt;
-          c.mesh.position.set(c.x, 0.6, c.z);
-
+          c.x += (dx / l) * 22 * dt; c.z += (dz / l) * 22 * dt;
+          c.mesh.position.set(c.x, 0.55, c.z);
           if (dist < 1.1) {
             sfxCash();
             GAME.cash += c.amount;
             spawnFloatingText(player3D.pos.x, 2.3, player3D.pos.z, `💵+$${c.amount}`, '#4ade80');
             scene.remove(c.mesh);
-            cashBundles3D.splice(i, 1);
+            cashDrops3D.splice(i, 1);
             updateHUD();
             renderQuickBasePads();
           }
         }
       }
 
-      // 8. Animar Ondas 3D
       for (let i = shockwaves3D.length - 1; i >= 0; i--) {
         const s = shockwaves3D[i];
-        s.life -= dt;
-        s.scale += (s.maxScale - s.scale) * 10 * dt;
+        s.life -= dt; s.scale += (s.maxScale - s.scale) * 10 * dt;
         s.mesh.scale.set(s.scale, s.scale, 1);
         s.mesh.material.opacity = Math.max(0, s.life * 2);
-        if (s.life <= 0) {
-          scene.remove(s.mesh);
-          shockwaves3D.splice(i, 1);
-        }
+        if (s.life <= 0) { scene.remove(s.mesh); shockwaves3D.splice(i, 1); }
       }
 
       renderer.render(scene, camera);
@@ -1480,7 +1307,7 @@
     }
 
     // ============================================================================
-    // 12. MENÚS DESLIZANTES (BASE, HÉROES/SKINS, GACHA, TIENDA)
+    // 8. INTERFACES DE MENÚ CLONADAS DE DUCK SURVIVAL (GEAR/GEMS, HÉROES 2+2, GACHA, BASE)
     // ============================================================================
     function openDrawer(tab) {
       GAME.activeDrawer = tab;
@@ -1496,156 +1323,149 @@
       const title = document.getElementById('drawer-title');
       const box = document.getElementById('drawer-content');
 
-      if (tab === 'base') {
-        title.textContent = '🏗️ Mejoras de la Base Fortificada (Con Dinero 💵)';
-        box.innerHTML = GAME.buildings.map(b => {
-          const cost = getBuildingCost(b);
-          return `
-            <div class="p-3 rounded-2xl bg-slate-900/95 border border-white/10 flex items-center justify-between gap-3">
-              <div>
-                <strong class="text-sm text-white">${b.icon} ${b.name} (Nv.${b.level})</strong>
-                <p class="text-xs text-slate-300 mt-0.5">${b.desc}</p>
+      if (tab === 'gear') {
+        title.textContent = '🎒 6 Slots de Equipamiento + Engaste & Fusión de Gemas';
+        const slotsHtml = GAME.gearSlots.map((g, idx) => `
+          <div class="p-2.5 rounded-2xl bg-slate-900/95 border border-white/10 flex items-center justify-between gap-2">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-base">${g.icon}</span>
+                <strong class="text-xs text-white">${g.name} (Nv.${g.level})</strong>
               </div>
-              <button onclick="upgradeBuildingById('${b.id}', false)" class="btn-tactile px-3.5 py-2 rounded-xl bg-emerald-500 text-black font-black text-xs shrink-0">
-                Mejorar (💵$${cost})
-              </button>
+              <span class="text-xs text-amber-300 block mt-0.5">💎 Engarzada: ${g.gemName}</span>
             </div>
-          `;
-        }).join('');
+            <button onclick="upgradeGearSlot(${idx})" class="btn-tactile px-3 py-1.5 rounded-xl bg-amber-500 text-black font-black text-xs shrink-0">
+              Subir (📜1 + $80)
+            </button>
+          </div>
+        `).join('');
+
+        const gemsHtml = GAME.gemBag.map(gm => `
+          <span class="px-2.5 py-1 rounded-xl bg-slate-900 border ${gm.color} font-bold text-xs">${gm.name}</span>
+        `).join('');
+
+        box.innerHTML = `
+          <div class="flex items-center justify-between bg-indigo-950/80 border border-indigo-400/40 rounded-2xl p-2.5">
+            <div>
+              <strong class="text-xs text-indigo-200 block">🔮 Forja de Gemas (Sistema Duck Survival)</strong>
+              <span class="text-xs text-slate-300">Combina 3 Gemas en 1 de rareza superior para multiplicar tu daño elemental.</span>
+            </div>
+            <button onclick="mergeGemsNow()" class="btn-tactile px-3 py-2 rounded-xl bg-gradient-to-r from-purple-500 to-amber-400 text-black font-black text-xs shrink-0">
+              🔮 Fusionar 3→1
+            </button>
+          </div>
+          <div class="flex flex-wrap gap-1.5">${gemsHtml}</div>
+          <div class="space-y-1.5 pt-1">${slotsHtml}</div>
+        `;
       } else if (tab === 'heroes') {
-        title.textContent = '🌟 Comandantes 3D y Exotrajes (Skins)';
-        const hHtml = GAME.heroes.map(h => `
-          <div class="p-2.5 rounded-2xl bg-slate-900/95 border ${GAME.selectedHeroId === h.id ? 'border-emerald-400' : 'border-white/10'} flex items-center justify-between">
+        title.textContent = '🌟 Escuadrón 2+2 y Vínculo Elemental (+30% Daño Fuego)';
+        const hHtml = GAME.heroes.map((h, i) => `
+          <div class="p-3 rounded-2xl bg-slate-900/95 border border-amber-400/30 flex items-center justify-between gap-2">
             <div>
-              <span class="px-1.5 py-0.5 rounded bg-rose-600 text-white font-black text-xs">${h.rarity}</span>
-              <strong class="text-sm ml-1">${h.icon} ${h.name} Nv.${h.level}</strong>
-              <span class="text-amber-400 ml-1">${'★'.repeat(h.stars)}</span>
+              <div class="flex items-center gap-1.5">
+                <span class="px-1.5 py-0.5 rounded bg-rose-600 text-white font-black text-xs">${h.rarity}</span>
+                <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold text-xs">${h.role}</span>
+              </div>
+              <strong class="text-sm block mt-1">${h.name} • Nv.${h.level} (${'★'.repeat(h.stars)})</strong>
+              <span class="text-xs text-amber-300">Elemento: ${h.element}</span>
             </div>
-            <div class="flex gap-1.5">
-              <button onclick="selectHero('${h.id}')" class="btn-tactile px-2.5 py-1.5 rounded-xl bg-white/10 font-bold text-xs">Equipar</button>
-              <button onclick="levelHero('${h.id}')" class="btn-tactile px-2.5 py-1.5 rounded-xl bg-amber-500 text-black font-black text-xs">⬆️ Nv</button>
-            </div>
-          </div>
-        `).join('');
-
-        const sHtml = GAME.skins.map(sk => `
-          <div class="p-2.5 rounded-2xl bg-slate-900/95 border border-cyan-500/30 flex items-center justify-between">
-            <div>
-              <strong class="text-xs text-cyan-300">👗 ${sk.name}</strong>
-              <p class="text-xs text-slate-400">${sk.desc}</p>
-            </div>
-            <button onclick="equipSkin('${sk.id}')" class="btn-tactile px-3 py-1.5 rounded-xl bg-cyan-400 text-black font-black text-xs">
-              ${sk.unlocked ? 'Equipar' : '🔓 Probar Gratis'}
+            <button onclick="levelUpSquadHero(${i})" class="btn-tactile px-3 py-2 rounded-xl bg-amber-500 text-black font-black text-xs shrink-0">
+              ⬆️ Subir Nv
             </button>
           </div>
         `).join('');
-        box.innerHTML = `<div class="space-y-2">${hHtml}<h4 class="font-bold text-amber-300 pt-2">👗 Skins Tácticas 3D</h4>${sHtml}</div>`;
+
+        box.innerHTML = `
+          <div class="p-2.5 rounded-2xl bg-orange-950/80 border border-orange-400/50 text-xs">
+            <strong class="text-amber-300">🔥 Bono de Vínculo Elemental Activo (3 Héroes de Fuego):</strong>
+            <span class="text-orange-100 block">+30% Daño a Impacto Ígneo, Meteorito 3D y Rifle Gattling.</span>
+          </div>
+          <div class="space-y-2">${hHtml}</div>
+        `;
       } else if (tab === 'gacha') {
-        title.textContent = '🎲 Reclutamiento Gacha de Comandantes';
+        title.textContent = '🎲 Cofres de Gemas S-Tier & Cápsula de Héroes';
         box.innerHTML = `
-          <div class="p-4 rounded-2xl bg-gradient-to-r from-indigo-950 via-purple-900 to-emerald-950 border border-emerald-400/40 text-white">
-            <h3 class="font-black text-sm mb-1">🌟 Cápsula de Élite Militar & Astral</h3>
-            <p class="text-xs text-slate-200 mb-3">Recluta copias duplicadas para ascender estrellas (1★ a 5★) y multiplicar el daño de tus armas y torretas.</p>
-            <div class="grid grid-cols-2 gap-2">
-              <button onclick="doGacha(1)" class="btn-tactile py-2.5 rounded-xl bg-white/15 border border-white/25 font-bold text-xs">Invocar x1 (1 🎟️)</button>
-              <button onclick="doGacha(10)" class="btn-tactile py-2.5 rounded-xl bg-amber-400 text-black font-black text-xs">Invocar x10 (10 🎟️)</button>
-            </div>
-          </div>
-          <div id="gacha-out" class="grid grid-cols-5 gap-1.5 pt-2"></div>
-        `;
-      } else if (tab === 'shop') {
-        title.textContent = '💎 Refuerzos de Clan y Ofertas LiveOps';
-        box.innerHTML = `
-          <div class="p-3 rounded-2xl bg-gradient-to-r from-amber-500/25 to-emerald-500/25 border border-amber-400 flex items-center justify-between gap-2">
-            <div>
-              <span class="px-2 py-0.5 rounded bg-rose-600 text-white font-black text-xs">🔥 PACK $0.99 INICIO (1200% VALOR)</span>
-              <p class="text-xs font-bold mt-1">Exotraje Cyber-Valquiria 3D + $2,000 Efectivo + 2,500 💎</p>
-            </div>
-            <button onclick="buyStarter()" class="btn-tactile px-3 py-2 rounded-xl bg-amber-400 text-black font-black text-xs shrink-0">Simular Gratis</button>
-          </div>
-          <div class="p-3 rounded-2xl bg-slate-900/95 border border-emerald-500/40 flex items-center justify-between gap-2">
-            <div>
-              <strong class="text-xs text-emerald-300">🛡️ Clan: Desplegar Mercenario Pesado UR</strong>
-              <p class="text-xs text-slate-400">Añade un soldado UR dorado en el patio que dispara junto a ti.</p>
-            </div>
-            <button onclick="hireMerc()" class="btn-tactile px-3 py-2 rounded-xl bg-emerald-500 text-black font-black text-xs shrink-0">
-              ${GAME.mercenaryActive ? '✓ Activo' : 'Solicitar Gratis'}
+          <div class="p-3.5 rounded-2xl bg-gradient-to-r from-purple-950 via-indigo-900 to-amber-900 border border-amber-400/50 text-white space-y-2">
+            <h3 class="font-black text-sm">📦 Cofre de Gemas & Equipamiento S-Tier</h3>
+            <p class="text-xs text-slate-200">Obtén Gemas Épicas/Legendarias para engarzar y Planos (📜) para subir tus 6 slots.</p>
+            <button onclick="openGemChestGacha()" class="btn-tactile w-full py-2.5 rounded-xl bg-amber-400 text-black font-black text-xs">
+              🌟 Abrir 10 Cofres de Gemas & Planos (Gratis Test)
             </button>
           </div>
+          <div id="gacha-out" class="grid grid-cols-2 gap-2 pt-2"></div>
         `;
+      } else if (tab === 'base') {
+        title.textContent = '🏰 Estructuras de la Base (Día/Noche) & Oferta $0.99';
+        const bHtml = GAME.buildings.map(b => `
+          <div class="p-2.5 rounded-2xl bg-slate-900/95 border border-white/10 flex items-center justify-between gap-2">
+            <div>
+              <strong class="text-xs text-white">${b.icon} ${b.name} (Nv.${b.level})</strong>
+              <p class="text-xs text-slate-400">${b.desc}</p>
+            </div>
+            <button onclick="upgradeBuildingById('${b.id}', false)" class="btn-tactile px-3 py-1.5 rounded-xl bg-emerald-500 text-black font-black text-xs shrink-0">
+              💵$${getBuildingCost(b)}
+            </button>
+          </div>
+        `).join('');
+        box.innerHTML = `<div class="space-y-2">${bHtml}</div>`;
       }
     }
 
-    function selectHero(id) {
-      const h = GAME.heroes.find(x => x.id === id);
-      h.unlocked = true;
-      GAME.selectedHeroId = id;
-      applyHeroSkinVisuals3D();
-      sfxUpgrade();
-      renderDrawer('heroes');
-    }
-    function levelHero(id) {
-      const h = GAME.heroes.find(x => x.id === id);
-      h.level += 2;
-      sfxUpgrade();
-      renderDrawer('heroes');
-    }
-    function equipSkin(id) {
-      const sk = GAME.skins.find(s => s.id === id);
-      sk.unlocked = true;
-      const h = GAME.heroes.find(x => x.id === sk.heroId);
-      if (h) { h.skin = id; GAME.selectedHeroId = h.id; }
-      applyHeroSkinVisuals3D();
-      sfxUpgrade();
-      renderDrawer('heroes');
-      showToast(`👗 ¡Exotraje 3D [${sk.name}] equipado!`);
-    }
-    function doGacha(n) {
-      if (GAME.tickets >= n) GAME.tickets -= n;
-      else { GAME.tickets += 20; GAME.tickets -= n; }
-      sfxUpgrade();
-      const res = [];
-      for (let i = 0; i < n; i++) {
-        const h = GAME.heroes[Math.floor(Math.random() * GAME.heroes.length)];
-        h.unlocked = true;
-        h.stars = Math.min(5, h.stars + (Math.random() < 0.35 ? 1 : 0));
-        res.push(h);
+    function upgradeGearSlot(idx) {
+      if (GAME.blueprints < 1 || GAME.cash < 80) {
+        GAME.blueprints += 10; GAME.cash += 300;
       }
+      GAME.blueprints--; GAME.cash -= 80;
+      GAME.gearSlots[idx].level++;
+      sfxUpgrade();
+      updateHUD();
+      renderDrawer('gear');
+      showToast(`🎒 ¡[${GAME.gearSlots[idx].name}] subió a Nivel ${GAME.gearSlots[idx].level}!`);
+    }
+
+    function mergeGemsNow() {
+      sfxUpgrade();
+      GAME.gemBag.push({ tier: 4, name: '🔴 Gema MÍTICA Roja (Meteorito +45% Daño)', color: 'border-rose-500 text-rose-300' });
+      GAME.gearSlots[0].gemTier = 4;
+      GAME.gearSlots[0].gemName = '🔴 Gema MÍTICA Roja (+45% Daño Fuego)';
+      updateHUD();
+      renderDrawer('gear');
+      showToast('🔮 ¡Fusión 3→1 exitosa! Creaste una Gema MÍTICA Roja (+45% Daño).');
+    }
+
+    function levelUpSquadHero(idx) {
+      GAME.heroes[idx].level += 2;
+      GAME.heroes[idx].stars = Math.min(5, GAME.heroes[idx].stars + 1);
+      sfxUpgrade();
+      updateHUD();
+      renderDrawer('heroes');
+      showToast(`🌟 ¡${GAME.heroes[idx].name} ascendió a Nv.${GAME.heroes[idx].level}!`);
+    }
+
+    function openGemChestGacha() {
+      sfxUpgrade();
+      GAME.blueprints += 15;
+      GAME.gemBag.push({ tier: 3, name: '🟡 Gema Dorada (Láser +28%)', color: 'border-amber-400 text-amber-300' });
       updateHUD();
       const out = document.getElementById('gacha-out');
       if (out) {
-        out.innerHTML = res.map(h => `
-          <div class="p-2 rounded-xl bg-slate-900 border border-amber-400/50 flex flex-col items-center text-center">
-            <span class="text-lg">${h.icon}</span>
-            <span class="font-bold text-xs truncate w-full">${h.name.split(' ')[1]}</span>
-            <span class="text-amber-400 text-xs">${'★'.repeat(h.stars)}</span>
-          </div>
-        `).join('');
+        out.innerHTML = `
+          <div class="p-2.5 rounded-xl bg-slate-900 border border-amber-400 text-amber-300 font-bold text-xs">🟡 Gema Dorada Legendaria (+28% Láser)</div>
+          <div class="p-2.5 rounded-xl bg-slate-900 border border-emerald-400 text-emerald-300 font-bold text-xs">📜 +15 Planos de Equipamiento</div>
+        `;
       }
+      showToast('🎲 ¡10 Cofres abiertos! Recibiste Gema Dorada y +15 Planos.');
     }
-    function buyStarter() {
-      GAME.cash += 2000;
-      GAME.gems += 2500;
-      equipSkin('SK01');
-      updateHUD();
-      renderQuickBasePads();
-      showToast('🔥 ¡Pack $0.99 activado! +$2,000 Efectivo y Exotraje Cyber-Valquiria.');
-    }
-    function hireMerc() {
-      GAME.mercenaryActive = true;
-      syncMarineSquad3D();
-      sfxUpgrade();
-      renderDrawer('shop');
-      showToast('🛡️ ¡Mercenario Pesado UR desplegado en tu Base 3D!');
-    }
-    function claimVipCash() {
-      GAME.cash += 1000;
-      GAME.tickets += 10;
+
+    function claimVipSupply() {
+      GAME.cash += 1200;
+      GAME.blueprints += 10;
       sfxUpgrade();
       updateHUD();
       renderQuickBasePads();
-      showToast('💵 ¡Suministro VIP recibido! +$1,000 en efectivo para mejorar tu Base.');
+      showToast('💵 ¡Suministro recibido! +$1,200 en efectivo y +10 Planos.');
     }
+
     function toggleFrameMode() {
       GAME.framedMode = !GAME.framedMode;
       const f = document.getElementById('phone-container');
@@ -1669,26 +1489,21 @@
       toastTimer = setTimeout(() => el.classList.add('hidden'), 2800);
     }
 
-    // ============================================================================
-    // 13. ARRANQUE DEL JUEGO 3D
-    // ============================================================================
     window.addEventListener('DOMContentLoaded', () => {
       resize3D();
       syncTurrets3D();
-      syncMarineSquad3D();
-      applyHeroSkinVisuals3D();
       renderQuickBasePads();
-      startWave(1);
+      startNightWaveNow();
 
       const bar = document.getElementById('load-bar');
       const st = document.getElementById('load-status');
-      setTimeout(() => { bar.style.width = '75%'; st.textContent = 'Levantando muros fortificados, barricada y torretas...'; }, 160);
-      setTimeout(() => { bar.style.width = '100%'; st.textContent = '¡Recinto Táctico 3D Listo!'; }, 340);
+      setTimeout(() => { bar.style.width = '80%'; st.textContent = 'Sincronizando 6 Slots de Equipo, Gemas y Ciclo Día/Noche...'; }, 160);
+      setTimeout(() => { bar.style.width = '100%'; st.textContent = '¡Listo!'; }, 320);
       setTimeout(() => {
         const ov = document.getElementById('loading-overlay');
         ov.style.opacity = '0';
         setTimeout(() => ov.style.display = 'none', 400);
-      }, 480);
+      }, 450);
 
       requestAnimationFrame(animate3D);
     });
