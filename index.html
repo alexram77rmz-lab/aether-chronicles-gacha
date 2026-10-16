@@ -1,0 +1,2154 @@
+<!DOCTYPE html>
+<html lang="es" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#08080a" />
+  <title>Aether Chronicles: Idle Gacha RPG — Official Web Build</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23f59e0b'/%3E%3Cstop offset='50%25' stop-color='%239333ea'/%3E%3Cstop offset='100%25' stop-color='%234f46e5'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Cpath d='M36 10L18 36h14l-4 18 18-26H32l4-18z' fill='%23fff'/%3E%3C/svg%3E" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --bg-main: #08080a;
+      --bg-card: #111116;
+      --bg-sub: #181820;
+      --border-col: #272732;
+      --text-main: #ffffff;
+      --text-muted: #94a3b8;
+    }
+    html.light {
+      --bg-main: #f1f5f9;
+      --bg-card: #ffffff;
+      --bg-sub: #f8fafc;
+      --border-col: #cbd5e1;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+    }
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      overflow-x: hidden;
+      max-width: 100vw;
+    }
+    .card-surface {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-col);
+    }
+    .sub-surface {
+      background-color: var(--bg-sub);
+      border: 1px solid var(--border-col);
+    }
+    .btn-tactile {
+      transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+      cursor: pointer;
+    }
+    .btn-tactile:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px -4px rgba(245, 158, 11, 0.35);
+      filter: brightness(1.06);
+    }
+    .btn-tactile:active {
+      transform: scale(0.95);
+    }
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-5px); }
+    }
+    .float-anim { animation: floatSlow 2.6s ease-in-out infinite; }
+    .tab-section {
+      transition: opacity 0.28s ease, transform 0.28s ease;
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+  </style>
+</head>
+<body class="antialiased select-none pb-24 md:pb-8">
+
+  <!-- LOADING SCREEN -->
+  <div id="loading-screen" class="fixed inset-0 z-50 bg-[#08080a] flex flex-col items-center justify-center p-6 transition-opacity duration-500">
+    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500 via-purple-600 to-indigo-600 flex items-center justify-center text-3xl shadow-2xl mb-4 animate-bounce">
+      ⚡
+    </div>
+    <h1 class="text-xl md:text-2xl font-extrabold text-white tracking-wider mb-1">AETHER CHRONICLES</h1>
+    <p class="text-xs text-amber-400 font-semibold uppercase tracking-widest mb-5">Gacha Idle RPG • WebGL / HTML5 Engine</p>
+    <div class="w-64 h-2.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+      <div id="loading-bar" class="h-full bg-gradient-to-r from-amber-500 via-purple-500 to-cyan-400 transition-all duration-300" style="width: 15%"></div>
+    </div>
+    <p id="loading-text" class="text-xs text-slate-400 mt-2 font-mono">Inicializando motor de combate 60 FPS...</p>
+  </div>
+
+  <!-- MAIN CONTAINER -->
+  <div class="max-w-6xl mx-auto px-3 pt-3 md:px-5 md:pt-5 flex flex-col gap-3">
+
+    <!-- HEADER: BRAND, RESOURCES & CONTROLS -->
+    <header class="card-surface rounded-2xl p-3.5 shadow-lg flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500 via-purple-600 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-md">
+          ⚡
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-extrabold text-base md:text-lg tracking-tight">AETHER CHRONICLES</h1>
+            <span id="vip-badge" class="px-2 py-0.5 text-xs font-bold rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40">VIP 1</span>
+            <span class="hidden sm:inline-block px-2 py-0.5 text-xs font-semibold rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">☁️ Auto-Save</span>
+          </div>
+          <p class="text-xs text-[var(--text-muted)]">
+            <span data-i18n="squadPower">Poder de Escuadrón:</span> <span id="top-power" class="font-bold text-amber-400">18,450</span>
+            <span class="mx-1">•</span>
+            <span data-i18n="skinBonus">Bono Skins:</span> <span id="top-skin-bonus" class="font-semibold text-emerald-400">+3% ATK/HP</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- CURRENCIES & SETTINGS -->
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="sub-surface rounded-xl px-3 py-1.5 flex items-center gap-1.5 text-xs font-semibold">
+          <span>🪙</span>
+          <span class="text-[var(--text-muted)]">Oro:</span>
+          <span id="res-gold" class="text-amber-400 font-bold">12,500</span>
+        </div>
+        <div class="sub-surface rounded-xl px-3 py-1.5 flex items-center gap-1.5 text-xs font-semibold">
+          <span>💎</span>
+          <span class="text-[var(--text-muted)]">Gemas:</span>
+          <span id="res-gems" class="text-sky-400 font-bold">5,400</span>
+        </div>
+        <div class="sub-surface rounded-xl px-3 py-1.5 flex items-center gap-1.5 text-xs font-semibold">
+          <span>🎟️</span>
+          <span class="text-[var(--text-muted)]">Tickets:</span>
+          <span id="res-tickets" class="text-purple-400 font-bold">20</span>
+        </div>
+        <div class="sub-surface rounded-xl px-3 py-1.5 flex items-center gap-1.5 text-xs font-semibold">
+          <span>🛡️</span>
+          <span class="text-[var(--text-muted)]">Clan:</span>
+          <span id="res-clan" class="text-emerald-400 font-bold">1,200</span>
+        </div>
+        <button id="btn-sound" onclick="toggleSound()" class="sub-surface btn-tactile rounded-xl px-3 py-1.5 text-xs font-bold">
+          🔊 SFX
+        </button>
+        <button id="btn-lang" onclick="toggleLang()" class="sub-surface btn-tactile rounded-xl px-2.5 py-1.5 text-xs font-bold">
+          🌐 ES
+        </button>
+        <button id="btn-theme" onclick="toggleTheme()" class="sub-surface btn-tactile rounded-xl px-2.5 py-1.5 text-xs font-bold">
+          🌙
+        </button>
+      </div>
+    </header>
+
+    <!-- PROMO HOOK BANNER -->
+    <div class="bg-gradient-to-r from-amber-500/20 via-purple-600/20 to-rose-500/20 border border-amber-500/40 rounded-2xl p-2.5 px-4 flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-2 text-xs md:text-sm">
+        <span class="px-2 py-0.5 rounded-md bg-rose-600 text-white font-bold text-xs">🔥 GANCHO 20K DESCARGAS</span>
+        <span class="font-medium">Canjea el código viral <strong>VIP20K</strong> (+100 Tickets) o prueba el <strong>Pack $0.99 Seraphina UR</strong>.</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="claimPromoCode()" class="btn-tactile px-3 py-1.5 rounded-xl bg-amber-500 text-black font-extrabold text-xs">
+          🎁 Código VIP20K (+25 🎟️ + 3,000 💎)
+        </button>
+        <button onclick="switchTab('shop')" class="btn-tactile px-3 py-1.5 rounded-xl bg-purple-600 text-white font-bold text-xs">
+          ⚡ Oferta $0.99 UR
+        </button>
+      </div>
+    </div>
+
+    <!-- DESKTOP NAVIGATION BAR -->
+    <nav class="hidden md:grid grid-cols-6 gap-2">
+      <button onclick="switchTab('battle')" id="tab-btn-battle" class="btn-tactile px-3 py-2.5 rounded-xl font-bold text-sm border flex items-center justify-center gap-1.5 bg-amber-500 text-black border-amber-400 shadow">
+        <span>⚔️</span> <span>Batalla Idle</span>
+      </button>
+      <button onclick="switchTab('heroes')" id="tab-btn-heroes" class="btn-tactile px-3 py-2.5 rounded-xl font-bold text-sm border flex items-center justify-center gap-1.5 card-surface">
+        <span>🌟</span> <span>Héroes & Skins</span>
+      </button>
+      <button onclick="switchTab('gacha')" id="tab-btn-gacha" class="btn-tactile px-3 py-2.5 rounded-xl font-bold text-sm border flex items-center justify-center gap-1.5 card-surface">
+        <span>🎲</span> <span>Portal Gacha</span>
+      </button>
+      <button onclick="switchTab('pets')" id="tab-btn-pets" class="btn-tactile px-3 py-2.5 rounded-xl font-bold text-sm border flex items-center justify-center gap-1.5 card-surface">
+        <span>🐾</span> <span>Mascotas</span>
+      </button>
+      <button onclick="switchTab('clan')" id="tab-btn-clan" class="btn-tactile px-3 py-2.5 rounded-xl font-bold text-sm border flex items-center justify-center gap-1.5 card-surface">
+        <span>🛡️</span> <span>Clan & Raid</span>
+      </button>
+      <button onclick="switchTab('shop')" id="tab-btn-shop" class="btn-tactile px-3 py-2.5 rounded-xl font-bold text-sm border flex items-center justify-center gap-1.5 card-surface">
+        <span>💎</span> <span>Ofertas & 20K</span>
+      </button>
+    </nav>
+
+    <!-- ==========================================
+         TAB 1: BATALLA IDLE EN TIEMPO REAL
+         ========================================== -->
+    <section id="tab-battle" class="tab-section flex flex-col gap-3">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+
+        <!-- LEFT COLUMN: BATTLE CANVAS + SQUAD HUD -->
+        <div class="lg:col-span-2 card-surface rounded-2xl p-3.5 flex flex-col gap-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span id="stage-badge" class="px-2.5 py-1 rounded-lg bg-indigo-500/20 text-indigo-400 border border-indigo-500/40 font-extrabold text-xs">
+                PISO 1 - 1
+              </span>
+              <span id="wave-status" class="text-xs font-semibold text-[var(--text-muted)]">
+                Oleada 1/5 • Enemigos del Vacío
+              </span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-semibold text-xs">
+                ✨ Aura Elemental Activa: +15% ATK/HP
+              </span>
+            </div>
+          </div>
+
+          <!-- 2D BATTLE ARENA CANVAS -->
+          <div class="relative rounded-xl overflow-hidden border border-slate-800 bg-slate-950 shadow-inner">
+            <canvas id="battle-canvas" width="760" height="340" class="w-full h-[270px] sm:h-[340px] block"></canvas>
+
+            <!-- TOP CANVAS OVERLAY -->
+            <div class="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none">
+              <div class="bg-black/70 backdrop-blur px-3 py-1 rounded-lg border border-white/10 text-white text-xs flex items-center gap-2">
+                <span>🐾 <strong id="hud-pet-name" class="text-amber-300">Ignis (Dragón)</strong></span>
+                <div class="w-20 h-2 bg-white/20 rounded-full overflow-hidden">
+                  <div id="hud-pet-bar" class="h-full bg-amber-400 transition-all duration-100" style="width: 45%"></div>
+                </div>
+              </div>
+              <div id="boss-timer-box" class="hidden bg-rose-950/90 px-3 py-1 rounded-lg border border-rose-500/50 text-rose-200 text-xs font-bold">
+                🔥 JEFE DE PISO • <span id="boss-timer">25.0s</span>
+              </div>
+            </div>
+
+            <!-- BOTTOM CANVAS CONTROLS -->
+            <div class="absolute bottom-2.5 left-2.5 right-2.5 flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-1.5">
+                <button onclick="cycleSpeed()" id="btn-speed" class="btn-tactile px-3 py-1.5 rounded-lg bg-amber-500 text-black font-extrabold text-xs shadow">
+                  ⏩ Velocidad x1
+                </button>
+                <button onclick="toggleAutoUlt()" id="btn-auto-ult" class="btn-tactile px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-bold text-xs shadow">
+                  ⚡ Auto-Ulti: ON
+                </button>
+              </div>
+              <button onclick="triggerBossNow()" class="btn-tactile px-3.5 py-1.5 rounded-lg bg-rose-600 text-white font-extrabold text-xs shadow">
+                👹 Desafiar Jefe Ahora
+              </button>
+            </div>
+          </div>
+
+          <!-- SQUAD ACTIVE CARDS -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">Escuadrón en Campo (Toca un héroe con 100% energía para lanzar su Definitiva)</span>
+              <button onclick="switchTab('heroes')" class="text-xs font-bold text-amber-400 hover:underline cursor-pointer">Editar Héroes / Skins →</button>
+            </div>
+            <div id="battle-squad-cards" class="grid grid-cols-5 gap-2"></div>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN: AFK CHEST + QUEST + LOG -->
+        <div class="flex flex-col gap-3">
+          <!-- AFK CHEST -->
+          <div class="card-surface rounded-2xl p-3.5 flex flex-col gap-2.5">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-2xl float-anim">🧰</span>
+                <div>
+                  <h3 class="font-bold text-sm">Cofre de Botín AFK</h3>
+                  <p class="text-xs text-[var(--text-muted)]">Farmeo automático 24/7</p>
+                </div>
+              </div>
+              <span id="afk-timer" class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-mono text-xs font-bold">00:12:45</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 sub-surface rounded-xl p-2.5 text-xs">
+              <div>
+                <span class="text-[var(--text-muted)] block">Producción:</span>
+                <span id="afk-rate-gold" class="font-bold text-amber-400">+420 Oro / min</span>
+              </div>
+              <div>
+                <span class="text-[var(--text-muted)] block">Acumulado:</span>
+                <span id="afk-stored-gold" class="font-bold text-emerald-400">1,850 Oro • 45 💎</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="claimAfkChest(false)" class="btn-tactile py-2.5 px-3 rounded-xl bg-amber-500 text-black font-extrabold text-xs">
+                ✨ Reclamar Botín
+              </button>
+              <button onclick="claimAfkChest(true)" class="btn-tactile py-2.5 px-3 rounded-xl bg-purple-600 text-white font-bold text-xs">
+                ⚡ Rápido 2h (50💎)
+              </button>
+            </div>
+          </div>
+
+          <!-- LAUNCH QUEST -->
+          <div class="card-surface rounded-2xl p-3.5 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-amber-400 uppercase">🎯 Misión Guía FTUE</span>
+              <span id="quest-counter" class="text-xs text-[var(--text-muted)]">Misión #1</span>
+            </div>
+            <p id="quest-desc" class="text-sm font-semibold">Sube el nivel de tus héroes o realiza una Invocación Gacha x10</p>
+            <div class="flex items-center justify-between mt-1">
+              <span class="text-xs text-sky-400 font-bold">Recompensa: +1,000 💎 + 5 🎟️</span>
+              <button onclick="claimQuestReward()" class="btn-tactile px-3.5 py-1.5 rounded-xl bg-emerald-600 text-white font-bold text-xs">
+                Reclamar
+              </button>
+            </div>
+          </div>
+
+          <!-- LIVE BATTLE LOG -->
+          <div class="card-surface rounded-2xl p-3.5 flex-1 flex flex-col">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="font-bold text-xs uppercase tracking-wider text-[var(--text-muted)]">📜 Crónica de Combate</h3>
+              <button onclick="resetSaveData()" class="text-xs text-rose-400 hover:underline cursor-pointer">Reiniciar Partida</button>
+            </div>
+            <div id="combat-log" class="sub-surface rounded-xl p-2.5 text-xs space-y-1.5 h-36 overflow-y-auto font-mono"></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==========================================
+         TAB 2: HÉROES, ASCENSIÓN Y SKINS
+         ========================================== -->
+    <section id="tab-heroes" class="tab-section hidden flex-col gap-3">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        <div class="lg:col-span-2 card-surface rounded-2xl p-4 flex flex-col gap-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 class="font-bold text-base">🌟 Roster de Héroes y Cristal de Resonancia</h2>
+              <p class="text-xs text-[var(--text-muted)]">Equipa hasta 5 héroes. Los duplicados del Gacha permiten Ascender de 1★ a 5★ Despertar.</p>
+            </div>
+            <button onclick="levelUpAllSquad()" class="btn-tactile px-3.5 py-2 rounded-xl bg-amber-500 text-black font-extrabold text-xs">
+              ⬆️ Subir Nivel Escuadrón
+            </button>
+          </div>
+          <div id="heroes-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[460px] overflow-y-auto pr-1"></div>
+        </div>
+
+        <div class="card-surface rounded-2xl p-4 flex flex-col gap-3">
+          <div id="hero-detail-panel"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         TAB 3: PORTAL GACHA & PITY
+         ========================================== -->
+    <section id="tab-gacha" class="tab-section hidden flex-col gap-3">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        <div class="lg:col-span-2 card-surface rounded-2xl p-4 flex flex-col justify-between gap-4">
+          <div class="bg-gradient-to-br from-indigo-950 via-purple-900 to-amber-900 border border-amber-500/40 rounded-2xl p-5 text-white">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <span class="px-2.5 py-1 rounded-full bg-amber-500 text-black font-extrabold text-xs">🌟 BANNER ASTRAL RATE-UP</span>
+              <span class="text-xs bg-black/50 px-2.5 py-1 rounded-lg border border-white/15">
+                Pity SSR/UR: <strong id="gacha-pity-count" class="text-amber-400">0</strong> / 70
+              </span>
+            </div>
+            <h2 class="text-xl md:text-2xl font-extrabold tracking-tight mb-1">Portal del Trono Celestial</h2>
+            <p class="text-xs md:text-sm text-purple-100 max-w-xl mb-4">
+              Probabilidad aumentada para <strong>Seraphina (Valquiria Solar UR)</strong> y <strong>Malakor (Rey del Vacío UR)</strong>. Soft Pity desde tirada 50 (+2.5%/tirada).
+            </p>
+
+            <div class="mb-4">
+              <div class="flex justify-between text-xs mb-1">
+                <span>Progreso hacia Pity Garantizado (SSR/UR)</span>
+                <span id="gacha-pity-prob" class="font-bold text-amber-300">Prob. SSR+ actual: 5.0%</span>
+              </div>
+              <div class="w-full h-2.5 bg-black/50 rounded-full overflow-hidden border border-white/10">
+                <div id="gacha-pity-bar" class="h-full bg-gradient-to-r from-purple-400 via-amber-400 to-rose-500 transition-all duration-300" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <button onclick="doGachaPull(1)" class="btn-tactile py-3 px-4 rounded-xl bg-white/15 border border-white/25 text-white font-bold text-xs md:text-sm flex flex-col items-center">
+                <span>🎲 Invocar x1</span>
+                <span class="text-xs text-amber-300 mt-0.5">1 🎟️ o 300 💎</span>
+              </button>
+              <button onclick="doGachaPull(10)" class="btn-tactile py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-extrabold text-xs md:text-sm flex flex-col items-center shadow-lg">
+                <span>🌟 Invocar x10 (¡Mejor Valor!)</span>
+                <span class="text-xs text-slate-900 mt-0.5">10 🎟️ o 2,700 💎 (-10%)</span>
+              </button>
+              <button onclick="claimPromoCode()" class="btn-tactile py-3 px-4 rounded-xl bg-rose-600 text-white font-bold text-xs md:text-sm flex flex-col items-center">
+                <span>🎁 Bono VIP20K</span>
+                <span class="text-xs text-rose-100 mt-0.5">+25 Tickets Gratis</span>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="font-bold text-sm">Resultado de la Invocación</h3>
+              <span id="gacha-total-pulls" class="text-xs text-[var(--text-muted)]">Tiradas totales: 0</span>
+            </div>
+            <div id="gacha-results-grid" class="grid grid-cols-2 sm:grid-cols-5 gap-2 min-h-[120px] sub-surface rounded-xl p-3 items-center justify-center">
+              <p class="col-span-full text-center text-xs text-[var(--text-muted)]">
+                Haz clic en "Invocar x10" para abrir portales y reclutar héroes SSR/UR.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-surface rounded-2xl p-4 flex flex-col gap-3">
+          <h3 class="font-bold text-sm">📊 Tabla de Probabilidades & Wishlist</h3>
+          <div class="space-y-2 text-xs">
+            <div class="p-2.5 rounded-xl sub-surface flex justify-between">
+              <span class="font-bold text-rose-400">🌈 UR (Mítico Astral)</span>
+              <span class="font-mono font-bold">0.8% (Pity: 20%)</span>
+            </div>
+            <div class="p-2.5 rounded-xl sub-surface flex justify-between">
+              <span class="font-bold text-amber-400">🟨 SSR (Legendario)</span>
+              <span class="font-mono font-bold">4.2% (Pity: 80%)</span>
+            </div>
+            <div class="p-2.5 rounded-xl sub-surface flex justify-between">
+              <span class="font-bold text-purple-400">🟪 SR (Épico)</span>
+              <span class="font-mono font-bold">43.0%</span>
+            </div>
+            <div class="p-2.5 rounded-xl sub-surface flex justify-between">
+              <span class="font-bold text-sky-400">🟦 R (Común)</span>
+              <span class="font-mono font-bold">52.0%</span>
+            </div>
+          </div>
+
+          <!-- CODIGO DE REGALO / PRE-REGISTRO CON VALIDACION EN TIEMPO REAL -->
+          <div class="border-t border-[var(--border-col)] pt-3 flex flex-col gap-2">
+            <h4 class="font-bold text-xs uppercase text-amber-400">🔑 Canjear Código de Regalo / Creador</h4>
+            <p class="text-xs text-[var(--text-muted)]">Prueba códigos como <code>VIP20K</code>, <code>AETHER777</code> o <code>GACHAGOD</code>:</p>
+            <div class="flex gap-2">
+              <input id="gift-code-input" type="text" placeholder="Ej: VIP20K" oninput="validateGiftInput()" class="flex-1 sub-surface rounded-xl px-3 py-2 text-xs font-mono uppercase focus:outline-none border border-slate-700" />
+              <button onclick="redeemCustomCode()" class="btn-tactile px-3.5 py-2 rounded-xl bg-amber-500 text-black font-extrabold text-xs">
+                Canjear
+              </button>
+            </div>
+            <span id="gift-code-feedback" class="text-xs hidden"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         TAB 4: SANTUARIO DE MASCOTAS
+         ========================================== -->
+    <section id="tab-pets" class="tab-section hidden flex-col gap-3">
+      <div class="card-surface rounded-2xl p-4">
+        <div class="mb-3">
+          <h2 class="font-bold text-base">🐾 Santuario de Mascotas Divinas (Companions)</h2>
+          <p class="text-xs text-[var(--text-muted)]">
+            La mascota equipada acompaña a tu escuadrón en combate y lanza su habilidad definitiva automáticamente cada pocos segundos.
+          </p>
+        </div>
+        <div id="pets-grid" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         TAB 5: CLAN, JEFE ABISAL & MERCENARIO
+         ========================================== -->
+    <section id="tab-clan" class="tab-section hidden flex-col gap-3">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        <div class="lg:col-span-2 card-surface rounded-2xl p-4 flex flex-col gap-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold text-xs">CLAN NIVEL 7 • 29/30 MIEMBROS</span>
+              <h2 class="font-bold text-lg mt-0.5">🛡️ Orden del Éter Inmortal</h2>
+            </div>
+            <button onclick="shareClanInvite()" class="btn-tactile px-3 py-1.5 rounded-xl bg-indigo-600 text-white font-bold text-xs">
+              🔗 Invitar Amigo al Clan (+500 💎)
+            </button>
+          </div>
+
+          <div class="bg-gradient-to-r from-rose-950/90 via-purple-950/90 to-slate-900 border border-rose-500/40 rounded-2xl p-4 text-white">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <div>
+                <h3 class="font-extrabold text-base text-rose-300">🐉 Jefe de Clan Diario: Behemoth Abisal</h3>
+                <p class="text-xs text-rose-100/80">Suma daño con tu clan para desbloquear cofres diarios de Gemas y Monedas de Clan.</p>
+              </div>
+              <span class="px-2.5 py-1 rounded-lg bg-black/50 text-amber-300 font-mono text-xs font-bold">
+                Tu Récord Hoy: <span id="clan-boss-dmg">0</span> DMG
+              </span>
+            </div>
+            <div class="w-full h-3 bg-black/60 rounded-full overflow-hidden border border-white/10 my-2.5">
+              <div id="clan-boss-bar" class="h-full bg-gradient-to-r from-rose-500 to-amber-400 transition-all duration-300" style="width: 35%"></div>
+            </div>
+            <div class="flex flex-wrap items-center justify-between gap-2 mt-3">
+              <span class="text-xs text-rose-200">Cofre de Clan: <strong>1.5M / 3.0M Daño Acumulado</strong></span>
+              <button onclick="attackClanBoss()" class="btn-tactile px-4 py-2 rounded-xl bg-rose-500 text-white font-extrabold text-xs shadow">
+                ⚔️ Atacar Jefe de Clan (+600 🛡️ & +250 💎)
+              </button>
+            </div>
+          </div>
+
+          <div class="sub-surface rounded-2xl p-3.5 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-500 flex items-center justify-center text-2xl">
+                👑
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h4 class="font-bold text-sm">Alquiler de Mercenario VIP (Líder: LordDrakon)</h4>
+                  <span class="px-2 py-0.5 rounded bg-amber-500 text-black font-bold text-xs">UR 5★ Nv.100</span>
+                </div>
+                <p class="text-xs text-[var(--text-muted)]">
+                  Pide prestado el héroe estrella del clan para ganar +35% Poder de Escuadrón inmediato.
+                </p>
+              </div>
+            </div>
+            <button id="btn-mercenary" onclick="hireMercenary()" class="btn-tactile px-3.5 py-2 rounded-xl bg-amber-500 text-black font-extrabold text-xs">
+              🤝 Contratar Mercenario (Gratis)
+            </button>
+          </div>
+        </div>
+
+        <div class="card-surface rounded-2xl p-4 flex flex-col gap-3">
+          <div>
+            <h3 class="font-bold text-sm">🔬 Árbol Tecnológico de Clan</h3>
+            <p class="text-xs text-[var(--text-muted)]">Mejora permanentemente las estadísticas de todas tus clases.</p>
+          </div>
+          <div id="clan-tech-list" class="space-y-2.5"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         TAB 6: TIENDA LIVEOPS & SIMULADOR 20K
+         ========================================== -->
+    <section id="tab-shop" class="tab-section hidden flex-col gap-3">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        <div class="lg:col-span-2 card-surface rounded-2xl p-4 flex flex-col gap-3">
+          <div>
+            <h2 class="font-bold text-base">💎 Ofertas LiveOps de Alta Conversión (Simulación Gratis)</h2>
+            <p class="text-xs text-[var(--text-muted)]">
+              Haz clic en cualquier paquete para simular su compra gratis y comprobar su impacto inmediato en tu cuenta.
+            </p>
+          </div>
+          <div id="shop-offers-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+        </div>
+
+        <div class="card-surface rounded-2xl p-4 flex flex-col gap-3">
+          <div>
+            <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold text-xs">PROYECCIÓN DE LANZAMIENTO</span>
+            <h3 class="font-bold text-sm mt-1">📈 Calculadora de 20,000+ Descargas</h3>
+            <p class="text-xs text-[var(--text-muted)]">Simula el retorno del primer mes combinando TikTok Hooks, Pre-registro y viralidad de Clan.</p>
+          </div>
+
+          <div class="space-y-3 text-xs">
+            <div>
+              <div class="flex justify-between mb-1">
+                <span>Descargas Base Mes 1</span>
+                <strong id="sim-dl-val" class="text-amber-400">22,500</strong>
+              </div>
+              <input id="sim-dl" type="range" min="10000" max="50000" step="500" value="22500" oninput="updateBusinessSim()" class="w-full accent-amber-500 cursor-pointer" />
+            </div>
+
+            <div>
+              <div class="flex justify-between mb-1">
+                <span>Conversión a Pago (Pack $0.99+)</span>
+                <strong id="sim-conv-val" class="text-emerald-400">5.2%</strong>
+              </div>
+              <input id="sim-conv" type="range" min="2.0" max="12.0" step="0.2" value="5.2" oninput="updateBusinessSim()" class="w-full accent-emerald-500 cursor-pointer" />
+            </div>
+
+            <div>
+              <div class="flex justify-between mb-1">
+                <span>ARPPU 30 Días ($ USD)</span>
+                <strong id="sim-arppu-val" class="text-sky-400">$18.50</strong>
+              </div>
+              <input id="sim-arppu" type="range" min="5" max="45" step="0.5" value="18.5" oninput="updateBusinessSim()" class="w-full accent-sky-500 cursor-pointer" />
+            </div>
+
+            <div class="sub-surface rounded-xl p-3 space-y-2 mt-2">
+              <div class="flex justify-between">
+                <span class="text-[var(--text-muted)]">Jugadores de Pago:</span>
+                <strong id="sim-out-payers" class="font-mono">1,345 usuarios</strong>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-[var(--text-muted)]">Descargas Virales (Clan K-Factor):</span>
+                <strong id="sim-out-viral" class="font-mono text-purple-400">+3,375 orgánicas</strong>
+              </div>
+              <div class="flex justify-between border-t border-[var(--border-col)] pt-2 text-sm">
+                <span class="font-bold">Ingresos Brutos D30:</span>
+                <strong id="sim-out-rev" class="font-mono text-emerald-400 text-base">$24,882 USD</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SOCIAL PROOF / PLAYER REVIEWS -->
+      <div class="card-surface rounded-2xl p-4 mt-1">
+        <h3 class="font-bold text-xs uppercase tracking-wider text-amber-400 mb-2.5">⭐ Reseñas de Beta Testers (Social Proof Pre-Lanzamiento)</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="sub-surface rounded-xl p-3">
+            <div class="flex items-center justify-between mb-1">
+              <strong class="text-amber-300">⭐⭐⭐⭐⭐ @KaitoGacha</strong>
+              <span class="text-[var(--text-muted)]">VIP 5</span>
+            </div>
+            <p class="text-[var(--text-muted)]">"El sistema de Soft Pity a las 50 tiradas y el código VIP20K enganchan desde el primer minuto. La skin Cyber-Valquiria se ve brutal."</p>
+          </div>
+          <div class="sub-surface rounded-xl p-3">
+            <div class="flex items-center justify-between mb-1">
+              <strong class="text-amber-300">⭐⭐⭐⭐⭐ @ValeriaRPG</strong>
+              <span class="text-[var(--text-muted)]">Líder de Clan</span>
+            </div>
+            <p class="text-[var(--text-muted)]">"Poder alquilar el héroe UR de un compañero de clan me ayudó a pasar el Jefe del Piso 3 sin trabarme."</p>
+          </div>
+          <div class="sub-surface rounded-xl p-3">
+            <div class="flex items-center justify-between mb-1">
+              <strong class="text-amber-300">⭐⭐⭐⭐⭐ @DarkSlime99</strong>
+              <span class="text-[var(--text-muted)]">Tester Móvil</span>
+            </div>
+            <p class="text-[var(--text-muted)]">"Corre súper fluido a 60 FPS tanto en navegador de PC como en el celular. El pack de $0.99 vale totalmente la pena."</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER WITH LIVE TRACKER & SOCIALS -->
+    <footer class="card-surface rounded-2xl p-3.5 px-4 flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--text-muted)]">
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+        <span>Servidor Global #1 Online • <strong id="live-players-count" class="text-emerald-400">1,428</strong> Jugadores Activos en este momento</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="switchTab('gacha')" class="hover:text-amber-400 font-semibold cursor-pointer">🎲 Invocar Ahora</button>
+        <span>•</span>
+        <button onclick="claimPromoCode()" class="hover:text-amber-400 font-semibold cursor-pointer">🎁 Reclamar VIP20K</button>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- MOBILE ERGONOMIC STICKY BOTTOM BAR -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 card-surface border-t border-[var(--border-col)] grid grid-cols-6 py-1.5 px-1 shadow-2xl">
+    <button onclick="switchTab('battle')" id="mob-btn-battle" class="flex flex-col items-center justify-center py-1 text-amber-400 font-bold text-xs">
+      <span class="text-base">⚔️</span>
+      <span>Batalla</span>
+    </button>
+    <button onclick="switchTab('heroes')" id="mob-btn-heroes" class="flex flex-col items-center justify-center py-1 text-[var(--text-muted)] font-semibold text-xs">
+      <span class="text-base">🌟</span>
+      <span>Héroes</span>
+    </button>
+    <button onclick="switchTab('gacha')" id="mob-btn-gacha" class="flex flex-col items-center justify-center py-1 text-[var(--text-muted)] font-semibold text-xs">
+      <span class="text-base">🎲</span>
+      <span>Gacha</span>
+    </button>
+    <button onclick="switchTab('pets')" id="mob-btn-pets" class="flex flex-col items-center justify-center py-1 text-[var(--text-muted)] font-semibold text-xs">
+      <span class="text-base">🐾</span>
+      <span>Mascotas</span>
+    </button>
+    <button onclick="switchTab('clan')" id="mob-btn-clan" class="flex flex-col items-center justify-center py-1 text-[var(--text-muted)] font-semibold text-xs">
+      <span class="text-base">🛡️</span>
+      <span>Clan</span>
+    </button>
+    <button onclick="switchTab('shop')" id="mob-btn-shop" class="flex flex-col items-center justify-center py-1 text-[var(--text-muted)] font-semibold text-xs">
+      <span class="text-base">💎</span>
+      <span>Tienda</span>
+    </button>
+  </nav>
+
+  <!-- FLASH OFFER POPUP MODAL -->
+  <div id="popup-offer-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="card-surface border-2 border-amber-500 rounded-2xl max-w-md w-full p-5 shadow-2xl flex flex-col gap-3">
+      <div class="flex items-center justify-between">
+        <span class="px-2.5 py-1 rounded-full bg-rose-600 text-white font-extrabold text-xs">⚡ OFERTA RELÁMPAGO • 800% VALOR</span>
+        <button onclick="closeFlashModal()" class="text-xs text-[var(--text-muted)] hover:underline cursor-pointer">Cerrar ✕</button>
+      </div>
+      <h3 class="font-extrabold text-lg">¡Impulso de Ascensión del Despertar!</h3>
+      <p class="text-xs text-[var(--text-muted)]">
+        Este pop-up se activa automáticamente ante un Jefe difícil para maximizar la conversión. ¡Simúlalo gratis!
+      </p>
+      <div class="sub-surface rounded-xl p-3 flex items-center justify-around text-xs font-bold">
+        <span>🎟️ +25 Tickets</span>
+        <span>💎 +2,500 Gemas</span>
+        <span>🪙 +50,000 Oro</span>
+      </div>
+      <button onclick="buyOffer('flash_popup', true)" class="btn-tactile w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-extrabold text-sm">
+        🔥 Reclamar Oferta ($2.99 Simulado Gratis)
+      </button>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast-box" class="fixed top-4 right-4 bg-slate-900 text-white border border-amber-500 px-4 py-2.5 rounded-xl shadow-2xl text-xs font-bold hidden z-50"></div>
+
+  <script>
+    // ============================================================================
+    // 1. STATE & TABLES
+    // ============================================================================
+    const DEFAULT_STATE = {
+      gold: 12500,
+      gems: 5400,
+      tickets: 20,
+      clanCoins: 1200,
+      vipLevel: 1,
+      soundOn: true,
+      lang: 'ES',
+      speedMult: 1,
+      autoUlt: true,
+      stageFloor: 1,
+      stageSub: 1,
+      wave: 1,
+      maxWave: 5,
+      afkSeconds: 765,
+      pityCounter: 0,
+      totalPulls: 0,
+      selectedHeroId: 'H01',
+      equippedPetId: 'P01',
+      mercenaryActive: false,
+      clanBossRecord: 0,
+      questIndex: 1,
+      purchasedOffers: {}
+    };
+
+    let STATE = Object.assign({}, DEFAULT_STATE);
+
+    const HEROES_DB = [
+      {
+        id: 'H01', name: 'Seraphina', title: 'Valquiria Solar', rarity: 'UR', faction: 'Solar', icon: '☀️',
+        role: 'DPS Burst', pos: 'back', unlocked: true, inSquad: true, level: 12, stars: 2, dupes: 1,
+        baseAtk: 340, baseHp: 1950, color: '#f59e0b',
+        ultName: 'Juicio del Alba', ultDesc: 'Lanza 5 lanzas solares (420% ATK AoE) y escuda al equipo.',
+        equippedSkin: 'default'
+      },
+      {
+        id: 'H02', name: 'Malakor', title: 'Rey del Vacío', rarity: 'UR', faction: 'Abyss', icon: '🌑',
+        role: 'Mago AoE', pos: 'back', unlocked: false, inSquad: false, level: 1, stars: 1, dupes: 0,
+        baseAtk: 375, baseHp: 1800, color: '#a855f7',
+        ultName: 'Singularidad Abisal', ultDesc: 'Agujero negro que causa 380% ATK a todos los enemigos.',
+        equippedSkin: 'default'
+      },
+      {
+        id: 'H03', name: 'Kaelen', title: 'Filo Carmesí', rarity: 'SSR', faction: 'Ignis', icon: '🔥',
+        role: 'Asesino', pos: 'front', unlocked: true, inSquad: true, level: 10, stars: 1, dupes: 0,
+        baseAtk: 285, baseHp: 2200, color: '#ef4444',
+        ultName: 'Danza de Ceniza', ultDesc: 'Corte crítico garantizado de 350% ATK sobre la línea frontal.',
+        equippedSkin: 'default'
+      },
+      {
+        id: 'H04', name: 'Lyra', title: 'Oráculo del Bosque', rarity: 'SSR', faction: 'Sylvan', icon: '🌿',
+        role: 'Healer', pos: 'back', unlocked: true, inSquad: true, level: 10, stars: 2, dupes: 1,
+        baseAtk: 210, baseHp: 2050, color: '#10b981',
+        ultName: 'Lluvia Esmeralda', ultDesc: 'Cura a todo el escuadrón un 280% ATK y sube velocidad.',
+        equippedSkin: 'SK04'
+      },
+      {
+        id: 'H05', name: 'Tharok', title: 'Baluarte Glacial', rarity: 'SSR', faction: 'Frost', icon: '❄️',
+        role: 'Tanque', pos: 'front', unlocked: true, inSquad: true, level: 11, stars: 1, dupes: 0,
+        baseAtk: 185, baseHp: 3400, color: '#38bdf8',
+        ultName: 'Muralla Cero Absoluto', ultDesc: 'Golpe glaciar AoE y escudo de reducción de daño.',
+        equippedSkin: 'default'
+      },
+      {
+        id: 'H06', name: 'Vespera', title: 'Reina de Espinas', rarity: 'SSR', faction: 'Sylvan', icon: '🌿',
+        role: 'Control', pos: 'back', unlocked: false, inSquad: false, level: 1, stars: 1, dupes: 0,
+        baseAtk: 265, baseHp: 1900, color: '#22c55e',
+        ultName: 'Jardín Venenoso', ultDesc: 'Enreda a los enemigos causando daño continuo por 5s.',
+        equippedSkin: 'default'
+      },
+      {
+        id: 'H07', name: 'Ignatius', title: 'Coloso de Magma', rarity: 'SR', faction: 'Ignis', icon: '🔥',
+        role: 'Tanque', pos: 'front', unlocked: true, inSquad: false, level: 8, stars: 2, dupes: 1,
+        baseAtk: 150, baseHp: 2650, color: '#f97316',
+        ultName: 'Coraza Volcánica', ultDesc: 'Explosión ígnea de 220% ATK y escudo ardiente.',
+        equippedSkin: 'default'
+      },
+      {
+        id: 'H08', name: 'Freya', title: 'Arquera Boreal', rarity: 'SR', faction: 'Frost', icon: '❄️',
+        role: 'DPS Rango', pos: 'back', unlocked: true, inSquad: true, level: 9, stars: 2, dupes: 2,
+        baseAtk: 195, baseHp: 1550, color: '#60a5fa',
+        ultName: 'Flecha de Escarcha', ultDesc: 'Lluvia de flechas heladas (230% ATK AoE).',
+        equippedSkin: 'default'
+      }
+    ];
+
+    const SKINS_DB = [
+      {
+        id: 'SK01', heroId: 'H01', name: 'Seraphina Cyber-Valquiria', tier: 'Mítica Live2D',
+        unlocked: false, atkBonus: 0.05, hpBonus: 0.05, visualColor: '#06b6d4', haloColor: '#22d3ee',
+        desc: '+5% ATK/HP Global • Alas de neón cian y láseres orbitales en batalla.'
+      },
+      {
+        id: 'SK02', heroId: 'H02', name: 'Malakor Emperador Cósmico', tier: 'Mítica Live2D',
+        unlocked: false, atkBonus: 0.05, hpBonus: 0.08, visualColor: '#eab308', haloColor: '#fde047',
+        desc: '+5% ATK / +8% HP Global • Armadura estelar dorada y meteoritos.'
+      },
+      {
+        id: 'SK03', heroId: 'H03', name: 'Kaelen Luna de Sangre', tier: 'Épica',
+        unlocked: false, atkBonus: 0.03, hpBonus: 0.02, visualColor: '#dc2626', haloColor: '#fb7185',
+        desc: '+3% ATK Global • Katana demoníaca carmesí con aura oscura.'
+      },
+      {
+        id: 'SK04', heroId: 'H04', name: 'Lyra Neko Celestial', tier: 'Épica (Regalo D3)',
+        unlocked: true, atkBonus: 0.03, hpBonus: 0.03, visualColor: '#f472b6', haloColor: '#fbcfe8',
+        desc: '+3% ATK/HP Global • Espíritu felino rosado y notas musicales.'
+      }
+    ];
+
+    const PETS_DB = [
+      {
+        id: 'P01', name: 'Ignis, Dragón Solar', rarity: 'Épica', icon: '🐉', unlocked: true, level: 5,
+        cooldown: 8, atkBuff: 0.08, hpBuff: 0.05, skillName: 'Aliento de Brasas',
+        desc: 'Causa 250% de daño ígneo a todos los enemigos cada 8s.'
+      },
+      {
+        id: 'P02', name: 'Yukiko, Kitsune Astral', rarity: 'Legendaria', icon: '🦊', unlocked: true, level: 3,
+        cooldown: 7, atkBuff: 0.12, hpBuff: 0.12, skillName: 'Llama Espiritual',
+        desc: 'Cura 20% HP a todo el escuadrón y golpea con fuego azul cada 7s.'
+      },
+      {
+        id: 'P03', name: 'Aetherion, Fénix UR', rarity: 'Mítica UR', icon: '🦅', unlocked: false, level: 1,
+        cooldown: 6, atkBuff: 0.22, hpBuff: 0.20, skillName: 'Supernova Renaciente',
+        desc: 'Devasta el campo con 450% daño verdadero y cura al equipo cada 6s.'
+      }
+    ];
+
+    const CLAN_TECH_DB = [
+      { id: 'CT1', name: 'Vanguardia Inmortal (Tanques)', level: 3, max: 20, cost: 250, bonusPerLv: 0.03 },
+      { id: 'CT2', name: 'Filo del Asalto (Guerreros/Asesinos)', level: 4, max: 20, cost: 250, bonusPerLv: 0.03 },
+      { id: 'CT3', name: 'Arcano Celestial (Magos/Healers)', level: 2, max: 20, cost: 250, bonusPerLv: 0.03 }
+    ];
+
+    const SHOP_OFFERS_DB = [
+      {
+        id: 'starter_pack', title: '🔥 Pack 1.ª Compra: Seraphina UR + Skin', price: '$0.99', badge: '1200% VALOR',
+        desc: 'Convierte al 10% de jugadores Día 1. Desbloquea la Skin Mítica Cyber-Valquiria + 1 copia de Seraphina UR + 1,500 Gemas.',
+        rewardText: 'Skin Cyber-Valquiria + Seraphina Dupe + 1,500 💎'
+      },
+      {
+        id: 'vip_pass', title: '👑 Pase Mensual VIP Astral', price: '$4.99', badge: '850% VALOR',
+        desc: 'Sube a VIP 3, activa +25% Oro AFK permanente, entrega 3,000 Gemas al instante y desbloquea al Fénix Mítico Aetherion.',
+        rewardText: 'Mascota Fénix UR + 3,000 💎 + Bono AFK'
+      },
+      {
+        id: 'growth_fund', title: '📈 Fondo de Crecimiento (Growth Fund)', price: '$19.99', badge: '1500% VALOR',
+        desc: 'El paquete #1 en ingresos en AFK Arena y Legend of Slime. Entrega 12,000 Gemas y 30 Tickets de Invocación.',
+        rewardText: '+12,000 💎 + 30 🎟️ Tickets Gacha'
+      },
+      {
+        id: 'skin_bundle', title: '🌌 Pack Emperador Cósmico (Malakor UR)', price: '$14.99', badge: 'COLECCIÓN',
+        desc: 'Recluta inmediatamente a Malakor (Rey del Vacío UR) + su Skin Mítica Emperador Cósmico (+5% ATK / +8% HP Global).',
+        rewardText: 'Héroe Malakor UR + Skin Cósmica'
+      }
+    ];
+
+    // ============================================================================
+    // 2. LOCALSTORAGE SAVE & LOAD
+    // ============================================================================
+    function saveGame() {
+      try {
+        const payload = {
+          state: STATE,
+          heroes: HEROES_DB.map(h => ({ id: h.id, unlocked: h.unlocked, inSquad: h.inSquad, level: h.level, stars: h.stars, dupes: h.dupes, equippedSkin: h.equippedSkin })),
+          skins: SKINS_DB.map(s => ({ id: s.id, unlocked: s.unlocked })),
+          pets: PETS_DB.map(p => ({ id: p.id, unlocked: p.unlocked, level: p.level })),
+          clanTech: CLAN_TECH_DB.map(c => ({ id: c.id, level: c.level }))
+        };
+        localStorage.setItem('aether_chronicles_save_v1', JSON.stringify(payload));
+      } catch (e) {}
+    }
+
+    function loadGame() {
+      try {
+        const raw = localStorage.getItem('aether_chronicles_save_v1');
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        if (data.state) STATE = Object.assign({}, DEFAULT_STATE, data.state);
+        if (data.heroes) {
+          data.heroes.forEach(sh => {
+            const target = HEROES_DB.find(h => h.id === sh.id);
+            if (target) Object.assign(target, sh);
+          });
+        }
+        if (data.skins) {
+          data.skins.forEach(ss => {
+            const target = SKINS_DB.find(s => s.id === ss.id);
+            if (target) target.unlocked = ss.unlocked;
+          });
+        }
+        if (data.pets) {
+          data.pets.forEach(sp => {
+            const target = PETS_DB.find(p => p.id === sp.id);
+            if (target) Object.assign(target, sp);
+          });
+        }
+        if (data.clanTech) {
+          data.clanTech.forEach(sc => {
+            const target = CLAN_TECH_DB.find(c => c.id === sc.id);
+            if (target) target.level = sc.level;
+          });
+        }
+      } catch (e) {}
+    }
+
+    function resetSaveData() {
+      localStorage.removeItem('aether_chronicles_save_v1');
+      location.reload();
+    }
+
+    // ============================================================================
+    // 3. WEB AUDIO SYNTHESIZER
+    // ============================================================================
+    let audioCtx = null;
+    function playTone(freq, type = 'sine', duration = 0.12, vol = 0.07) {
+      if (!STATE.soundOn) return;
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+    function sfxHit() { playTone(210 + Math.random() * 80, 'triangle', 0.08, 0.04); }
+    function sfxUlt() {
+      playTone(440, 'sawtooth', 0.15, 0.07);
+      setTimeout(() => playTone(660, 'sawtooth', 0.22, 0.08), 80);
+    }
+    function sfxGachaSSR() {
+      [523, 659, 783, 1046].forEach((n, i) => setTimeout(() => playTone(n, 'triangle', 0.22, 0.09), i * 90));
+    }
+
+    function toggleSound() {
+      STATE.soundOn = !STATE.soundOn;
+      document.getElementById('btn-sound').textContent = STATE.soundOn ? '🔊 SFX' : '🔇 MUTE';
+      saveGame();
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      html.classList.toggle('light');
+      document.getElementById('btn-theme').textContent = html.classList.contains('light') ? '☀️' : '🌙';
+    }
+
+    function toggleLang() {
+      STATE.lang = STATE.lang === 'ES' ? 'EN' : 'ES';
+      document.getElementById('btn-lang').textContent = `🌐 ${STATE.lang}`;
+      showToast(STATE.lang === 'EN' ? '🌐 Language switched to English (UI labels updated)' : '🌐 Idioma cambiado a Español');
+    }
+
+    // ============================================================================
+    // 4. RPG MATH & SYNERGIES
+    // ============================================================================
+    function StarMult(stars) {
+      return [1, 1.0, 1.25, 1.6, 2.1, 3.0][Math.min(5, stars)] || 1;
+    }
+
+    function getGlobalSkinBonuses() {
+      let atk = 0, hp = 0;
+      SKINS_DB.forEach(s => {
+        if (s.unlocked) { atk += s.atkBonus; hp += s.hpBonus; }
+      });
+      return { atk, hp };
+    }
+
+    function getClanTechBonus() {
+      let total = 0;
+      CLAN_TECH_DB.forEach(t => { total += t.level * t.bonusPerLv; });
+      return total / 3;
+    }
+
+    function getHeroStats(hero) {
+      const skinB = getGlobalSkinBonuses();
+      const clanB = getClanTechBonus();
+      const pet = PETS_DB.find(p => p.id === STATE.equippedPetId) || PETS_DB[0];
+      const mercMult = STATE.mercenaryActive ? 1.35 : 1.0;
+      const lvMult = 1 + 0.14 * (hero.level - 1);
+      const starM = StarMult(hero.stars);
+      const totalMult = lvMult * starM * (1 + skinB.atk + clanB + pet.atkBuff) * mercMult;
+
+      const atk = Math.round(hero.baseAtk * totalMult);
+      const hp = Math.round(hero.baseHp * lvMult * starM * (1 + skinB.hp + clanB + pet.hpBuff) * mercMult);
+      const power = Math.round(atk * 4.2 + hp * 0.85);
+      return { atk, hp, power };
+    }
+
+    function getSquadPower() {
+      const squad = HEROES_DB.filter(h => h.inSquad && h.unlocked);
+      return squad.reduce((sum, h) => sum + getHeroStats(h).power, 0);
+    }
+
+    // ============================================================================
+    // 5. 60 FPS CANVAS BATTLE ENGINE
+    // ============================================================================
+    const canvas = document.getElementById('battle-canvas');
+    const ctx = canvas.getContext('2d');
+
+    let battleUnits = [];
+    let enemyUnits = [];
+    let projectiles = [];
+    let floatingTexts = [];
+    let petEnergy = 40;
+    let bossTimer = 25.0;
+    let shakeFrames = 0;
+
+    function syncSquadToBattle() {
+      const squad = HEROES_DB.filter(h => h.inSquad && h.unlocked).slice(0, 5);
+      const frontSlots = [{ x: 225, y: 160 }, { x: 225, y: 250 }];
+      const backSlots = [{ x: 110, y: 120 }, { x: 85, y: 200 }, { x: 110, y: 275 }];
+      let fIdx = 0, bIdx = 0;
+
+      battleUnits = squad.map((h) => {
+        const st = getHeroStats(h);
+        let pos;
+        if (h.pos === 'front' && fIdx < 2) { pos = frontSlots[fIdx++]; }
+        else if (bIdx < 3) { pos = backSlots[bIdx++]; }
+        else { pos = frontSlots[Math.min(1, fIdx++)]; }
+
+        const existing = battleUnits.find(u => u.id === h.id);
+        return {
+          id: h.id,
+          heroRef: h,
+          x: pos.x,
+          y: pos.y,
+          maxHp: st.hp,
+          hp: existing ? Math.min(st.hp, Math.max(st.hp * 0.4, existing.hp)) : st.hp,
+          atk: st.atk,
+          energy: existing ? existing.energy : 35,
+          atkTimer: Math.random() * 0.8,
+          atkCooldown: h.role === 'Tanque' ? 1.35 : 1.05
+        };
+      });
+      renderSquadCards();
+    }
+
+    function spawnEnemyWave(isBossWave = false) {
+      enemyUnits = [];
+      const difficulty = (STATE.stageFloor - 1) * 5 + STATE.stageSub + (STATE.wave - 1) * 0.4;
+      const baseHp = Math.round(1400 * Math.pow(1.18, difficulty));
+      const baseAtk = Math.round(95 * Math.pow(1.15, difficulty));
+
+      if (isBossWave || STATE.wave === STATE.maxWave) {
+        STATE.wave = STATE.maxWave;
+        bossTimer = 25.0;
+        document.getElementById('boss-timer-box').classList.remove('hidden');
+        enemyUnits.push({
+          name: `Arconte del Vacío (Jefe ${STATE.stageFloor}-${STATE.stageSub})`,
+          isBoss: true,
+          x: 590,
+          y: 200,
+          maxHp: baseHp * 4.2,
+          hp: baseHp * 4.2,
+          atk: baseAtk * 1.55,
+          atkTimer: 0.5,
+          color: '#f43f5e',
+          radius: 36
+        });
+        enemyUnits.push({
+          name: 'Centinela Abisal',
+          isBoss: false,
+          x: 495,
+          y: 135,
+          maxHp: baseHp * 1.3,
+          hp: baseHp * 1.3,
+          atk: baseAtk,
+          atkTimer: 0.9,
+          color: '#a855f7',
+          radius: 20
+        });
+        enemyUnits.push({
+          name: 'Centinela Abisal',
+          isBoss: false,
+          x: 495,
+          y: 260,
+          maxHp: baseHp * 1.3,
+          hp: baseHp * 1.3,
+          atk: baseAtk,
+          atkTimer: 1.1,
+          color: '#a855f7',
+          radius: 20
+        });
+        addCombatLog(`👹 ¡JEFE DE PISO APARECE: Arconte del Vacío!`);
+      } else {
+        document.getElementById('boss-timer-box').classList.add('hidden');
+        const positions = [
+          { x: 500, y: 145 }, { x: 500, y: 250 },
+          { x: 615, y: 125 }, { x: 635, y: 205 }, { x: 615, y: 275 }
+        ];
+        for (let i = 0; i < 4; i++) {
+          enemyUnits.push({
+            name: 'Espectro Corrupto',
+            isBoss: false,
+            x: positions[i].x,
+            y: positions[i].y,
+            maxHp: baseHp,
+            hp: baseHp,
+            atk: baseAtk,
+            atkTimer: Math.random() * 1.2,
+            color: i < 2 ? '#ef4444' : '#8b5cf6',
+            radius: 21
+          });
+        }
+      }
+      updateStageHeader();
+    }
+
+    function triggerBossNow() {
+      STATE.wave = STATE.maxWave;
+      spawnEnemyWave(true);
+      showToast('👹 ¡Desafiando al Jefe de Piso ahora!');
+    }
+
+    function castHeroUltimate(heroId) {
+      const unit = battleUnits.find(u => u.id === heroId);
+      if (!unit || enemyUnits.length === 0) return;
+      unit.energy = 0;
+      sfxUlt();
+      shakeFrames = 10;
+
+      const skin = SKINS_DB.find(s => s.id === unit.heroRef.equippedSkin);
+      const beamColor = skin ? skin.visualColor : unit.heroRef.color;
+
+      floatingTexts.push({
+        x: unit.x, y: unit.y - 38,
+        text: `⚡ ${unit.heroRef.ultName.toUpperCase()}!`,
+        color: '#fde047', life: 1.1, vy: -28, size: 13
+      });
+
+      if (unit.heroRef.role === 'Healer') {
+        battleUnits.forEach(ally => {
+          const heal = Math.round(unit.atk * 2.6);
+          ally.hp = Math.min(ally.maxHp, ally.hp + heal);
+          floatingTexts.push({
+            x: ally.x, y: ally.y - 25,
+            text: `+${formatNum(heal)} 💚`,
+            color: '#34d399', life: 0.9, vy: -24, size: 12
+          });
+        });
+      } else {
+        enemyUnits.forEach(en => {
+          const dmg = Math.round(unit.atk * (unit.heroRef.rarity === 'UR' ? 3.8 : 2.9));
+          en.hp -= dmg;
+          projectiles.push({
+            x: unit.x + 20, y: unit.y, tx: en.x, ty: en.y,
+            color: beamColor, radius: 9, progress: 0, speed: 4.5
+          });
+          floatingTexts.push({
+            x: en.x + (Math.random() * 24 - 12), y: en.y - 28,
+            text: `💥 CRIT ${formatNum(dmg)}`,
+            color: '#facc15', life: 0.95, vy: -32, size: 13
+          });
+        });
+      }
+      addCombatLog(`🌟 ${unit.heroRef.name} lanzó [${unit.heroRef.ultName}]!`);
+    }
+
+    function castPetSkill() {
+      const pet = PETS_DB.find(p => p.id === STATE.equippedPetId) || PETS_DB[0];
+      if (enemyUnits.length === 0) return;
+      sfxUlt();
+      const totalSquadAtk = battleUnits.reduce((s, u) => s + u.atk, 0);
+      const dmg = Math.round(totalSquadAtk * (pet.id === 'P03' ? 1.8 : 1.1));
+
+      floatingTexts.push({
+        x: 360, y: 70,
+        text: `${pet.icon} ¡${pet.skillName.toUpperCase()}!`,
+        color: '#38bdf8', life: 1.2, vy: -18, size: 14
+      });
+
+      enemyUnits.forEach(en => {
+        en.hp -= dmg;
+        floatingTexts.push({
+          x: en.x, y: en.y - 20,
+          text: `🔥 ${formatNum(dmg)}`,
+          color: '#fb923c', life: 0.85, vy: -25, size: 12
+        });
+      });
+
+      battleUnits.forEach(ally => {
+        ally.hp = Math.min(ally.maxHp, ally.hp + Math.round(ally.maxHp * 0.15));
+      });
+    }
+
+    let lastTime = performance.now();
+    function updateBattle(now) {
+      const rawDt = Math.min(0.05, (now - lastTime) / 1000);
+      lastTime = now;
+      const dt = rawDt * STATE.speedMult;
+
+      const pet = PETS_DB.find(p => p.id === STATE.equippedPetId) || PETS_DB[0];
+      petEnergy += (100 / pet.cooldown) * dt;
+      if (petEnergy >= 100) {
+        petEnergy = 0;
+        castPetSkill();
+      }
+      document.getElementById('hud-pet-bar').style.width = `${Math.min(100, petEnergy)}%`;
+
+      if (STATE.wave === STATE.maxWave && enemyUnits.length > 0) {
+        bossTimer -= dt;
+        document.getElementById('boss-timer').textContent = `${Math.max(0, bossTimer).toFixed(1)}s`;
+        if (bossTimer <= 0) {
+          addCombatLog(`⚠️ ¡Tiempo agotado contra el Jefe! Se activa Oferta Relámpago.`);
+          STATE.wave = 1;
+          spawnEnemyWave(false);
+          if (!STATE.purchasedOffers['flash_popup']) {
+            document.getElementById('popup-offer-modal').classList.remove('hidden');
+            document.getElementById('popup-offer-modal').classList.add('flex');
+          }
+        }
+      }
+
+      battleUnits.forEach(u => {
+        const st = getHeroStats(u.heroRef);
+        u.maxHp = st.hp;
+        u.atk = st.atk;
+
+        u.atkTimer += dt;
+        if (u.atkTimer >= u.atkCooldown && enemyUnits.length > 0) {
+          u.atkTimer = 0;
+          const target = enemyUnits[0];
+          const isCrit = Math.random() < 0.28;
+          const dmg = Math.round(u.atk * (isCrit ? 1.75 : 1.0));
+          target.hp -= dmg;
+          u.energy = Math.min(100, u.energy + 24);
+          sfxHit();
+
+          const skin = SKINS_DB.find(s => s.id === u.heroRef.equippedSkin);
+          const pColor = skin ? skin.visualColor : u.heroRef.color;
+
+          projectiles.push({
+            x: u.x + 18, y: u.y, tx: target.x, ty: target.y,
+            color: pColor, radius: 5, progress: 0, speed: 5.5
+          });
+
+          floatingTexts.push({
+            x: target.x + (Math.random() * 20 - 10),
+            y: target.y - 20,
+            text: isCrit ? `⚡${formatNum(dmg)}` : `${formatNum(dmg)}`,
+            color: isCrit ? '#fde047' : '#ffffff',
+            life: 0.7,
+            vy: -22,
+            size: isCrit ? 13 : 12
+          });
+
+          if (u.energy >= 100 && STATE.autoUlt) {
+            castHeroUltimate(u.id);
+          }
+        }
+      });
+
+      enemyUnits.forEach(en => {
+        en.atkTimer += dt;
+        if (en.atkTimer >= 1.45 && battleUnits.length > 0) {
+          en.atkTimer = 0;
+          const target = battleUnits[0];
+          const dmg = Math.max(15, Math.round(en.atk * (0.85 + Math.random() * 0.3)));
+          target.hp = Math.max(1, target.hp - dmg);
+          projectiles.push({
+            x: en.x - 18, y: en.y, tx: target.x, ty: target.y,
+            color: en.color, radius: 5, progress: 0, speed: 4.8
+          });
+        }
+      });
+
+      for (let i = enemyUnits.length - 1; i >= 0; i--) {
+        if (enemyUnits[i].hp <= 0) {
+          const killed = enemyUnits[i];
+          const goldDrop = Math.round((65 + STATE.stageFloor * 45 + STATE.stageSub * 20) * (killed.isBoss ? 5 : 1));
+          STATE.gold += goldDrop;
+          if (killed.isBoss) {
+            STATE.gems += 100;
+            addCombatLog(`🏆 ¡Jefe derrotado! +${formatNum(goldDrop)} Oro y +100 Gemas!`);
+          }
+          enemyUnits.splice(i, 1);
+          updateTopBar();
+          saveGame();
+        }
+      }
+
+      if (enemyUnits.length === 0) {
+        if (STATE.wave < STATE.maxWave) {
+          STATE.wave++;
+          spawnEnemyWave(false);
+        } else {
+          STATE.wave = 1;
+          STATE.stageSub++;
+          if (STATE.stageSub > 5) {
+            STATE.stageSub = 1;
+            STATE.stageFloor++;
+          }
+          battleUnits.forEach(u => { u.hp = u.maxHp; });
+          spawnEnemyWave(false);
+          saveGame();
+        }
+      }
+
+      for (let i = projectiles.length - 1; i >= 0; i--) {
+        projectiles[i].progress += dt * projectiles[i].speed;
+        if (projectiles[i].progress >= 1) projectiles.splice(i, 1);
+      }
+      for (let i = floatingTexts.length - 1; i >= 0; i--) {
+        floatingTexts[i].y += floatingTexts[i].vy * rawDt;
+        floatingTexts[i].life -= rawDt;
+        if (floatingTexts[i].life <= 0) floatingTexts.splice(i, 1);
+      }
+
+      drawBattleCanvas(now);
+      updateSquadCardBars();
+      requestAnimationFrame(updateBattle);
+    }
+
+    function drawBattleCanvas(now) {
+      ctx.save();
+      if (shakeFrames > 0) {
+        shakeFrames--;
+        ctx.translate((Math.random() - 0.5) * 7, (Math.random() - 0.5) * 7);
+      }
+
+      const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      grad.addColorStop(0, '#090d16');
+      grad.addColorStop(0.6, '#1e1b4b');
+      grad.addColorStop(1, '#0f172a');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
+      ctx.lineWidth = 1;
+      for (let x = 40; x < canvas.width; x += 65) {
+        ctx.beginPath();
+        ctx.moveTo(x, 85);
+        ctx.lineTo(x - 35, canvas.height);
+        ctx.stroke();
+      }
+      for (let y = 105; y < canvas.height; y += 45) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
+
+      const pet = PETS_DB.find(p => p.id === STATE.equippedPetId) || PETS_DB[0];
+      const petY = 68 + Math.sin(now / 320) * 6;
+      ctx.beginPath();
+      ctx.arc(165, petY, 18, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(251, 191, 36, 0.22)';
+      ctx.fill();
+      ctx.strokeStyle = '#fbbf24';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.font = '18px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(pet.icon, 165, petY + 6);
+
+      battleUnits.forEach((u, idx) => {
+        const bob = Math.sin(now / 240 + idx) * 3;
+        const skin = SKINS_DB.find(s => s.id === u.heroRef.equippedSkin);
+        const bodyColor = skin ? skin.visualColor : u.heroRef.color;
+
+        if (skin || u.heroRef.rarity === 'UR') {
+          ctx.beginPath();
+          ctx.arc(u.x, u.y + bob, 26, 0, Math.PI * 2);
+          ctx.strokeStyle = skin ? skin.haloColor : 'rgba(250, 204, 21, 0.65)';
+          ctx.lineWidth = 2.5;
+          ctx.stroke();
+        }
+
+        ctx.beginPath();
+        ctx.ellipse(u.x, u.y + 22, 18, 6, 0, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0,0,0,0.45)';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(u.x, u.y + bob, 19, 0, Math.PI * 2);
+        ctx.fillStyle = bodyColor;
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.font = '15px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(u.heroRef.icon, u.x, u.y + bob + 5);
+
+        if (skin) {
+          ctx.font = 'bold 10px sans-serif';
+          ctx.fillStyle = '#22d3ee';
+          ctx.fillText('★SKIN', u.x, u.y - 34);
+        }
+
+        ctx.font = 'bold 11px sans-serif';
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillText(`${u.heroRef.name} ${'★'.repeat(u.heroRef.stars)}`, u.x, u.y + 36);
+
+        const barW = 46;
+        const hpPct = Math.max(0, Math.min(1, u.hp / u.maxHp));
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.fillRect(u.x - barW / 2, u.y - 30, barW, 5);
+        ctx.fillStyle = '#22c55e';
+        ctx.fillRect(u.x - barW / 2, u.y - 30, barW * hpPct, 5);
+
+        const enPct = Math.max(0, Math.min(1, u.energy / 100));
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.fillRect(u.x - barW / 2, u.y - 24, barW, 4);
+        ctx.fillStyle = '#facc15';
+        ctx.fillRect(u.x - barW / 2, u.y - 24, barW * enPct, 4);
+      });
+
+      enemyUnits.forEach((en, idx) => {
+        const bob = Math.sin(now / 260 + idx * 2) * 3.5;
+        const r = en.radius || 21;
+
+        ctx.beginPath();
+        ctx.ellipse(en.x, en.y + r + 4, r * 0.9, 7, 0, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(en.x, en.y + bob, r, 0, Math.PI * 2);
+        ctx.fillStyle = en.color;
+        ctx.fill();
+        ctx.strokeStyle = en.isBoss ? '#fde047' : '#fda4af';
+        ctx.lineWidth = en.isBoss ? 3 : 1.5;
+        ctx.stroke();
+
+        ctx.font = en.isBoss ? '22px sans-serif' : '15px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(en.isBoss ? '👹' : '👾', en.x, en.y + bob + 6);
+
+        const barW = en.isBoss ? 76 : 46;
+        const hpPct = Math.max(0, Math.min(1, en.hp / en.maxHp));
+        ctx.fillStyle = 'rgba(0,0,0,0.75)';
+        ctx.fillRect(en.x - barW / 2, en.y - r - 12, barW, 6);
+        ctx.fillStyle = '#f43f5e';
+        ctx.fillRect(en.x - barW / 2, en.y - r - 12, barW * hpPct, 6);
+      });
+
+      projectiles.forEach(p => {
+        const cx = p.x + (p.tx - p.x) * p.progress;
+        const cy = p.y + (p.ty - p.y) * p.progress;
+        ctx.beginPath();
+        ctx.arc(cx, cy, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+      });
+
+      floatingTexts.forEach(ft => {
+        ctx.font = `bold ${ft.size || 12}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillStyle = ft.color;
+        ctx.fillText(ft.text, ft.x, ft.y);
+      });
+
+      ctx.restore();
+    }
+
+    // ============================================================================
+    // 6. UI ACTIONS & CONTROLLERS
+    // ============================================================================
+    function formatNum(n) {
+      if (n >= 1000000) return (n / 1000000).toFixed(2) + 'M';
+      if (n >= 10000) return (n / 1000).toFixed(1) + 'K';
+      return Math.round(n).toLocaleString();
+    }
+
+    function updateTopBar() {
+      document.getElementById('res-gold').textContent = formatNum(STATE.gold);
+      document.getElementById('res-gems').textContent = formatNum(STATE.gems);
+      document.getElementById('res-tickets').textContent = STATE.tickets;
+      document.getElementById('res-clan').textContent = formatNum(STATE.clanCoins);
+      document.getElementById('vip-badge').textContent = `VIP ${STATE.vipLevel}`;
+      document.getElementById('top-power').textContent = formatNum(getSquadPower());
+
+      const sb = getGlobalSkinBonuses();
+      document.getElementById('top-skin-bonus').textContent =
+        `+${Math.round(sb.atk * 100)}% ATK / +${Math.round(sb.hp * 100)}% HP`;
+    }
+
+    function updateStageHeader() {
+      document.getElementById('stage-badge').textContent = `PISO ${STATE.stageFloor} - ${STATE.stageSub}`;
+      document.getElementById('wave-status').textContent =
+        STATE.wave === STATE.maxWave
+          ? `🔥 ¡JEFE DE PISO EN COMBATE!`
+          : `Oleada ${STATE.wave}/${STATE.maxWave} • Enemigos del Vacío`;
+    }
+
+    function renderSquadCards() {
+      const container = document.getElementById('battle-squad-cards');
+      container.innerHTML = battleUnits.map(u => {
+        const h = u.heroRef;
+        const rarityBorder = h.rarity === 'UR' ? 'border-rose-500' : h.rarity === 'SSR' ? 'border-amber-400' : 'border-purple-400';
+        return `
+          <div onclick="castHeroUltimate('${h.id}')" class="sub-surface btn-tactile border-2 ${rarityBorder} rounded-xl p-2 flex flex-col gap-1">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-bold truncate">${h.icon} ${h.name}</span>
+              <span class="text-amber-400 font-bold">Nv.${h.level}</span>
+            </div>
+            <div class="w-full h-1.5 bg-black/40 rounded-full overflow-hidden">
+              <div id="card-hp-${h.id}" class="h-full bg-emerald-400" style="width: 100%"></div>
+            </div>
+            <div class="w-full h-1.5 bg-black/40 rounded-full overflow-hidden">
+              <div id="card-en-${h.id}" class="h-full bg-amber-400" style="width: ${u.energy}%"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateSquadCardBars() {
+      battleUnits.forEach(u => {
+        const hpEl = document.getElementById(`card-hp-${u.id}`);
+        const enEl = document.getElementById(`card-en-${u.id}`);
+        if (hpEl) hpEl.style.width = `${Math.max(0, Math.min(100, (u.hp / u.maxHp) * 100))}%`;
+        if (enEl) enEl.style.width = `${Math.max(0, Math.min(100, u.energy))}%`;
+      });
+    }
+
+    function cycleSpeed() {
+      STATE.speedMult = STATE.speedMult === 1 ? 2 : STATE.speedMult === 2 ? 4 : 1;
+      document.getElementById('btn-speed').textContent = `⏩ Velocidad x${STATE.speedMult}`;
+      saveGame();
+    }
+
+    function toggleAutoUlt() {
+      STATE.autoUlt = !STATE.autoUlt;
+      const btn = document.getElementById('btn-auto-ult');
+      btn.textContent = STATE.autoUlt ? '⚡ Auto-Ulti: ON' : '⚡ Auto-Ulti: OFF';
+      saveGame();
+    }
+
+    function renderHeroesTab() {
+      const grid = document.getElementById('heroes-grid');
+      grid.innerHTML = HEROES_DB.map(h => {
+        const st = getHeroStats(h);
+        const badgeColor = h.rarity === 'UR'
+          ? 'bg-rose-600 text-white'
+          : h.rarity === 'SSR'
+            ? 'bg-amber-500 text-black'
+            : 'bg-purple-600 text-white';
+        const selectedClass = STATE.selectedHeroId === h.id ? 'ring-2 ring-amber-400' : '';
+
+        return `
+          <div onclick="selectHero('${h.id}')" class="sub-surface btn-tactile ${selectedClass} rounded-xl p-3 flex items-center justify-between gap-2 ${h.unlocked ? '' : 'opacity-65'}">
+            <div class="flex items-center gap-2.5">
+              <div class="w-11 h-11 rounded-xl flex items-center justify-center text-xl font-bold border border-white/20" style="background:${h.color}33">
+                ${h.icon}
+              </div>
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span class="px-1.5 py-0.5 rounded text-xs font-extrabold ${badgeColor}">${h.rarity}</span>
+                  <span class="font-bold text-sm">${h.name}</span>
+                  ${h.inSquad ? '<span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-xs font-bold">EQUIPO</span>' : ''}
+                </div>
+                <p class="text-xs text-[var(--text-muted)] mt-0.5">
+                  Nv.${h.level} • <span class="text-amber-400">${'★'.repeat(h.stars)}</span> • Poder: <strong>${formatNum(st.power)}</strong>
+                </p>
+              </div>
+            </div>
+            <div class="text-right text-xs">
+              <span class="block text-[var(--text-muted)]">Copias</span>
+              <span class="font-bold text-amber-400">${h.dupes} / ${h.stars}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+      renderHeroDetail();
+    }
+
+    function selectHero(id) {
+      STATE.selectedHeroId = id;
+      renderHeroesTab();
+    }
+
+    function renderHeroDetail() {
+      const h = HEROES_DB.find(x => x.id === STATE.selectedHeroId) || HEROES_DB[0];
+      const st = getHeroStats(h);
+      const lvCost = Math.round(120 * Math.pow(1.14, h.level - 1));
+      const heroSkins = SKINS_DB.filter(s => s.heroId === h.id);
+
+      const skinsHtml = heroSkins.length > 0 ? heroSkins.map(sk => `
+        <div class="p-2.5 rounded-xl sub-surface flex flex-col gap-1.5">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-xs text-cyan-400">👗 ${sk.name}</span>
+            <span class="text-xs px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-semibold">${sk.tier}</span>
+          </div>
+          <p class="text-xs text-[var(--text-muted)]">${sk.desc}</p>
+          <button onclick="toggleHeroSkin('${h.id}', '${sk.id}')" class="btn-tactile py-1.5 px-3 rounded-lg font-bold text-xs ${
+            sk.unlocked
+              ? (h.equippedSkin === sk.id ? 'bg-emerald-600 text-white' : 'bg-amber-500 text-black')
+              : 'bg-indigo-600 text-white'
+          }">
+            ${!sk.unlocked ? '🔓 Desbloquear Skin Gratis (Test)' : (h.equippedSkin === sk.id ? '✓ Skin Equipada en Combate' : 'Equipar Skin')}
+          </button>
+        </div>
+      `).join('') : `<p class="text-xs text-[var(--text-muted)]">Este héroe recibirá Skin en el Evento de Lanzamiento Semana 2.</p>`;
+
+      document.getElementById('hero-detail-panel').innerHTML = `
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-xs font-bold text-amber-400">${h.rarity} • Facción ${h.faction} (${h.role})</span>
+            <h3 class="text-lg font-extrabold">${h.icon} ${h.name}, ${h.title}</h3>
+          </div>
+          <span class="text-amber-400 font-bold text-sm">${'★'.repeat(h.stars)}</span>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 sub-surface rounded-xl p-2.5 text-xs text-center">
+          <div>
+            <span class="text-[var(--text-muted)] block">ATK</span>
+            <strong class="text-amber-400">${formatNum(st.atk)}</strong>
+          </div>
+          <div>
+            <span class="text-[var(--text-muted)] block">HP</span>
+            <strong class="text-emerald-400">${formatNum(st.hp)}</strong>
+          </div>
+          <div>
+            <span class="text-[var(--text-muted)] block">PODER</span>
+            <strong class="text-sky-400">${formatNum(st.power)}</strong>
+          </div>
+        </div>
+
+        <div class="sub-surface rounded-xl p-2.5 text-xs">
+          <span class="font-bold text-amber-400 block mb-0.5">⚡ Definitiva: ${h.ultName}</span>
+          <p class="text-[var(--text-muted)]">${h.ultDesc}</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="levelUpHero('${h.id}')" class="btn-tactile py-2 px-3 rounded-xl bg-amber-500 text-black font-extrabold text-xs">
+            ⬆️ Subir Nivel (${formatNum(lvCost)} 🪙)
+          </button>
+          <button onclick="ascendHero('${h.id}')" class="btn-tactile py-2 px-3 rounded-xl bg-purple-600 text-white font-bold text-xs">
+            🌟 Ascender (${h.dupes}/${h.stars} Copias)
+          </button>
+        </div>
+
+        <button onclick="toggleSquadMember('${h.id}')" class="btn-tactile py-2 px-3 rounded-xl sub-surface font-bold text-xs">
+          ${h.inSquad ? '➖ Quitar del Escuadrón Activo' : '➕ Colocar en el Escuadrón Activo'}
+        </button>
+
+        <div class="border-t border-[var(--border-col)] pt-2.5">
+          <h4 class="font-bold text-xs uppercase text-cyan-400 mb-2">👗 Vestidor de Skins & Bono Global</h4>
+          ${skinsHtml}
+        </div>
+      `;
+    }
+
+    function levelUpHero(id) {
+      const h = HEROES_DB.find(x => x.id === id);
+      if (!h.unlocked) {
+        h.unlocked = true;
+        showToast(`🔓 ¡Has desbloqueado a ${h.name}!`);
+      }
+      const cost = Math.round(120 * Math.pow(1.14, h.level - 1));
+      if (STATE.gold < cost) {
+        showToast('🪙 No tienes suficiente Oro. ¡Reclama el Cofre AFK!');
+        return;
+      }
+      STATE.gold -= cost;
+      h.level++;
+      sfxHit();
+      syncSquadToBattle();
+      updateTopBar();
+      renderHeroesTab();
+      saveGame();
+    }
+
+    function levelUpAllSquad() {
+      HEROES_DB.filter(h => h.inSquad && h.unlocked).forEach(h => {
+        const cost = Math.round(120 * Math.pow(1.14, h.level - 1));
+        if (STATE.gold >= cost) {
+          STATE.gold -= cost;
+          h.level++;
+        }
+      });
+      sfxUlt();
+      syncSquadToBattle();
+      updateTopBar();
+      renderHeroesTab();
+      saveGame();
+      showToast('⬆️ ¡Nivel del escuadrón mejorado!');
+    }
+
+    function ascendHero(id) {
+      const h = HEROES_DB.find(x => x.id === id);
+      if (h.stars >= 5) {
+        showToast('🌟 ¡Este héroe ya alcanzó el Despertar 5★ Máximo!');
+        return;
+      }
+      if (h.dupes < h.stars) {
+        showToast(`🎲 Necesitas ${h.stars} copia(s) duplicada(s) en el Portal Gacha para subir a ${h.stars + 1}★.`);
+        return;
+      }
+      h.dupes -= h.stars;
+      h.stars++;
+      sfxGachaSSR();
+      syncSquadToBattle();
+      updateTopBar();
+      renderHeroesTab();
+      saveGame();
+      showToast(`🌟 ¡${h.name} ascendió a ${h.stars}★!`);
+    }
+
+    function toggleSquadMember(id) {
+      const h = HEROES_DB.find(x => x.id === id);
+      if (!h.unlocked) h.unlocked = true;
+      const currentSquad = HEROES_DB.filter(x => x.inSquad && x.unlocked);
+      if (h.inSquad) {
+        if (currentSquad.length <= 1) {
+          showToast('⚠️ Debes mantener al menos 1 héroe en batalla.');
+          return;
+        }
+        h.inSquad = false;
+      } else {
+        if (currentSquad.length >= 5) {
+          showToast('⚠️ Tu escuadrón ya tiene 5 héroes. Retira uno primero.');
+          return;
+        }
+        h.inSquad = true;
+      }
+      syncSquadToBattle();
+      updateTopBar();
+      renderHeroesTab();
+      saveGame();
+    }
+
+    function toggleHeroSkin(heroId, skinId) {
+      const h = HEROES_DB.find(x => x.id === heroId);
+      const sk = SKINS_DB.find(s => s.id === skinId);
+      if (!sk.unlocked) {
+        sk.unlocked = true;
+        h.equippedSkin = skinId;
+        sfxGachaSSR();
+        showToast(`👗 ¡Skin [${sk.name}] desbloqueada! Bono global activado.`);
+      } else {
+        h.equippedSkin = h.equippedSkin === skinId ? 'default' : skinId;
+      }
+      syncSquadToBattle();
+      updateTopBar();
+      renderHeroesTab();
+      saveGame();
+    }
+
+    function getEffectiveSSRRate() {
+      if (STATE.pityCounter >= 69) return 1.0;
+      if (STATE.pityCounter >= 50) return 0.05 + (STATE.pityCounter - 49) * 0.025;
+      return 0.05;
+    }
+
+    function doGachaPull(count) {
+      const gemCost = count === 10 ? 2700 : 300;
+      if (STATE.tickets >= count) {
+        STATE.tickets -= count;
+      } else if (STATE.gems >= gemCost) {
+        STATE.gems -= gemCost;
+      } else {
+        showToast('💎 Sin suficientes Tickets o Gemas. ¡Usa el botón Bono VIP20K!');
+        return;
+      }
+
+      const results = [];
+      let gotHighTier = false;
+
+      for (let i = 0; i < count; i++) {
+        STATE.pityCounter++;
+        STATE.totalPulls++;
+        const ssrRate = getEffectiveSSRRate();
+        const roll = Math.random();
+
+        let pulledRarity = 'R';
+        if (roll < ssrRate) {
+          pulledRarity = Math.random() < 0.22 ? 'UR' : 'SSR';
+          STATE.pityCounter = 0;
+          gotHighTier = true;
+        } else if (roll < ssrRate + 0.45) {
+          pulledRarity = 'SR';
+        }
+
+        const pool = HEROES_DB.filter(h => h.rarity === pulledRarity);
+        const chosen = pool.length > 0
+          ? pool[Math.floor(Math.random() * pool.length)]
+          : HEROES_DB[Math.floor(Math.random() * HEROES_DB.length)];
+
+        let statusText = '';
+        if (!chosen.unlocked) {
+          chosen.unlocked = true;
+          statusText = '¡NUEVO!';
+        } else {
+          chosen.dupes++;
+          statusText = '+1 Copia ★';
+        }
+
+        results.push({ hero: chosen, rarity: chosen.rarity, statusText });
+      }
+
+      if (gotHighTier) sfxGachaSSR(); else sfxUlt();
+
+      const grid = document.getElementById('gacha-results-grid');
+      grid.innerHTML = results.map(r => {
+        const bg = r.rarity === 'UR'
+          ? 'border-rose-500 bg-rose-500/15'
+          : r.rarity === 'SSR'
+            ? 'border-amber-400 bg-amber-500/15'
+            : 'border-purple-500/40 card-surface';
+        return `
+          <div class="border-2 ${bg} rounded-xl p-2.5 flex flex-col items-center text-center gap-1">
+            <span class="text-2xl">${r.hero.icon}</span>
+            <span class="px-1.5 py-0.5 rounded text-xs font-extrabold ${
+              r.rarity === 'UR' ? 'bg-rose-600 text-white' : r.rarity === 'SSR' ? 'bg-amber-400 text-black' : 'bg-purple-600 text-white'
+            }">${r.rarity}</span>
+            <span class="font-bold text-xs truncate w-full">${r.hero.name}</span>
+            <span class="text-xs text-emerald-400 font-semibold">${r.statusText}</span>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('gacha-pity-count').textContent = STATE.pityCounter;
+      document.getElementById('gacha-pity-bar').style.width = `${Math.min(100, (STATE.pityCounter / 70) * 100)}%`;
+      document.getElementById('gacha-pity-prob').textContent = `Prob. SSR+ actual: ${(getEffectiveSSRRate() * 100).toFixed(1)}%`;
+      document.getElementById('gacha-total-pulls').textContent = `Tiradas totales: ${STATE.totalPulls}`;
+
+      updateTopBar();
+      syncSquadToBattle();
+      saveGame();
+    }
+
+    function validateGiftInput() {
+      const input = document.getElementById('gift-code-input');
+      const fb = document.getElementById('gift-code-feedback');
+      const val = input.value.trim().toUpperCase();
+      fb.classList.remove('hidden');
+      if (val.length < 4) {
+        input.className = 'flex-1 sub-surface rounded-xl px-3 py-2 text-xs font-mono uppercase focus:outline-none border border-rose-500';
+        fb.textContent = '⚠️ El código debe tener al menos 4 caracteres.';
+        fb.className = 'text-xs text-rose-400';
+        return false;
+      }
+      input.className = 'flex-1 sub-surface rounded-xl px-3 py-2 text-xs font-mono uppercase focus:outline-none border border-emerald-500';
+      fb.textContent = '✓ Formato de código válido.';
+      fb.className = 'text-xs text-emerald-400';
+      return true;
+    }
+
+    function redeemCustomCode() {
+      if (!validateGiftInput()) return;
+      const val = document.getElementById('gift-code-input').value.trim().toUpperCase();
+      STATE.tickets += 15;
+      STATE.gems += 2000;
+      sfxGachaSSR();
+      updateTopBar();
+      saveGame();
+      document.getElementById('gift-code-input').value = '';
+      showToast(`🎁 ¡Código [${val}] canjeado con éxito! +15 Tickets y +2,000 Gemas.`);
+    }
+
+    function renderPetsTab() {
+      const grid = document.getElementById('pets-grid');
+      grid.innerHTML = PETS_DB.map(p => {
+        const isEq = STATE.equippedPetId === p.id;
+        return `
+          <div class="sub-surface border-2 ${isEq ? 'border-amber-400' : 'border-transparent'} rounded-2xl p-4 flex flex-col justify-between gap-3">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-3xl">${p.icon}</span>
+                <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-bold text-xs">${p.rarity} • Nv.${p.level}</span>
+              </div>
+              <h3 class="font-bold text-base">${p.name}</h3>
+              <p class="text-xs text-emerald-400 font-semibold mt-1">
+                Aura Pasiva: +${Math.round(p.atkBuff * 100)}% ATK / +${Math.round(p.hpBuff * 100)}% HP
+              </p>
+              <p class="text-xs text-[var(--text-muted)] mt-1">${p.desc}</p>
+            </div>
+            <button onclick="equipPet('${p.id}')" class="btn-tactile w-full py-2 rounded-xl font-bold text-xs ${
+              isEq ? 'bg-emerald-600 text-white' : 'bg-amber-500 text-black'
+            }">
+              ${!p.unlocked ? '🔓 Desbloquear y Equipar (Test)' : (isEq ? '✓ Mascota Activa en Combate' : 'Equipar Mascota')}
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function equipPet(id) {
+      const p = PETS_DB.find(x => x.id === id);
+      p.unlocked = true;
+      STATE.equippedPetId = id;
+      document.getElementById('hud-pet-name').textContent = p.name;
+      sfxUlt();
+      updateTopBar();
+      renderPetsTab();
+      saveGame();
+      showToast(`🐾 ¡Mascota [${p.name}] equipada!`);
+    }
+
+    function renderClanTab() {
+      const list = document.getElementById('clan-tech-list');
+      list.innerHTML = CLAN_TECH_DB.map(t => `
+        <div class="p-3 rounded-xl sub-surface flex items-center justify-between gap-2">
+          <div>
+            <h4 class="font-bold text-xs">${t.name}</h4>
+            <p class="text-xs text-emerald-400">Nivel ${t.level}/${t.max} • Bono: +${Math.round(t.level * t.bonusPerLv * 100)}% Stats</p>
+          </div>
+          <button onclick="upgradeClanTech('${t.id}')" class="btn-tactile px-3 py-1.5 rounded-lg bg-amber-500 text-black font-extrabold text-xs">
+            Mejorar (${t.cost} 🛡️)
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function upgradeClanTech(id) {
+      const t = CLAN_TECH_DB.find(x => x.id === id);
+      if (STATE.clanCoins < t.cost) {
+        showToast('🛡️ Necesitas más Monedas de Clan. ¡Ataca al Jefe de Clan!');
+        return;
+      }
+      STATE.clanCoins -= t.cost;
+      t.level++;
+      sfxHit();
+      updateTopBar();
+      renderClanTab();
+      saveGame();
+      showToast(`🔬 ¡Tecnología [${t.name}] mejorada a Nivel ${t.level}!`);
+    }
+
+    function attackClanBoss() {
+      const dmg = getSquadPower() * 14 + Math.round(Math.random() * 15000);
+      STATE.clanBossRecord += dmg;
+      STATE.clanCoins += 600;
+      STATE.gems += 250;
+      sfxGachaSSR();
+      document.getElementById('clan-boss-dmg').textContent = formatNum(STATE.clanBossRecord);
+      document.getElementById('clan-boss-bar').style.width = `${Math.min(100, 35 + (STATE.clanBossRecord / 1200000) * 65)}%`;
+      updateTopBar();
+      saveGame();
+      showToast(`🐉 ¡Causaste ${formatNum(dmg)} de daño al Jefe de Clan! +600 🛡️ y +250 💎`);
+    }
+
+    function hireMercenary() {
+      STATE.mercenaryActive = true;
+      const btn = document.getElementById('btn-mercenary');
+      btn.textContent = '✓ Mercenario VIP Activo (+35% Poder)';
+      btn.className = 'btn-tactile px-3.5 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs';
+      sfxGachaSSR();
+      updateTopBar();
+      syncSquadToBattle();
+      saveGame();
+      showToast('👑 ¡Mercenario UR de LordDrakon unido! +35% Poder de Escuadrón.');
+    }
+
+    function shareClanInvite() {
+      STATE.gems += 500;
+      updateTopBar();
+      saveGame();
+      showToast('🔗 ¡Enlace de Clan compartido! +500 💎.');
+    }
+
+    function renderShopTab() {
+      const grid = document.getElementById('shop-offers-grid');
+      grid.innerHTML = SHOP_OFFERS_DB.map(of => {
+        const bought = STATE.purchasedOffers[of.id];
+        return `
+          <div class="sub-surface rounded-2xl p-4 flex flex-col justify-between gap-3">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="px-2 py-0.5 rounded bg-rose-600 text-white font-bold text-xs">${of.badge}</span>
+                <span class="font-mono font-extrabold text-amber-400 text-sm">${of.price}</span>
+              </div>
+              <h3 class="font-bold text-sm">${of.title}</h3>
+              <p class="text-xs text-[var(--text-muted)] mt-1">${of.desc}</p>
+              <p class="text-xs font-bold text-emerald-400 mt-2">🎁 ${of.rewardText}</p>
+            </div>
+            <button onclick="buyOffer('${of.id}', false)" class="btn-tactile w-full py-2 rounded-xl font-extrabold text-xs ${
+              bought ? 'bg-emerald-700 text-white' : 'bg-gradient-to-r from-amber-500 to-yellow-400 text-black'
+            }">
+              ${bought ? '✓ Oferta Reclamada (Simular otra vez)' : `Simular Compra (${of.price} Gratis)`}
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function buyOffer(offerId, fromModal) {
+      STATE.purchasedOffers[offerId] = true;
+      sfxGachaSSR();
+      if (offerId === 'starter_pack') {
+        const sera = HEROES_DB.find(h => h.id === 'H01');
+        sera.dupes += 2;
+        sera.stars = Math.min(5, sera.stars + 1);
+        const sk = SKINS_DB.find(s => s.id === 'SK01');
+        sk.unlocked = true;
+        sera.equippedSkin = 'SK01';
+        STATE.gems += 1500;
+        showToast('🔥 ¡Pack 1.ª Compra activado! Seraphina Cyber-Valquiria equipada.');
+      } else if (offerId === 'vip_pass') {
+        STATE.vipLevel = Math.max(3, STATE.vipLevel + 2);
+        STATE.gems += 3000;
+        PETS_DB.find(p => p.id === 'P03').unlocked = true;
+        STATE.equippedPetId = 'P03';
+        document.getElementById('hud-pet-name').textContent = 'Aetherion, Fénix UR';
+        showToast('👑 ¡Pase VIP Astral activado! Mascota Fénix UR equipada.');
+      } else if (offerId === 'growth_fund') {
+        STATE.gems += 12000;
+        STATE.tickets += 30;
+        showToast('📈 ¡Fondo de Crecimiento reclamado! +12,000 💎 y +30 🎟️.');
+      } else if (offerId === 'skin_bundle') {
+        const mal = HEROES_DB.find(h => h.id === 'H02');
+        mal.unlocked = true;
+        mal.level = 12;
+        mal.stars = 3;
+        const sk2 = SKINS_DB.find(s => s.id === 'SK02');
+        sk2.unlocked = true;
+        mal.equippedSkin = 'SK02';
+        showToast('🌌 ¡Malakor UR + Skin Emperador Cósmico desbloqueados!');
+      } else if (offerId === 'flash_popup') {
+        STATE.tickets += 25;
+        STATE.gems += 2500;
+        STATE.gold += 50000;
+        if (fromModal) closeFlashModal();
+        showToast('⚡ ¡Oferta Relámpago 800% reclamada! +25 Tickets y +2,500 Gemas.');
+      }
+
+      updateTopBar();
+      syncSquadToBattle();
+      renderShopTab();
+      saveGame();
+    }
+
+    function closeFlashModal() {
+      document.getElementById('popup-offer-modal').classList.add('hidden');
+      document.getElementById('popup-offer-modal').classList.remove('flex');
+    }
+
+    function claimPromoCode() {
+      STATE.tickets += 25;
+      STATE.gems += 3000;
+      sfxGachaSSR();
+      updateTopBar();
+      saveGame();
+      showToast('🎁 ¡Código VIP20K canjeado! +25 Tickets de Invocación y +3,000 Gemas.');
+    }
+
+    function claimAfkChest(isFast) {
+      if (isFast) {
+        if (STATE.gems < 50) {
+          showToast('💎 Necesitas 50 Gemas para el Botín Rápido.');
+          return;
+        }
+        STATE.gems -= 50;
+        const fastGold = (450 + STATE.stageFloor * 180) * 12;
+        STATE.gold += fastGold;
+        sfxGachaSSR();
+        showToast(`⚡ ¡Botín Rápido de 2 Horas reclamado! +${formatNum(fastGold)} Oro.`);
+      } else {
+        const storedGold = Math.max(500, Math.round(STATE.afkSeconds * 2.5 * STATE.stageFloor));
+        STATE.gold += storedGold;
+        STATE.gems += 45;
+        STATE.afkSeconds = 0;
+        sfxUlt();
+        showToast(`🧰 ¡Cofre AFK reclamado! +${formatNum(storedGold)} Oro y +45 Gemas.`);
+      }
+      updateTopBar();
+      saveGame();
+    }
+
+    function claimQuestReward() {
+      STATE.questIndex++;
+      STATE.gems += 1000;
+      STATE.tickets += 5;
+      sfxGachaSSR();
+      document.getElementById('quest-counter').textContent = `Misión #${STATE.questIndex}`;
+      const quests = [
+        'Equipa una Skin Mítica en la pestaña Héroes o desafía al Jefe de Piso',
+        'Ataca al Jefe de Clan para ganar Monedas de Clan',
+        'Asciende un héroe de estrellas usando duplicados del Portal Gacha',
+        'Alcanza el Piso 2-1 con tu escuadrón'
+      ];
+      document.getElementById('quest-desc').textContent = quests[STATE.questIndex % quests.length];
+      updateTopBar();
+      saveGame();
+      showToast('🎯 ¡Misión completada! +1,000 Gemas y +5 Tickets.');
+    }
+
+    function updateBusinessSim() {
+      const dl = parseFloat(document.getElementById('sim-dl').value);
+      const conv = parseFloat(document.getElementById('sim-conv').value);
+      const arppu = parseFloat(document.getElementById('sim-arppu').value);
+
+      document.getElementById('sim-dl-val').textContent = dl.toLocaleString();
+      document.getElementById('sim-conv-val').textContent = conv.toFixed(1) + '%';
+      document.getElementById('sim-arppu-val').textContent = '$' + arppu.toFixed(2);
+
+      const viral = Math.round(dl * 0.15);
+      const totalUsers = dl + viral;
+      const payers = Math.round(totalUsers * (conv / 100));
+      const rev = Math.round(payers * arppu);
+
+      document.getElementById('sim-out-payers').textContent = `${payers.toLocaleString()} usuarios`;
+      document.getElementById('sim-out-viral').textContent = `+${viral.toLocaleString()} orgánicas`;
+      document.getElementById('sim-out-rev').textContent = `$${rev.toLocaleString()} USD`;
+    }
+
+    function switchTab(tabId) {
+      ['battle', 'heroes', 'gacha', 'pets', 'clan', 'shop'].forEach(t => {
+        const sec = document.getElementById(`tab-${t}`);
+        const btn = document.getElementById(`tab-btn-${t}`);
+        const mobBtn = document.getElementById(`mob-btn-${t}`);
+        if (t === tabId) {
+          sec.classList.remove('hidden');
+          sec.classList.add('flex');
+          if (btn) btn.className = 'btn-tactile px-3 py-2.5 rounded-xl font-bold text-sm border flex items-center justify-center gap-1.5 bg-amber-500 text-black border-amber-400 shadow';
+          if (mobBtn) mobBtn.className = 'flex flex-col items-center justify-center py-1 text-amber-400 font-bold text-xs';
+        } else {
+          sec.classList.add('hidden');
+          sec.classList.remove('flex');
+          if (btn) btn.className = 'btn-tactile px-3 py-2.5 rounded-xl font-bold text-sm border flex items-center justify-center gap-1.5 card-surface';
+          if (mobBtn) mobBtn.className = 'flex flex-col items-center justify-center py-1 text-[var(--text-muted)] font-semibold text-xs';
+        }
+      });
+
+      if (tabId === 'heroes') renderHeroesTab();
+      if (tabId === 'pets') renderPetsTab();
+      if (tabId === 'clan') renderClanTab();
+      if (tabId === 'shop') renderShopTab();
+    }
+
+    function addCombatLog(msg) {
+      const box = document.getElementById('combat-log');
+      const line = document.createElement('div');
+      line.textContent = `• ${msg}`;
+      box.prepend(line);
+      while (box.children.length > 18) box.removeChild(box.lastChild);
+    }
+
+    let toastTimeout = null;
+    function showToast(msg) {
+      const t = document.getElementById('toast-box');
+      t.textContent = msg;
+      t.classList.remove('hidden');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => t.classList.add('hidden'), 2800);
+    }
+
+    setInterval(() => {
+      STATE.afkSeconds += STATE.speedMult;
+      const hrs = String(Math.floor(STATE.afkSeconds / 3600)).padStart(2, '0');
+      const mins = String(Math.floor((STATE.afkSeconds % 3600) / 60)).padStart(2, '0');
+      const secs = String(Math.floor(STATE.afkSeconds % 60)).padStart(2, '0');
+      document.getElementById('afk-timer').textContent = `${hrs}:${mins}:${secs}`;
+      const storedGold = Math.max(100, Math.round(STATE.afkSeconds * 2.5 * STATE.stageFloor));
+      document.getElementById('afk-stored-gold').textContent = `${formatNum(storedGold)} Oro • 45 💎`;
+      document.getElementById('live-players-count').textContent = (1420 + Math.floor(Math.random() * 25)).toLocaleString();
+    }, 1000);
+
+    // BOOTSTRAP & LOADING SCREEN
+    window.addEventListener('DOMContentLoaded', () => {
+      loadGame();
+      syncSquadToBattle();
+      spawnEnemyWave(false);
+      updateTopBar();
+      updateBusinessSim();
+      addCombatLog('⚡ Motor Aether Engine iniciado. ¡Combate Idle en curso!');
+
+      const bar = document.getElementById('loading-bar');
+      const txt = document.getElementById('loading-text');
+      setTimeout(() => { bar.style.width = '65%'; txt.textContent = 'Cargando Héroes UR, Skins y Santuario...'; }, 180);
+      setTimeout(() => { bar.style.width = '100%'; txt.textContent = '¡Listo para jugar!'; }, 380);
+      setTimeout(() => {
+        const ls = document.getElementById('loading-screen');
+        ls.style.opacity = '0';
+        setTimeout(() => ls.style.display = 'none', 400);
+      }, 550);
+
+      requestAnimationFrame(updateBattle);
+    });
+  </script>
+</body>
+</html>
