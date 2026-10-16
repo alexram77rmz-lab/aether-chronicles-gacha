@@ -2,25 +2,92 @@
 
 namespace AetherEngine3D {
 
-    AetherSurvivorSimulation::AetherSurvivorSimulation() {
-        // Inicializar los 5 Pads de Construcción de la Base 3D
-        buildings.push_back({BuildingType::CommandCitadel, 1, 25, {0.0f, 0.0f, 0.0f}, 3.2f, 0.0f});
-        buildings.push_back({BuildingType::LaserTurret,    1, 25, {-6.0f, 0.0f, -6.0f}, 2.2f, 0.0f});
-        buildings.push_back({BuildingType::GoldExtractor,  1, 25, {6.5f, 0.0f, -5.5f}, 2.2f, 0.0f});
-        buildings.push_back({BuildingType::ForcefieldDome, 1, 25, {-6.5f, 0.0f, 6.0f}, 2.2f, 0.0f});
-        buildings.push_back({BuildingType::SquadBarracks,  1, 25, {6.5f, 0.0f, 6.0f}, 2.2f, 0.0f});
+    AetherTacticalArenaSim::AetherTacticalArenaSim() {
+        basePads.push_back({BuildingType::CommandBunker,  1, 30, { 0.0f, 0.0f,  8.5f}, 0});
+        basePads.push_back({BuildingType::FrontBarricade, 1, 30, { 0.0f, 0.0f,  1.5f}, 0});
+        basePads.push_back({BuildingType::HeavyTurrets,   1, 30, {-6.5f, 0.0f,  2.5f}, 0});
+        basePads.push_back({BuildingType::CashArmory,     1, 30, { 6.5f, 0.0f,  2.5f}, 0});
+        basePads.push_back({BuildingType::MercenarySquad, 1, 30, {-5.5f, 0.0f,  8.0f}, 0});
+
+        skills.push_back({"airstrike", "Ataque Aereo de Misiles", 12.0f, 0.0f, 5.5f});
+        skills.push_back({"overdrive", "Tormenta Electrica & Cadencia", 10.0f, 0.0f, 3.8f});
+        skills.push_back({"medshield", "Reparacion de Muro & Escudo", 14.0f, 0.0f, 2.0f});
     }
 
-    bool AetherSurvivorSimulation::upgradeBuilding(BuildingType type) {
-        for (auto& b : buildings) {
-            if (b.type == type && b.level < b.maxLevel) {
-                uint64_t cost = b.getUpgradeCost();
-                if (goldCoins >= cost) {
-                    goldCoins -= cost;
-                    b.level++;
-                    if (type == BuildingType::CommandCitadel) {
-                        playerMaxHp += 450.0f;
-                        playerHp = playerMaxHp;
+    void AetherTacticalArenaSim::startWave(int waveIdx) {
+        currentWave = waveIdx;
+        enemies.clear();
+
+        bool isFinalBossWave = (currentWave == 5);
+        currentPhase = isFinalBossWave ? StagePhase::FinalBossWave5 : StagePhase::WaveCombat;
+
+        int mobCount = isFinalBossWave ? 8 : (6 + currentWave * 3);
+        float stageScale = std::pow(1.35f, currentStage - 1);
+
+        // En Oleada 5 generamos el Jefe Final gigante en la Puerta Central Norte
+        if (isFinalBossWave) {
+            Enemy3D boss;
+            boss.id = m_nextEnemyId++;
+            boss.pos = {0.0f, 0.0f, -14.0f};
+            boss.maxHp = 2200.0f * stageScale;
+            boss.hp = boss.maxHp;
+            boss.atk = 65.0f * stageScale;
+            boss.speed = 2.6f;
+            boss.radius = 2.1f;
+            boss.isFinalBoss = true;
+            boss.alive = true;
+            enemies.push_back(boss);
+        }
+
+        // Generar horda saliendo por las 3 puertas del recinto norte
+        const float gateX[3] = {-7.5f, 0.0f, 7.5f};
+        for (int i = 0; i < mobCount; ++i) {
+            Enemy3D e;
+            e.id = m_nextEnemyId++;
+            float gx = gateX[i % 3] + ((i % 2 == 0) ? -0.9f : 0.9f);
+            float gz = -14.2f - (i / 3) * 1.3f;
+            e.pos = {gx, 0.0f, gz};
+            e.maxHp = (140.0f + currentWave * 35.0f) * stageScale;
+            e.hp = e.maxHp;
+            e.atk = 18.0f * stageScale;
+            e.speed = 3.6f + (i % 3) * 0.45f;
+            e.radius = 0.75f;
+            e.isFinalBoss = false;
+            e.alive = true;
+            enemies.push_back(e);
+        }
+
+        enemiesRemainingInWave = static_cast<int>(enemies.size());
+    }
+
+    void AetherTacticalArenaSim::triggerWaveClearReward() {
+        currentPhase = StagePhase::WaveClearCashDrop;
+        int armoryLv = basePads[3].level;
+        int packCount = 8 + currentWave * 2;
+        int packValue = static_cast<int>((35 + currentWave * 15) * (1.0f + (armoryLv - 1) * 0.25f));
+
+        for (int i = 0; i < packCount; ++i) {
+            float angle = (static_cast<float>(i) / packCount) * 6.283185f;
+            float r = 2.0f + (i % 3) * 1.4f;
+            cashDrops.push_back({{std::cos(angle) * r, 0.0f, -2.0f + std::sin(angle) * r}, packValue, true, false});
+        }
+    }
+
+    bool AetherTacticalArenaSim::investCashIntoPad(BuildingType type, int amount) {
+        for (auto& pad : basePads) {
+            if (pad.type == type && pad.level < pad.maxLevel) {
+                int needed = pad.getUpgradeCost() - pad.cashInvestedInCurrentLevel;
+                int spend = std::min(cashDollars, std::min(amount, needed));
+                if (spend <= 0) return false;
+
+                cashDollars -= spend;
+                pad.cashInvestedInCurrentLevel += spend;
+                if (pad.cashInvestedInCurrentLevel >= pad.getUpgradeCost()) {
+                    pad.cashInvestedInCurrentLevel = 0;
+                    pad.level++;
+                    if (type == BuildingType::FrontBarricade) {
+                        barricadeMaxHp += 600.0f;
+                        barricadeHp = barricadeMaxHp;
                     }
                     return true;
                 }
@@ -29,85 +96,40 @@ namespace AetherEngine3D {
         return false;
     }
 
-    void AetherSurvivorSimulation::spawnWave(int waveNumber) {
-        currentWave = waveNumber;
-        int count = 14 + waveNumber * 4;
-        bool hasBoss = (waveNumber % 3 == 0);
+    bool AetherTacticalArenaSim::castActiveSkill(int skillIndex) {
+        if (skillIndex < 0 || skillIndex >= static_cast<int>(skills.size())) return false;
+        auto& sk = skills[skillIndex];
+        if (!sk.isReady()) return false;
 
-        for (int i = 0; i < count; ++i) {
-            float angle = (static_cast<float>(i) / count) * 6.283185f;
-            float dist = 22.0f + (i % 5) * 2.5f;
-            bool isBoss = (hasBoss && i == 0);
-
-            Enemy3D e;
-            e.id = m_nextEnemyId++;
-            e.pos = {std::cos(angle) * dist, 0.0f, std::sin(angle) * dist};
-            e.maxHp = (180.0f * std::pow(1.22f, waveNumber - 1)) * (isBoss ? 8.0f : 1.0f);
-            e.hp = e.maxHp;
-            e.atk = 25.0f * std::pow(1.15f, waveNumber - 1);
-            e.speed = isBoss ? 3.2f : (4.2f + (i % 3) * 0.6f);
-            e.radius = isBoss ? 1.8f : 0.75f;
-            e.isBoss = isBoss;
-            e.alive = true;
-            enemies.push_back(e);
-        }
+        sk.currentCooldown = sk.cooldown;
+        return true;
     }
 
-    void AetherSurvivorSimulation::stepSimulation(float dt) {
-        orbitalAngle += dt * 3.8f;
-        m_grid.clear();
+    void AetherTacticalArenaSim::update(float dt) {
+        arenaBounds.clampPosition(playerPos, 0.8f);
 
-        // 1. Mover enemigos hacia el jugador o la base e insertarlos en el Spatial Hash Grid
-        for (uint32_t i = 0; i < enemies.size(); ++i) {
-            auto& e = enemies[i];
+        for (auto& sk : skills) {
+            if (sk.currentCooldown > 0.0f) {
+                sk.currentCooldown = std::max(0.0f, sk.currentCooldown - dt);
+            }
+        }
+
+        int aliveCount = 0;
+        for (auto& e : enemies) {
             if (!e.alive) continue;
-
+            aliveCount++;
             Vec3 dir = (playerPos - e.pos).normalizedXZ();
             e.pos = e.pos + dir * (e.speed * dt);
-            m_grid.insert(i, e.pos);
+            arenaBounds.clampPosition(e.pos, e.radius);
         }
+        enemiesRemainingInWave = aliveCount;
 
-        // 2. Daño de Espadas Orbitales 3D (Estilo Survivor.io Guardian)
-        float bladeOrbitRadius = 3.4f;
-        std::vector<uint32_t> nearby;
-        for (int b = 0; b < orbitalBladeCount; ++b) {
-            float a = orbitalAngle + (b * 6.283185f / orbitalBladeCount);
-            Vec3 bladePos{
-                playerPos.x + std::cos(a) * bladeOrbitRadius,
-                0.0f,
-                playerPos.z + std::sin(a) * bladeOrbitRadius
-            };
-
-            nearby.clear();
-            m_grid.queryRadius(bladePos, 1.3f, nearby);
-            for (uint32_t idx : nearby) {
-                auto& en = enemies[idx];
-                if (!en.alive) continue;
-                if ((en.pos - bladePos).lengthSqXZ() <= 1.5f) {
-                    en.hp -= 140.0f * dt * 5.0f;
-                    if (en.hp <= 0.0f) {
-                        en.alive = false;
-                        lootDrops.push_back({en.pos, en.isBoss ? 150 : 18, en.isBoss ? 100 : 20, false, false});
-                    }
-                }
-            }
-        }
-
-        // 3. Imán de Monedas y Cristales XP
-        for (auto& drop : lootDrops) {
-            if (drop.collected) continue;
-            float distSq = (playerPos - drop.pos).lengthSqXZ();
-            if (distSq <= magnetRadius * magnetRadius) {
-                drop.isMagnetized = true;
-            }
-            if (drop.isMagnetized) {
-                Vec3 dir = (playerPos - drop.pos).normalizedXZ();
-                drop.pos = drop.pos + dir * (18.0f * dt);
-                if (distSq <= 0.8f) {
-                    drop.collected = true;
-                    goldCoins += drop.goldValue;
-                    playerXp += drop.xpValue;
-                }
+        if (aliveCount == 0 && (currentPhase == StagePhase::WaveCombat || currentPhase == StagePhase::FinalBossWave5)) {
+            if (currentWave == 5) {
+                currentPhase = StagePhase::StageVictory;
+                currentStage++;
+            } else {
+                triggerWaveClearReward();
             }
         }
     }

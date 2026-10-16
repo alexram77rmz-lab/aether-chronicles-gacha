@@ -26,129 +26,110 @@ namespace AetherEngine3D {
         }
     };
 
+    /**
+     * Ciclo de 5 Oleadas por Nivel (Estilo Duck Survival / Last War / Zombie Defense 3D):
+     * - Oleadas 1 a 4: Hordas normales -> Al matar la oleada cae Lluvia de Dinero ($$$) -> Mejora de Base.
+     * - Oleada 5: ¡Aparece el Jefe Final del Nivel!
+     */
+    enum class StagePhase : uint8_t {
+        WaveCombat        = 0,
+        WaveClearCashDrop = 1,
+        BaseUpgradeIntermission = 2,
+        FinalBossWave5    = 3,
+        StageVictory      = 4
+    };
+
     enum class BuildingType : uint8_t {
-        CommandCitadel = 0,
-        LaserTurret    = 1,
-        GoldExtractor  = 2,
-        ForcefieldDome = 3,
-        SquadBarracks  = 4
+        CommandBunker    = 0, // Núcleo de mando y curación
+        FrontBarricade   = 1, // Muro defensivo con púas eléctricas
+        HeavyTurrets     = 2, // Torretas metralleta / misiles en flancos
+        CashArmory       = 3, // Fábrica de billetes y mejora de calibre
+        MercenarySquad   = 4  // Escuadrón de soldados defensores 3D
     };
 
     struct BaseBuildingPad {
         BuildingType type;
         int level = 1;
-        int maxLevel = 25;
+        int maxLevel = 30;
         Vec3 worldPos;
-        float radius = 2.5f;
-        float cooldownTimer = 0.0f;
+        int cashInvestedInCurrentLevel = 0;
 
-        uint64_t getUpgradeCost() const {
-            // Escalado equilibrado estilo Duck Survival / Whiteout Survival
-            return static_cast<uint64_t>(50.0 * std::pow(1.28, level - 1));
+        int getUpgradeCost() const {
+            return static_cast<int>(80.0 * std::pow(1.30, level - 1));
         }
+    };
+
+    struct ActiveSkill {
+        std::string id;
+        std::string name;
+        float cooldown = 10.0f;
+        float currentCooldown = 0.0f;
+        float damageMultiplier = 4.0f;
+
+        bool isReady() const { return currentCooldown <= 0.0f; }
     };
 
     struct Enemy3D {
         uint32_t id;
         Vec3 pos;
-        Vec3 vel;
         float hp;
         float maxHp;
         float atk;
         float speed;
         float radius;
-        bool isBoss;
+        bool isFinalBoss;
         bool alive = true;
     };
 
-    struct LootDrop3D {
+    struct CashBundle3D {
         Vec3 pos;
-        int goldValue;
-        int xpValue;
-        bool isMagnetized = false;
+        int cashAmount;
+        bool magnetized = false;
         bool collected = false;
     };
 
-    struct Projectile3D {
-        Vec3 pos;
-        Vec3 dir;
-        float speed;
-        float damage;
-        float life;
-        int pierceCount;
-    };
-
     /**
-     * SpatialHashGrid3D:
-     * Permite colisionar +1,000 enemigos 3D, proyectiles y monedas magnéticas en O(1)
-     * para dispositivos móviles de gama media y alta a 60-120 FPS.
+     * Mapa Semi-Cerrado (Recinto Fortificado 3D):
+     * Limita el movimiento del jugador y los enemigos dentro de los muros perimetrales.
      */
-    class SpatialHashGrid3D {
-    public:
-        explicit SpatialHashGrid3D(float cellSize = 4.0f) : m_cellSize(cellSize) {}
+    struct EnclosedArenaBounds {
+        float minX = -13.5f;
+        float maxX =  13.5f;
+        float minZ = -15.5f; // Puertas Norte de invasión
+        float maxZ =  13.5f; // Zona Sur de la Base
 
-        void clear() { m_buckets.clear(); }
-
-        void insert(uint32_t enemyIndex, const Vec3& pos) {
-            int64_t key = computeKey(pos.x, pos.z);
-            m_buckets[key].push_back(enemyIndex);
-        }
-
-        void queryRadius(const Vec3& center, float radius, std::vector<uint32_t>& outIndices) const {
-            int minX = static_cast<int>(std::floor((center.x - radius) / m_cellSize));
-            int maxX = static_cast<int>(std::floor((center.x + radius) / m_cellSize));
-            int minZ = static_cast<int>(std::floor((center.z - radius) / m_cellSize));
-            int maxZ = static_cast<int>(std::floor((center.z + radius) / m_cellSize));
-
-            for (int gx = minX; gx <= maxX; ++gx) {
-                for (int gz = minZ; gz <= maxZ; ++gz) {
-                    int64_t key = (static_cast<int64_t>(gx) << 32) ^ (static_cast<uint32_t>(gz));
-                    auto it = m_buckets.find(key);
-                    if (it != m_buckets.end()) {
-                        outIndices.insert(outIndices.end(), it->second.begin(), it->second.end());
-                    }
-                }
-            }
-        }
-
-    private:
-        float m_cellSize;
-        std::unordered_map<int64_t, std::vector<uint32_t>> m_buckets;
-
-        int64_t computeKey(float x, float z) const {
-            int gx = static_cast<int>(std::floor(x / m_cellSize));
-            int gz = static_cast<int>(std::floor(z / m_cellSize));
-            return (static_cast<int64_t>(gx) << 32) ^ (static_cast<uint32_t>(gz));
+        void clampPosition(Vec3& p, float entityRadius = 0.7f) const {
+            p.x = std::max(minX + entityRadius, std::min(maxX - entityRadius, p.x));
+            p.z = std::max(minZ + entityRadius, std::min(maxZ - entityRadius, p.z));
         }
     };
 
-    class AetherSurvivorSimulation {
+    class AetherTacticalArenaSim {
     public:
-        AetherSurvivorSimulation();
-        void stepSimulation(float dt);
-        bool upgradeBuilding(BuildingType type);
-        void spawnWave(int waveNumber);
+        AetherTacticalArenaSim();
+        void update(float dt);
+        void startWave(int waveIdx);
+        void triggerWaveClearReward();
+        bool investCashIntoPad(BuildingType type, int amount);
+        bool castActiveSkill(int skillIndex);
 
-        Vec3 playerPos{0.0f, 0.0f, 4.0f};
-        float playerHp = 2500.0f;
-        float playerMaxHp = 2500.0f;
-        float playerMoveSpeed = 9.5f;
-        float magnetRadius = 5.5f;
-        int orbitalBladeCount = 3;
-        float orbitalAngle = 0.0f;
+        EnclosedArenaBounds arenaBounds;
+        StagePhase currentPhase = StagePhase::WaveCombat;
 
-        uint64_t goldCoins = 250;
-        uint64_t playerXp = 0;
-        int playerRunLevel = 1;
-        int currentWave = 1;
+        int currentStage = 1;
+        int currentWave = 1; // 1..5 (5 = Jefe Final)
+        int enemiesRemainingInWave = 0;
+        int cashDollars = 300;
+        float barricadeHp = 1500.0f;
+        float barricadeMaxHp = 1500.0f;
 
-        std::vector<BaseBuildingPad> buildings;
+        Vec3 playerPos{0.0f, 0.0f, 4.5f};
+        std::vector<BaseBuildingPad> basePads;
+        std::vector<ActiveSkill> skills;
         std::vector<Enemy3D> enemies;
-        std::vector<LootDrop3D> lootDrops;
-        std::vector<Projectile3D> projectiles;
+        std::vector<CashBundle3D> cashDrops;
 
     private:
-        SpatialHashGrid3D m_grid{4.0f};
         uint32_t m_nextEnemyId = 1;
     };
 

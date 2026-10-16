@@ -3,45 +3,44 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#08080a" />
-  <title>Aether Survivor 3D — Beta 2.0 (Mobile Gacha & Base RPG)</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23f59e0b'/%3E%3Cpath d='M36 8L16 36h15l-3 20 20-28H33l3-20z' fill='%2308080a'/%3E%3C/svg%3E" />
+  <meta name="theme-color" content="#07090e" />
+  <title>Aether Outpost 3D — Beta 2.5 (Realistic Base Defense & 5-Wave Boss RPG)</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2310b981'/%3E%3Cpath d='M32 10l18 10v24L32 54 14 44V20z' fill='%23064e3b' stroke='%23fff' stroke-width='4'/%3E%3C/svg%3E" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
     html, body {
       margin: 0; padding: 0; width: 100%; height: 100%;
-      background: #05060a; color: #f8fafc;
+      background: #05070b; color: #f8fafc;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       overflow: hidden;
     }
-    /* Contenedor que simula celular 9:16 en PC y ocupa 100% en móvil real */
     .phone-viewport-wrapper {
       width: 100vw;
       height: 100dvh;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(circle at center, #1e1b4b 0%, #05060a 75%);
+      background: radial-gradient(circle at center, #111827 0%, #030407 80%);
     }
     .phone-frame {
       position: relative;
       width: 100%;
       height: 100%;
-      max-width: 450px;
-      max-height: 920px;
-      background: #090d16;
+      max-width: 460px;
+      max-height: 930px;
+      background: #090d14;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.85), 0 0 0 2px rgba(255, 255, 255, 0.08);
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.9), 0 0 0 2px rgba(255, 255, 255, 0.08);
     }
-    @media (min-width: 500px) {
+    @media (min-width: 520px) {
       .phone-frame.framed-mode {
-        height: 94dvh;
-        border-radius: 34px;
-        border: 5px solid #1e293b;
+        height: 95dvh;
+        border-radius: 36px;
+        border: 6px solid #1f2937;
       }
       .phone-frame.fullscreen-mode {
         max-width: 100vw;
@@ -51,207 +50,239 @@
         border: none;
       }
     }
-    .btn-pop {
+    .btn-tactile {
       transition: transform 0.12s ease, filter 0.15s ease;
       cursor: pointer;
     }
-    .btn-pop:hover { filter: brightness(1.1); transform: translateY(-2px); }
-    .btn-pop:active { transform: scale(0.93); }
-    .glass-panel {
-      background: rgba(12, 15, 26, 0.84);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+    .btn-tactile:hover { filter: brightness(1.12); transform: translateY(-2px); }
+    .btn-tactile:active { transform: scale(0.92); }
+    .glass-hud {
+      background: rgba(10, 14, 23, 0.85);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
     }
     .drawer-sheet {
       transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
     }
+    @keyframes pulseAlert {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.04); opacity: 0.88; }
+    }
+    .boss-alert { animation: pulseAlert 1.1s ease-in-out infinite; }
     ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.22); border-radius: 999px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.25); border-radius: 999px; }
   </style>
 </head>
 <body>
 
-  <!-- PANTALLA DE CARGA BETA 2.0 -->
-  <div id="loading-overlay" class="fixed inset-0 z-50 bg-[#05060a] flex flex-col items-center justify-center p-6 transition-opacity duration-500">
-    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 via-orange-500 to-rose-600 flex items-center justify-center text-3xl shadow-2xl mb-3 animate-bounce">
-      ⚡
+  <!-- PANTALLA DE CARGA REALISTA 3D -->
+  <div id="loading-overlay" class="fixed inset-0 z-50 bg-[#05070b] flex flex-col items-center justify-center p-6 transition-opacity duration-500">
+    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-600 to-amber-500 flex items-center justify-center text-3xl shadow-2xl mb-3 animate-bounce">
+      🏰
     </div>
-    <span class="px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-extrabold text-xs mb-1">
-      BETA 2.0 • 3D SURVIVOR & BASE ENGINE
+    <span class="px-3 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-extrabold text-xs mb-1">
+      BETA 2.5 • REALISTIC 3D TACTICAL COMPOUND
     </span>
-    <h1 class="text-xl font-black tracking-wider text-white">AETHER SURVIVOR 3D</h1>
+    <h1 class="text-xl font-black tracking-wider text-white">AETHER OUTPOST 3D</h1>
     <p class="text-xs text-slate-400 mt-1 mb-5 text-center max-w-xs">
-      Motor 3D WebGL + C++ Spatial Grid • Construcción de Base en Vivo, Hordas, Armas Orbitales y Gacha RPG
+      Mapa Cerrado Fortificado • 5 Oleadas por Nivel • Lluvia de Dinero (💵) para Mejorar Base • Jefe Final en Oleada 5
     </p>
-    <div class="w-60 h-2.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
-      <div id="load-bar" class="h-full bg-gradient-to-r from-amber-400 via-emerald-400 to-cyan-400 transition-all duration-300" style="width: 25%"></div>
+    <div class="w-64 h-2.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+      <div id="load-bar" class="h-full bg-gradient-to-r from-emerald-400 via-amber-400 to-rose-500 transition-all duration-300" style="width: 20%"></div>
     </div>
-    <p id="load-status" class="text-xs text-amber-300 font-mono mt-2">Compilando escena 3D, torretas y sombras...</p>
+    <p id="load-status" class="text-xs text-emerald-300 font-mono mt-2">Generando texturas PBR, muros 3D y torretas...</p>
   </div>
 
   <div class="phone-viewport-wrapper">
-    <!-- MARCO DE CELULAR (O PANTALLA COMPLETA) -->
     <div id="phone-container" class="phone-frame framed-mode">
 
-      <!-- LIENZO 3D THREE.JS (OCUPA TODA LA PANTALLA DEL CELULAR) -->
+      <!-- ESCENA 3D THREE.JS -->
       <div id="canvas-3d-host" class="absolute inset-0 z-0"></div>
 
-      <!-- CAPA DE TEXTOS DE DAÑO FLOTANTES 2D PROYECTADOS DESDE 3D -->
+      <!-- CAPA DE TEXTOS FLOTANTES 2D ($ DINERO, DAÑO, MEJORAS) -->
       <div id="floating-dmg-layer" class="absolute inset-0 z-10 pointer-events-none overflow-hidden"></div>
 
       <!-- ====================================================
-           HUD SUPERIOR MÓVIL (NIVEL XP, RECURSOS, OLEADA)
+           HUD SUPERIOR: PROGRESO DE LAS 5 OLEADAS + BARRA JEFE + DINERO
            ==================================================== -->
       <header class="relative z-20 p-2.5 flex flex-col gap-1.5 pointer-events-auto">
-        <!-- BARRA DE EXPERIENCIA ESTILO SURVIVOR.IO -->
-        <div class="w-full h-5 bg-slate-950/90 rounded-full border border-white/15 overflow-hidden relative flex items-center px-2.5 shadow">
-          <div id="xp-bar-fill" class="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 transition-all duration-200" style="width: 20%"></div>
-          <div class="relative z-10 w-full flex items-center justify-between text-xs font-extrabold text-white drop-shadow">
-            <span id="hud-run-lv">⚡ NV. BATALLA 1</span>
-            <span id="hud-wave-txt" class="text-amber-300">OLEADA 1 • HORDA DEL VACÍO</span>
-            <span id="hud-kills">💀 0</span>
+
+        <!-- INDICADOR DE NIVEL Y PROGRESO DE LAS 5 OLEADAS (1-2-3-4-💀JEFE) -->
+        <div class="glass-hud rounded-2xl p-2 px-3 flex items-center justify-between gap-2 shadow-lg">
+          <div class="flex items-center gap-2">
+            <span id="stage-badge" class="px-2 py-0.5 rounded-lg bg-amber-500 text-black font-black text-xs">
+              NIVEL 1
+            </span>
+            <div>
+              <div class="flex items-center gap-1 text-xs font-extrabold">
+                <span id="wave-title-txt" class="text-white">OLEADA 1 / 5</span>
+                <span class="text-slate-400">•</span>
+                <span id="enemies-left-txt" class="text-emerald-400">Enemigos: 8</span>
+              </div>
+              <!-- Píldoras visuales de las 5 oleadas -->
+              <div class="flex items-center gap-1 mt-1">
+                <div id="w-pill-1" class="w-6 h-2 rounded-full bg-emerald-400"></div>
+                <div id="w-pill-2" class="w-6 h-2 rounded-full bg-slate-700"></div>
+                <div id="w-pill-3" class="w-6 h-2 rounded-full bg-slate-700"></div>
+                <div id="w-pill-4" class="w-6 h-2 rounded-full bg-slate-700"></div>
+                <div id="w-pill-5" class="px-1.5 h-3.5 rounded bg-rose-950 border border-rose-500/50 text-rose-300 flex items-center text-xs font-black">
+                  💀5
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- VIDA DEL MURO / BARRICADA DE LA BASE -->
+          <div class="flex flex-col items-end">
+            <span class="text-xs font-bold text-slate-300">🧱 Muro Base: <strong id="hud-wall-hp" class="text-cyan-300">100%</strong></span>
+            <div class="w-24 h-2 bg-slate-800 rounded-full overflow-hidden border border-white/15 mt-0.5">
+              <div id="hud-wall-bar" class="h-full bg-gradient-to-r from-cyan-400 to-emerald-400 transition-all duration-200" style="width: 100%"></div>
+            </div>
           </div>
         </div>
 
-        <!-- FILA DE MONEDAS, GEMAS, TICKETS Y CONTROLES -->
+        <!-- BARRA DE VIDA DEL JEFE FINAL (SOLO VISIBLE EN OLEADA 5) -->
+        <div id="boss-hp-banner" class="hidden boss-alert bg-rose-950/95 border-2 border-rose-500 rounded-2xl p-2 px-3 flex-col gap-1 shadow-2xl">
+          <div class="flex items-center justify-between text-xs font-black">
+            <span class="text-rose-200">👹 JEFE FINAL (OLEADA 5/5): TITÁN BLINDADO X-9</span>
+            <span id="boss-hp-num" class="text-amber-300">4,500 HP</span>
+          </div>
+          <div class="w-full h-3 bg-black/70 rounded-full overflow-hidden border border-rose-400/40">
+            <div id="boss-hp-fill" class="h-full bg-gradient-to-r from-rose-600 via-orange-500 to-amber-400 transition-all duration-100" style="width: 100%"></div>
+          </div>
+        </div>
+
+        <!-- RECURSOS: DINERO EN EFECTIVO (💵), GEMAS, TICKETS + CONTROLES -->
         <div class="flex items-center justify-between gap-1.5">
           <div class="flex items-center gap-1.5">
-            <div class="glass-panel rounded-xl px-2.5 py-1 flex items-center gap-1 text-xs font-bold">
-              <span>🪙</span>
-              <span id="res-gold" class="text-amber-400 font-extrabold">350</span>
+            <div class="glass-hud rounded-xl px-2.5 py-1 flex items-center gap-1 text-xs font-bold border border-emerald-500/40">
+              <span>💵</span>
+              <span id="res-cash" class="text-emerald-400 font-black text-sm">$320</span>
             </div>
-            <div class="glass-panel rounded-xl px-2.5 py-1 flex items-center gap-1 text-xs font-bold">
+            <div class="glass-hud rounded-xl px-2.5 py-1 flex items-center gap-1 text-xs font-bold">
               <span>💎</span>
               <span id="res-gems" class="text-sky-400 font-extrabold">5,400</span>
             </div>
-            <div class="glass-panel rounded-xl px-2.5 py-1 flex items-center gap-1 text-xs font-bold">
+            <div class="glass-hud rounded-xl px-2.5 py-1 flex items-center gap-1 text-xs font-bold">
               <span>🎟️</span>
               <span id="res-tickets" class="text-purple-400 font-extrabold">20</span>
             </div>
           </div>
 
           <div class="flex items-center gap-1">
-            <button onclick="claimVipBonus()" class="btn-pop px-2 py-1 rounded-xl bg-rose-600 text-white font-extrabold text-xs shadow">
-              🎁 VIP20K
+            <button onclick="claimVipCash()" class="btn-tactile px-2 py-1 rounded-xl bg-emerald-600 text-white font-extrabold text-xs shadow">
+              💵 +$1,000
             </button>
-            <button onclick="toggleFrameMode()" id="btn-frame-mode" class="btn-pop glass-panel px-2 py-1 rounded-xl text-xs font-bold hidden sm:inline-block" title="Cambiar Vista Celular / Pantalla Completa">
-              🖥️ Full
-            </button>
-            <button onclick="toggleSound()" id="btn-sound" class="btn-pop glass-panel px-2 py-1 rounded-xl text-xs font-bold">
-              🔊
-            </button>
-          </div>
-        </div>
-
-        <!-- MINI-BANNER DE PODER Y ESTADO DE LA BASE 3D -->
-        <div class="flex items-center justify-between gap-1.5">
-          <div class="glass-panel rounded-xl px-2.5 py-1 text-xs flex items-center gap-2">
-            <span>🏰 Base Nv.<strong id="hud-base-lv" class="text-amber-400">1</strong></span>
-            <span>•</span>
-            <span>🗼 Torretas: <strong id="hud-turret-count" class="text-cyan-400">1</strong></span>
-            <span>•</span>
-            <span>⚔️ Poder: <strong id="hud-power" class="text-emerald-400">2,450</strong></span>
-          </div>
-
-          <div class="flex items-center gap-1">
-            <button onclick="toggleAutoPilot()" id="btn-autopilot" class="btn-pop px-2.5 py-1 rounded-xl bg-emerald-600 text-white font-extrabold text-xs shadow">
+            <button onclick="toggleAutoPilot()" id="btn-autopilot" class="btn-tactile px-2 py-1 rounded-xl bg-amber-500 text-black font-extrabold text-xs shadow">
               🤖 IA: ON
             </button>
-            <button onclick="spawnBossWaveNow()" class="btn-pop px-2.5 py-1 rounded-xl bg-amber-500 text-black font-extrabold text-xs shadow">
-              👹 Jefe 3D
+            <button onclick="toggleFrameMode()" id="btn-frame-mode" class="btn-tactile glass-hud px-2 py-1 rounded-xl text-xs font-bold hidden sm:inline-block">
+              🖥️ Full
+            </button>
+            <button onclick="toggleSound()" id="btn-sound" class="btn-tactile glass-hud px-2 py-1 rounded-xl text-xs font-bold">
+              🔊
             </button>
           </div>
         </div>
       </header>
 
       <!-- ====================================================
-           TARJETA EMERGENTE ROGUELITE (ESTILO SURVIVOR.IO)
+           CARTEL DE FASE DE MEJORA ENTRE OLEADAS (ESTILO DUCK SURVIVAL)
            ==================================================== -->
-      <div id="skill-choice-banner" class="relative z-20 mx-2.5 mt-1 glass-panel border-2 border-amber-400 rounded-2xl p-2.5 hidden flex-col gap-2 shadow-2xl">
+      <div id="intermission-banner" class="relative z-20 mx-2.5 mt-1 glass-hud border-2 border-emerald-400 rounded-2xl p-2.5 hidden flex-col gap-2 shadow-2xl pointer-events-auto">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-black text-amber-300 uppercase tracking-wide">🌟 ¡SUBISTE DE NIVEL! ELIGE ARMA 3D</span>
-          <span class="text-xs text-slate-300">Toca una tarjeta</span>
+          <div>
+            <span class="text-xs font-black text-emerald-300 uppercase block">💵 ¡OLEADA COMPLETADA! RECOGE EL DINERO Y MEJORA TU BASE</span>
+            <span id="intermission-sub" class="text-xs text-slate-300">Camina sobre las zonas verdes del mapa o toca los botones de abajo antes de la siguiente oleada.</span>
+          </div>
+          <button onclick="startNextWaveNow()" id="btn-next-wave" class="btn-tactile px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-black font-black text-xs shrink-0 shadow-lg">
+            ⚔️ LANZAR OLEADA 2/5
+          </button>
         </div>
-        <div id="skill-cards-row" class="grid grid-cols-3 gap-1.5"></div>
       </div>
 
-      <!-- ESPACIADOR CENTRAL (DEJA VER EL MUNDO 3D, JOYSTICK Y BASE) -->
+      <!-- ====================================================
+           ZONA CENTRAL Y CONTROLES DE COMBATE / HABILIDADES / BASE
+           ==================================================== -->
       <div class="relative z-10 flex-1 pointer-events-none flex flex-col justify-end p-2.5">
 
-        <!-- ACCIONES RÁPIDAS DE MEJORA DE BASE 3D CON MONEDAS (ESTILO DUCK SURVIVAL) -->
+        <!-- BARRA RÁPIDA DE LAS 5 MEJORAS DE LA BASE CON DINERO ($) -->
         <div class="pointer-events-auto mb-2">
           <div class="flex items-center justify-between mb-1 px-1">
-            <span class="text-xs font-extrabold text-amber-300 drop-shadow">
-              🏗️ MEJORA TU BASE 3D (Camina a los círculos o toca aquí con 🪙)
+            <span class="text-xs font-extrabold text-emerald-300 drop-shadow">
+              🏗️ MEJORAR BASE CON DINERO (💵 Párate en los Pads 3D o toca aquí)
             </span>
-            <span id="joystick-hint" class="text-xs text-cyan-300 font-semibold drop-shadow">
-              🕹️ Arrastra para moverte
-            </span>
+            <button onclick="forceBossWave5()" class="text-xs font-extrabold text-rose-400 hover:underline cursor-pointer drop-shadow">
+              💀 Saltar a Oleada 5 (Jefe) →
+            </button>
           </div>
           <div id="quick-base-pads" class="grid grid-cols-5 gap-1.5"></div>
         </div>
 
-        <!-- ZONA DEL JOYSTICK TÁCTIL + HABILIDAD DEFINITIVA -->
-        <div class="flex items-end justify-between px-2 pb-1">
-          <!-- JOYSTICK VISUAL -->
-          <div id="joystick-zone" class="pointer-events-auto w-24 h-24 rounded-full bg-black/45 border-2 border-white/25 backdrop-blur-sm relative flex items-center justify-center touch-none shadow-lg">
-            <div id="joystick-knob" class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-md border border-white/60 transition-transform duration-75"></div>
-            <span class="absolute -top-5 text-xs font-bold text-white/75">MOVER 3D</span>
+        <!-- FILA INFERIOR: JOYSTICK TÁCTIL + 3 HABILIDADES ACTIVAS CON COOLDOWN -->
+        <div class="flex items-end justify-between px-1 pb-1">
+          <!-- JOYSTICK TÁCTIL 3D -->
+          <div id="joystick-zone" class="pointer-events-auto w-24 h-24 rounded-full bg-black/55 border-2 border-white/25 backdrop-blur-sm relative flex items-center justify-center touch-none shadow-xl">
+            <div id="joystick-knob" class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-600 shadow-md border border-white/70 transition-transform duration-75"></div>
+            <span class="absolute -top-5 text-xs font-bold text-white/80">MOVER</span>
           </div>
 
-          <!-- BOTONES DE ACCIÓN DERECHA: ULTI + IMÁN + COFRE -->
-          <div class="pointer-events-auto flex flex-col items-end gap-2">
-            <div class="flex items-center gap-2">
-              <button onclick="vacuumAllLoot()" class="btn-pop px-3 py-2 rounded-2xl glass-panel border border-cyan-400/50 text-cyan-300 font-extrabold text-xs shadow-lg">
-                🧲 Imán 3D
-              </button>
-              <button onclick="castUltimate3D()" id="btn-ult-3d" class="btn-pop px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-black font-black text-xs shadow-xl border border-white/40">
-                ⚡ ULTI SOLAR (LISTA)
-              </button>
-            </div>
+          <!-- 3 HABILIDADES ACTIVAS (MISILES, TORMENTA ELÉCTRICA, REPARAR/ESCUDO) -->
+          <div class="pointer-events-auto flex items-center gap-2">
+            <button onclick="castSkill(0)" id="skill-btn-0" class="btn-tactile w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-600 to-orange-600 border-2 border-white/40 flex flex-col items-center justify-center shadow-xl relative overflow-hidden">
+              <span class="text-lg">💣</span>
+              <span class="text-xs font-black leading-tight">Misiles</span>
+              <span id="skill-cd-0" class="text-xs font-mono text-amber-200">LISTO</span>
+            </button>
+
+            <button onclick="castSkill(1)" id="skill-btn-1" class="btn-tactile w-16 h-16 rounded-2xl bg-gradient-to-br from-sky-600 to-indigo-600 border-2 border-white/40 flex flex-col items-center justify-center shadow-xl relative overflow-hidden">
+              <span class="text-lg">⚡</span>
+              <span class="text-xs font-black leading-tight">Electro</span>
+              <span id="skill-cd-1" class="text-xs font-mono text-amber-200">LISTO</span>
+            </button>
+
+            <button onclick="castSkill(2)" id="skill-btn-2" class="btn-tactile w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 border-2 border-white/40 flex flex-col items-center justify-center shadow-xl relative overflow-hidden">
+              <span class="text-lg">🛡️</span>
+              <span class="text-xs font-black leading-tight">Muro+HP</span>
+              <span id="skill-cd-2" class="text-xs font-mono text-amber-200">LISTO</span>
+            </button>
           </div>
         </div>
 
       </div>
 
       <!-- ====================================================
-           CAJÓN DESLIZANTE (BOTTOM DRAWER PARA BASE, GACHA, HÉROES, CLAN, TIENDA)
+           CAJÓN DESLIZANTE (BASE, HÉROES/SKINS, GACHA, CLAN, TIENDA)
            ==================================================== -->
-      <div id="bottom-drawer" class="drawer-sheet translate-y-full absolute left-0 right-0 bottom-14 z-30 h-[66%] glass-panel rounded-t-3xl p-4 flex flex-col gap-3 shadow-2xl pointer-events-auto">
+      <div id="bottom-drawer" class="drawer-sheet translate-y-full absolute left-0 right-0 bottom-14 z-30 h-[66%] glass-hud rounded-t-3xl p-4 flex flex-col gap-3 shadow-2xl pointer-events-auto">
         <div class="flex items-center justify-between border-b border-white/10 pb-2">
-          <h2 id="drawer-title" class="font-extrabold text-base text-amber-400">🏰 Construcción de Base 3D</h2>
-          <button onclick="closeDrawer()" class="btn-pop px-3 py-1 rounded-xl bg-white/10 text-xs font-bold">
-            ✕ Volver al 3D
+          <h2 id="drawer-title" class="font-extrabold text-base text-emerald-400">🏰 Comandancia de la Base</h2>
+          <button onclick="closeDrawer()" class="btn-tactile px-3 py-1 rounded-xl bg-white/10 text-xs font-bold">
+            ✕ Volver al Mapa 3D
           </button>
         </div>
         <div id="drawer-content" class="flex-1 overflow-y-auto pr-1 space-y-2.5 text-xs"></div>
       </div>
 
-      <!-- ====================================================
-           BARRA DE NAVEGACIÓN INFERIOR PARA CELULAR (6 BOTONES)
-           ==================================================== -->
-      <nav class="relative z-40 bg-[#080b12] border-t border-white/15 grid grid-cols-6 py-1.5 px-1 pointer-events-auto">
-        <button onclick="closeDrawer()" id="nav-world" class="btn-pop flex flex-col items-center justify-center py-1 text-amber-400 font-extrabold text-xs">
+      <!-- BARRA DE NAVEGACIÓN INFERIOR -->
+      <nav class="relative z-40 bg-[#060911] border-t border-white/15 grid grid-cols-5 py-1.5 px-1 pointer-events-auto">
+        <button onclick="closeDrawer()" class="btn-tactile flex flex-col items-center justify-center py-1 text-emerald-400 font-extrabold text-xs">
           <span class="text-base">🕹️</span>
-          <span>Mundo 3D</span>
-        </button>
-        <button onclick="openDrawer('base')" id="nav-base" class="btn-pop flex flex-col items-center justify-center py-1 text-slate-300 font-bold text-xs">
-          <span class="text-base">🏰</span>
           <span>Base 3D</span>
         </button>
-        <button onclick="openDrawer('weapons')" id="nav-weapons" class="btn-pop flex flex-col items-center justify-center py-1 text-slate-300 font-bold text-xs">
-          <span class="text-base">🌀</span>
-          <span>Armas</span>
+        <button onclick="openDrawer('base')" class="btn-tactile flex flex-col items-center justify-center py-1 text-slate-300 font-bold text-xs">
+          <span class="text-base">🏗️</span>
+          <span>Mejoras $</span>
         </button>
-        <button onclick="openDrawer('gacha')" id="nav-gacha" class="btn-pop flex flex-col items-center justify-center py-1 text-slate-300 font-bold text-xs">
-          <span class="text-base">🎲</span>
-          <span>Gacha</span>
-        </button>
-        <button onclick="openDrawer('heroes')" id="nav-heroes" class="btn-pop flex flex-col items-center justify-center py-1 text-slate-300 font-bold text-xs">
+        <button onclick="openDrawer('heroes')" class="btn-tactile flex flex-col items-center justify-center py-1 text-slate-300 font-bold text-xs">
           <span class="text-base">🌟</span>
           <span>Héroes/Skin</span>
         </button>
-        <button onclick="openDrawer('shop')" id="nav-shop" class="btn-pop flex flex-col items-center justify-center py-1 text-slate-300 font-bold text-xs">
+        <button onclick="openDrawer('gacha')" class="btn-tactile flex flex-col items-center justify-center py-1 text-slate-300 font-bold text-xs">
+          <span class="text-base">🎲</span>
+          <span>Gacha</span>
+        </button>
+        <button onclick="openDrawer('shop')" class="btn-tactile flex flex-col items-center justify-center py-1 text-slate-300 font-bold text-xs">
           <span class="text-base">💎</span>
           <span>Clan/Tienda</span>
         </button>
@@ -260,76 +291,66 @@
     </div>
   </div>
 
-  <!-- TOAST DE FEEDBACK -->
-  <div id="toast-msg" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white border border-amber-400 px-4 py-2 rounded-2xl shadow-2xl text-xs font-extrabold hidden"></div>
+  <!-- TOAST -->
+  <div id="toast-msg" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white border border-emerald-400 px-4 py-2 rounded-2xl shadow-2xl text-xs font-extrabold hidden"></div>
 
   <script>
     // ============================================================================
-    // 1. ESTADO GLOBAL BETA 2.0 (SURVIVOR 3D + BASE + GACHA RPG)
+    // 1. ESTADO DEL JUEGO: 5 OLEADAS -> DINERO ($) -> MEJORAR BASE -> JEFE FINAL
     // ============================================================================
     const GAME = {
-      gold: 350,
+      cash: 320,
       gems: 5400,
       tickets: 20,
-      clanCoins: 1200,
       soundOn: true,
       autoPilot: true,
       framedMode: true,
       activeDrawer: null,
 
-      // Progresión en partida 3D
-      runLevel: 1,
-      runXp: 0,
-      runXpNext: 100,
-      wave: 1,
-      kills: 0,
-      pityCounter: 0,
+      // Ciclo de 5 oleadas por Nivel
+      stage: 1,
+      wave: 1, // 1, 2, 3, 4 = Hordas | 5 = Jefe Final
+      phase: 'combat', // 'combat' | 'intermission'
+      enemiesToSpawnInWave: 0,
+      spawnCooldown: 0,
+
+      wallHp: 1500,
+      wallMaxHp: 1500,
+      overdriveTimer: 0,
       mercenaryActive: false,
 
-      // Armas estilo Survivor.io
-      weapons: {
-        blades: { level: 2, name: '🌀 Espadas Orbitales 3D', desc: 'Cuchillas de energía que giran alrededor de tu héroe.' },
-        blaster: { level: 1, name: '🏹 Ráfaga Solar 3D', desc: 'Dispara proyectiles automáticos al enemigo más cercano.' },
-        lightning: { level: 1, name: '⚡ Rayo Celestial 3D', desc: 'Impacta con relámpagos del cielo cada 3.5 segundos.' },
-        nova: { level: 1, name: '🔥 Anillo de Plasma 3D', desc: 'Quema y empuja hordas cercanas con ondas expansivas.' },
-        magnet: { level: 1, name: '🧲 Super Imán de Monedas', desc: 'Aumenta el radio de succión y el valor de las monedas +25%.' }
-      },
-
-      // Edificios de la Base 3D (Estilo Duck Survival / Whiteout Survival)
+      //Las 5 Instalaciones de la Base dentro del recinto fortificado
       buildings: [
-        { id: 'citadel', name: '🏰 Ciudadela', icon: '🏰', level: 1, baseCost: 60, x: 0, z: 0, color: 0xf59e0b, desc: 'Núcleo central: Cura tu vida al acercarte y genera Oro/seg.' },
-        { id: 'turrets', name: '🗼 Torretas', icon: '🗼', level: 1, baseCost: 75, x: -7, z: -6, color: 0x06b6d4, desc: 'Construye hasta 4 torretas láser 3D automáticas (1 por nivel hasta 4, luego sube daño).' },
-        { id: 'mine',    name: '⛏️ Mina Oro', icon: '⛏️', level: 1, baseCost: 65, x: 7, z: -6, color: 0xeab308, desc: 'Extractor 3D que escupe monedas físicas de oro al suelo cada 3.5s.' },
-        { id: 'dome',    name: '🛡️ Domo Escudo', icon: '🛡️', level: 1, baseCost: 80, x: -7, z: 6, color: 0x3b82f6, desc: 'Campo de fuerza hexagonal que ralentiza y daña enemigos dentro de la base.' },
-        { id: 'barracks',name: '⚔️ Cuartel IA', icon: '⚔️', level: 1, baseCost: 90, x: 7, z: 6, color: 0x10b981, desc: 'Despliega aliados soldados 3D que te siguen y disparan contigo.' }
+        { id: 'wall',    name: '🧱 Barricada Frontal', icon: '🧱', level: 1, baseCost: 70,  x: 0,    z: 2.2, color: 0x38bdf8, desc: 'Aumenta la vida del muro defensivo +600 HP y electrifica a los enemigos que lo tocan.' },
+        { id: 'turrets', name: '🔫 Torretas Gattling', icon: '🔫', level: 1, baseCost: 90,  x: -6.2, z: 3.2, color: 0xf59e0b, desc: 'Instala y mejora hasta 4 torretas metralleta pesadas sobre la muralla.' },
+        { id: 'squad',   name: '🎖️ Marines 3D',        icon: '🎖️', level: 1, baseCost: 100, x: 6.2,  z: 3.2, color: 0x10b981, desc: 'Despliega soldados armados en 3D que defienden el patio y te escoltan.' },
+        { id: 'armory',  name: '💵 Armería & Bóveda',  icon: '💵', level: 1, baseCost: 85,  x: -5.5, z: 8.2, color: 0x22c55e, desc: 'Aumenta el Dinero (💵) que suelta cada oleada +30% y mejora el rifle de tu héroe.' },
+        { id: 'bunker',  name: '🏰 Búnker Central',    icon: '🏰', level: 1, baseCost: 110, x: 5.5,  z: 8.2, color: 0xa855f7, desc: 'Sube el daño global +25%, reduce cooldown de habilidades y activa el Dron Aéreo.' }
       ],
 
-      // Roster de Héroes y Skins 3D
+      // 3 Habilidades Activas Tácticas
+      skills: [
+        { name: 'Ataque Aéreo', cooldown: 10, timer: 0 },
+        { name: 'Sobrecarga Electro', cooldown: 9, timer: 0 },
+        { name: 'Muro + Botiquín', cooldown: 11, timer: 0 }
+      ],
+
       selectedHeroId: 'H01',
       heroes: [
-        { id: 'H01', name: 'Seraphina', rarity: 'UR', icon: '☀️', level: 10, stars: 2, dupes: 1, unlocked: true, baseAtk: 180, color: 0xf59e0b, skin: 'default' },
-        { id: 'H02', name: 'Malakor', rarity: 'UR', icon: '🌑', level: 1, stars: 1, dupes: 0, unlocked: false, baseAtk: 210, color: 0xa855f7, skin: 'default' },
-        { id: 'H03', name: 'Kaelen', rarity: 'SSR', icon: '🔥', level: 8, stars: 1, dupes: 0, unlocked: true, baseAtk: 145, color: 0xef4444, skin: 'default' },
-        { id: 'H04', name: 'Lyra', rarity: 'SSR', icon: '🌿', level: 8, stars: 2, dupes: 1, unlocked: true, baseAtk: 135, color: 0x10b981, skin: 'SK04' },
-        { id: 'H05', name: 'Tharok', rarity: 'SSR', icon: '❄️', level: 9, stars: 1, dupes: 0, unlocked: true, baseAtk: 140, color: 0x38bdf8, skin: 'default' }
+        { id: 'H01', name: 'Comandante Seraphina', rarity: 'UR', icon: '☀️', level: 10, stars: 2, dupes: 1, unlocked: true, baseAtk: 65, color: 0xf59e0b, skin: 'default' },
+        { id: 'H02', name: 'General Malakor', rarity: 'UR', icon: '🌑', level: 1, stars: 1, dupes: 0, unlocked: false, baseAtk: 80, color: 0xa855f7, skin: 'default' },
+        { id: 'H03', name: 'Capitán Kaelen', rarity: 'SSR', icon: '🔥', level: 8, stars: 1, dupes: 0, unlocked: true, baseAtk: 52, color: 0xef4444, skin: 'default' },
+        { id: 'H04', name: 'Doctora Lyra', rarity: 'SSR', icon: '🌿', level: 8, stars: 2, dupes: 1, unlocked: true, baseAtk: 48, color: 0x10b981, skin: 'default' }
       ],
 
       skins: [
-        { id: 'SK01', heroId: 'H01', name: 'Cyber-Valquiria Neón', unlocked: false, color: 0x06b6d4, wingColor: 0x22d3ee, bonusPct: 0.15, desc: '+15% Daño Global • Cambia a Seraphina en 3D con alas láser cian.' },
-        { id: 'SK02', heroId: 'H02', name: 'Emperador Cósmico', unlocked: false, color: 0xfacc15, wingColor: 0xa855f7, bonusPct: 0.20, desc: '+20% Daño Global • Armadura dorada galáctica en 3D.' },
-        { id: 'SK03', heroId: 'H03', name: 'Kaelen Luna Sangrienta', unlocked: false, color: 0xdc2626, wingColor: 0xf43f5e, bonusPct: 0.10, desc: '+10% Daño Global • Aura carmesí oscura en 3D.' },
-        { id: 'SK04', heroId: 'H04', name: 'Lyra Neko Celestial', unlocked: true, color: 0xf472b6, wingColor: 0xfbcfe8, bonusPct: 0.08, desc: '+8% Daño Global • Halos rosados en 3D.' }
-      ],
-
-      pets: [
-        { id: 'P01', name: 'Ignis (Dragón 3D)', icon: '🐉', rarity: 'Épica', unlocked: true, equipped: true, color: 0xf97316, bonus: 0.10 },
-        { id: 'P02', name: 'Yukiko (Kitsune 3D)', icon: '🦊', rarity: 'SSR', unlocked: true, equipped: false, color: 0x38bdf8, bonus: 0.18 },
-        { id: 'P03', name: 'Aetherion (Fénix UR 3D)', icon: '🦅', rarity: 'UR', unlocked: false, equipped: false, color: 0xfacc15, bonus: 0.35 }
+        { id: 'SK01', heroId: 'H01', name: 'Exotraje Cyber-Valquiria', unlocked: false, color: 0x06b6d4, visorColor: 0x22d3ee, bonusPct: 0.25, desc: '+25% Daño Global • Armadura táctica de neón cian y rifles de plasma.' },
+        { id: 'SK02', heroId: 'H02', name: 'Armadura Destructor Abisal', unlocked: false, color: 0xfacc15, visorColor: 0xa855f7, bonusPct: 0.30, desc: '+30% Daño Global • Placas doradas pesadas.' }
       ]
     };
 
     // ============================================================================
-    // 2. AUDIO SINTETIZADO (MONEDAS, LÁSERES, CONSTRUCCIÓN, GACHA)
+    // 2. SONIDO SINTETIZADO (DISPAROS REALISTAS, EXPLOSIONES, BILLETES, SIRENA JEFE)
     // ============================================================================
     let audioCtx = null;
     function playTone(freq, type = 'sine', dur = 0.09, vol = 0.05) {
@@ -348,13 +369,17 @@
         o.stop(audioCtx.currentTime + dur);
       } catch (e) {}
     }
-    function sfxCoin() { playTone(880 + Math.random() * 220, 'sine', 0.07, 0.04); }
-    function sfxShoot() { playTone(320 + Math.random() * 90, 'triangle', 0.06, 0.03); }
-    function sfxBuild() {
-      [440, 554, 659, 880].forEach((f, i) => setTimeout(() => playTone(f, 'triangle', 0.14, 0.07), i * 65));
+    function sfxRifle() { playTone(160 + Math.random() * 60, 'sawtooth', 0.05, 0.035); }
+    function sfxCash() { playTone(980 + Math.random() * 250, 'sine', 0.08, 0.045); }
+    function sfxUpgrade() {
+      [440, 554, 659, 880].forEach((f, i) => setTimeout(() => playTone(f, 'triangle', 0.13, 0.07), i * 60));
     }
-    function sfxLevelUp() {
-      [523, 659, 783, 1046].forEach((f, i) => setTimeout(() => playTone(f, 'sawtooth', 0.18, 0.07), i * 80));
+    function sfxExplosion() {
+      playTone(85, 'sawtooth', 0.28, 0.09);
+      setTimeout(() => playTone(62, 'square', 0.32, 0.08), 50);
+    }
+    function sfxBossSiren() {
+      [220, 165, 220, 165].forEach((f, i) => setTimeout(() => playTone(f, 'sawtooth', 0.22, 0.08), i * 180));
     }
 
     function toggleSound() {
@@ -363,414 +388,643 @@
     }
 
     // ============================================================================
-    // 3. ESCENA 3D THREE.JS (TERRENO, BASE 3D, HÉROE, TORRETAS, HORDAS, MONEDAS)
+    // 3. GENERADOR DE TEXTURAS PROCEDURALES PBR (SUELO EMPEDRADO, ACERO, HORMIGÓN)
+    // ============================================================================
+    function createGroundTexture() {
+      const c = document.createElement('canvas');
+      c.width = 512; c.height = 512;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#1b222c';
+      ctx.fillRect(0, 0, 512, 512);
+
+      // Baldosas de piedra táctica y grietas sutiles
+      ctx.strokeStyle = '#11161d';
+      ctx.lineWidth = 4;
+      for (let y = 0; y < 512; y += 64) {
+        for (let x = 0; x < 512; x += 64) {
+          const shade = 24 + Math.floor(Math.random() * 14);
+          ctx.fillStyle = `rgb(${shade}, ${shade + 5}, ${shade + 12})`;
+          ctx.fillRect(x + 2, y + 2, 60, 60);
+          ctx.strokeRect(x, y, 64, 64);
+        }
+      }
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(6, 7);
+      return tex;
+    }
+
+    // ============================================================================
+    // 4. ESCENA 3D SEMI-CERRADA (FORTALEZA TÁCTICA CON MUROS, ANTORCHAS Y PUERTAS)
     // ============================================================================
     const hostEl = document.getElementById('canvas-3d-host');
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x070b14);
-    scene.fog = new THREE.FogExp2(0x070b14, 0.015);
+    scene.background = new THREE.Color(0x070a10);
+    scene.fog = new THREE.FogExp2(0x070a10, 0.016);
 
-    const camera = new THREE.PerspectiveCamera(48, 1, 0.1, 160);
+    const camera = new THREE.PerspectiveCamera(46, 1, 0.1, 140);
     const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
     hostEl.appendChild(renderer.domElement);
 
     function resize3D() {
-      const w = hostEl.clientWidth || 420;
-      const h = hostEl.clientHeight || 780;
+      const w = hostEl.clientWidth || 430;
+      const h = hostEl.clientHeight || 800;
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
     }
     window.addEventListener('resize', resize3D);
 
-    // Iluminación 3D
-    const ambientLight = new THREE.AmbientLight(0x94a3b8, 0.85);
-    scene.add(ambientLight);
+    // Iluminación realista (Luz de luna + Sol táctico + Braseros cálidos en los muros + Fogón de disparo)
+    const hemiLight = new THREE.HemisphereLight(0x93c5fd, 0x1e293b, 0.65);
+    scene.add(hemiLight);
 
-    const dirLight = new THREE.DirectionalLight(0xfffbeb, 1.25);
-    dirLight.position.set(18, 34, 22);
-    dirLight.castShadow = true;
-    dirLight.shadow.mapSize.width = 1024;
-    dirLight.shadow.mapSize.height = 1024;
-    dirLight.shadow.camera.near = 5;
-    dirLight.shadow.camera.far = 90;
-    const d = 28;
-    dirLight.shadow.camera.left = -d;
-    dirLight.shadow.camera.right = d;
-    dirLight.shadow.camera.top = d;
-    dirLight.shadow.camera.bottom = -d;
-    scene.add(dirLight);
+    const sunLight = new THREE.DirectionalLight(0xfff7ed, 1.35);
+    sunLight.position.set(16, 32, 18);
+    sunLight.castShadow = true;
+    sunLight.shadow.mapSize.width = 1024;
+    sunLight.shadow.mapSize.height = 1024;
+    const sd = 22;
+    sunLight.shadow.camera.left = -sd;
+    sunLight.shadow.camera.right = sd;
+    sunLight.shadow.camera.top = sd;
+    sunLight.shadow.camera.bottom = -sd;
+    scene.add(sunLight);
 
-    const basePointLight = new THREE.PointLight(0xf59e0b, 1.6, 22);
-    basePointLight.position.set(0, 4, 0);
-    scene.add(basePointLight);
+    const muzzleFlashLight = new THREE.PointLight(0xfbbf24, 0, 10);
+    scene.add(muzzleFlashLight);
 
-    // Suelo 3D + Cuadrícula Táctica + Decoración de Mapa
-    const groundGeo = new THREE.PlaneGeometry(120, 120);
-    const groundMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.85, metalness: 0.1 });
-    const groundMesh = new THREE.Mesh(groundGeo, groundMat);
+    // Límites del Mapa Semi-Cerrado (Patio Fortificado: X de -11.5 a +11.5, Z de -14.5 a +11.5)
+    const ARENA_BOUNDS = { minX: -11.2, maxX: 11.2, minZ: -13.8, maxZ: 10.8 };
+
+    // Suelo empedrado realista
+    const groundMesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(32, 36),
+      new THREE.MeshStandardMaterial({ map: createGroundTexture(), roughness: 0.82, metalness: 0.12 })
+    );
     groundMesh.rotation.x = -Math.PI / 2;
     groundMesh.receiveShadow = true;
     scene.add(groundMesh);
 
-    const gridHelper = new THREE.GridHelper(100, 50, 0x38bdf8, 0x1e293b);
-    gridHelper.position.y = 0.02;
-    scene.add(gridHelper);
+    // Construcción de los Muros Perimetrales del Recinto Cerrado
+    const wallMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.6, metalness: 0.35 });
+    const darkSteelMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.4, metalness: 0.7 });
 
-    // Perímetro luminoso de la Base
-    const baseRingGeo = new THREE.RingGeometry(9.6, 10.0, 48);
-    const baseRingMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b, side: THREE.DoubleSide, transparent: true, opacity: 0.45 });
-    const baseRingMesh = new THREE.Mesh(baseRingGeo, baseRingMat);
-    baseRingMesh.rotation.x = -Math.PI / 2;
-    baseRingMesh.position.y = 0.04;
-    scene.add(baseRingMesh);
+    function addPerimeterWall(x, y, z, w, h, d, mat = wallMat) {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+      m.position.set(x, y, z);
+      m.castShadow = true;
+      m.receiveShadow = true;
+      scene.add(m);
+      return m;
+    }
 
-    // Domo de Fuerza 3D (Escudo de Base)
-    const domeGeo = new THREE.SphereGeometry(9.8, 28, 16, 0, Math.PI * 2, 0, Math.PI / 2);
-    const domeMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, wireframe: true, transparent: true, opacity: 0.14 });
-    const domeMesh = new THREE.Mesh(domeGeo, domeMat);
-    scene.add(domeMesh);
+    // Muros Izquierdo, Derecho y Sur
+    addPerimeterWall(-12.6, 2.2, -1.5, 1.6, 4.4, 30);
+    addPerimeterWall( 12.6, 2.2, -1.5, 1.6, 4.4, 30);
+    addPerimeterWall( 0.0,  2.0, 12.2, 26.8, 4.0, 1.6);
 
-    // ============================================================================
-    // 4. CONSTRUCCIÓN DE OBJETOS 3D: BASE, PADS, TORRETAS, HÉROE, ALIADOS
-    // ============================================================================
-    const padMeshes = {};
-    const turretMeshes = [];
-    const allySoldiers3D = [];
+    // Muro Norte con 3 Portales de Invasión (Izquierda X=-7, Centro X=0, Derecha X=+7)
+    addPerimeterWall(-10.5, 2.4, -15.2, 4.2, 4.8, 1.8);
+    addPerimeterWall(-3.5,  2.4, -15.2, 3.8, 4.8, 1.8);
+    addPerimeterWall( 3.5,  2.4, -15.2, 3.8, 4.8, 1.8);
+    addPerimeterWall( 10.5, 2.4, -15.2, 4.2, 4.8, 1.8);
+    // Dintel superior sobre las 3 puertas norte
+    addPerimeterWall(0, 4.2, -15.2, 26.0, 1.2, 2.0, darkSteelMat);
 
-    // Crear los 5 Pads de Construcción en el suelo 3D
-    const citadelCrystalMesh = new THREE.Mesh(
-      new THREE.OctahedronGeometry(1.15, 0),
-      new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0xd97706, emissiveIntensity: 0.6, metalness: 0.6, roughness: 0.2 })
-    );
-    citadelCrystalMesh.position.set(0, 3.2, 0);
-    citadelCrystalMesh.castShadow = true;
-    scene.add(citadelCrystalMesh);
+    // 4 Torres de Vigilancia en las esquinas + Braseros con luz cálida
+    const cornerCoords = [
+      { x: -12.2, z: -14.8 }, { x: 12.2, z: -14.8 },
+      { x: -12.2, z:  11.8 }, { x: 12.2, z:  11.8 }
+    ];
+    cornerCoords.forEach(c => {
+      addPerimeterWall(c.x, 3.2, c.z, 2.8, 6.4, 2.8, darkSteelMat);
+      const brazierLight = new THREE.PointLight(0xf97316, 1.2, 16);
+      brazierLight.position.set(c.x * 0.82, 3.5, c.z * 0.85);
+      scene.add(brazierLight);
 
-    const citadelBaseTower = new THREE.Mesh(
-      new THREE.CylinderGeometry(1.4, 2.0, 2.0, 8),
-      new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.5, roughness: 0.4 })
-    );
-    citadelBaseTower.position.set(0, 1.0, 0);
-    citadelBaseTower.castShadow = true;
-    citadelBaseTower.receiveShadow = true;
-    scene.add(citadelBaseTower);
-
-    // Mina de Oro 3D (Extractor giratorio)
-    const mineGroup = new THREE.Group();
-    mineGroup.position.set(7, 0, -6);
-    const mineBase = new THREE.Mesh(
-      new THREE.CylinderGeometry(1.2, 1.5, 1.2, 6),
-      new THREE.MeshStandardMaterial({ color: 0xca8a04, metalness: 0.6, roughness: 0.3 })
-    );
-    mineBase.position.y = 0.6;
-    const mineDrill = new THREE.Mesh(
-      new THREE.ConeGeometry(0.85, 2.2, 6),
-      new THREE.MeshStandardMaterial({ color: 0xfef08a, emissive: 0xca8a04, emissiveIntensity: 0.4 })
-    );
-    mineDrill.position.y = 2.0;
-    mineDrill.rotation.x = Math.PI;
-    mineGroup.add(mineBase, mineDrill);
-    scene.add(mineGroup);
-
-    // Cuartel 3D
-    const barracksMesh = new THREE.Mesh(
-      new THREE.BoxGeometry(2.2, 1.6, 2.2),
-      new THREE.MeshStandardMaterial({ color: 0x059669, roughness: 0.4, metalness: 0.3 })
-    );
-    barracksMesh.position.set(7, 0.8, 6);
-    barracksMesh.castShadow = true;
-    scene.add(barracksMesh);
-
-    // Generador de anillos de Pad interactivos en 3D
-    GAME.buildings.forEach(b => {
-      const ring = new THREE.Mesh(
-        new THREE.RingGeometry(1.8, 2.25, 32),
-        new THREE.MeshBasicMaterial({ color: b.color, side: THREE.DoubleSide, transparent: true, opacity: 0.75 })
+      const flame = new THREE.Mesh(
+        new THREE.ConeGeometry(0.45, 0.9, 8),
+        new THREE.MeshBasicMaterial({ color: 0xfb923c })
       );
-      ring.rotation.x = -Math.PI / 2;
-      ring.position.set(b.x, 0.05, b.z);
-      scene.add(ring);
-      padMeshes[b.id] = ring;
+      flame.position.set(c.x * 0.88, 3.6, c.z * 0.88);
+      scene.add(flame);
     });
 
-    // Crear las 4 posiciones de Torretas Automáticas 3D
-    const turretCoords = [
-      { x: -7, z: -6 },
-      { x: -7, z: 6 },
-      { x: 0, z: -8.5 },
-      { x: 0, z: 8.5 }
+    // Cajas de suministros y barriles tácticos dentro del mapa cerrado
+    const crateMat = new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.7 });
+    [
+      { x: -9.8, z: -4.5 }, { x: -9.2, z: -3.2 },
+      { x:  9.8, z: -4.5 }, { x:  9.3, z: -3.1 }
+    ].forEach(p => {
+      addPerimeterWall(p.x, 0.65, p.z, 1.3, 1.3, 1.3, crateMat);
+    });
+
+    // ============================================================================
+    // 5. BARRICADA DEFENSIVA E INSTALACIONES 3D DE LA BASE (ZONA SUR)
+    // ============================================================================
+    // Línea de Barricada Frontal (en Z = 1.6) que divide la Zona de Combate Norte y tu Base Sur
+    const barricadeGroup = new THREE.Group();
+    barricadeGroup.position.set(0, 0, 1.6);
+    scene.add(barricadeGroup);
+
+    const sandbagMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.6, metalness: 0.4 });
+    const laserFenceMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.65 });
+
+    for (let bx = -9.5; bx <= 9.5; bx += 3.8) {
+      if (Math.abs(bx) < 1.5) continue; // Paso central con barrera láser para el héroe
+      const block = new THREE.Mesh(new THREE.BoxGeometry(3.1, 1.35, 1.1), sandbagMat);
+      block.position.set(bx, 0.68, 0);
+      block.castShadow = true;
+      block.receiveShadow = true;
+      barricadeGroup.add(block);
+    }
+    const centerLaserGate = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.9, 0.25), laserFenceMat);
+    centerLaserGate.position.set(0, 0.5, 0);
+    barricadeGroup.add(centerLaserGate);
+
+    // Búnker de Comando Central (Sur)
+    const bunkerGroup = new THREE.Group();
+    bunkerGroup.position.set(5.5, 0, 8.2);
+    const bunkerBase = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.6, 2.1, 2.2, 8),
+      new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.6, roughness: 0.35 })
+    );
+    bunkerBase.position.y = 1.1;
+    bunkerBase.castShadow = true;
+    const bunkerRadar = new THREE.Mesh(
+      new THREE.OctahedronGeometry(0.95, 0),
+      new THREE.MeshStandardMaterial({ color: 0xa855f7, emissive: 0x7e22ce, emissiveIntensity: 0.7 })
+    );
+    bunkerRadar.position.y = 3.0;
+    bunkerGroup.add(bunkerBase, bunkerRadar);
+    scene.add(bunkerGroup);
+
+    // Armería & Bóveda de Dinero (Sur-Oeste)
+    const armoryGroup = new THREE.Group();
+    armoryGroup.position.set(-5.5, 0, 8.2);
+    const vaultBox = new THREE.Mesh(
+      new THREE.BoxGeometry(2.6, 1.9, 2.2),
+      new THREE.MeshStandardMaterial({ color: 0x065f46, metalness: 0.5, roughness: 0.4 })
+    );
+    vaultBox.position.y = 0.95;
+    vaultBox.castShadow = true;
+    armoryGroup.add(vaultBox);
+    scene.add(armoryGroup);
+
+    // Pads luminosos en el suelo para mejorar con Dinero ($)
+    const padMeshes = {};
+    GAME.buildings.forEach(b => {
+      const padGroup = new THREE.Group();
+      padGroup.position.set(b.x, 0.04, b.z);
+
+      const outerRing = new THREE.Mesh(
+        new THREE.RingGeometry(1.55, 1.95, 32),
+        new THREE.MeshBasicMaterial({ color: b.color, side: THREE.DoubleSide, transparent: true, opacity: 0.85 })
+      );
+      outerRing.rotation.x = -Math.PI / 2;
+
+      const innerPlate = new THREE.Mesh(
+        new THREE.CircleGeometry(1.5, 32),
+        new THREE.MeshBasicMaterial({ color: b.color, transparent: true, opacity: 0.18 })
+      );
+      innerPlate.rotation.x = -Math.PI / 2;
+
+      padGroup.add(outerRing, innerPlate);
+      scene.add(padGroup);
+      padMeshes[b.id] = { group: padGroup, ring: outerRing };
+    });
+
+    // Torretas Gattling 3D sobre la Barricada
+    const turretSlots = [
+      { x: -4.8, z: 1.6 },
+      { x:  4.8, z: 1.6 },
+      { x: -8.6, z: 1.6 },
+      { x:  8.6, z: 1.6 }
     ];
+    const turretEntities = [];
 
     function syncTurrets3D() {
-      const desiredCount = Math.min(4, GAME.buildings.find(b => b.id === 'turrets').level);
-      while (turretMeshes.length < desiredCount) {
-        const idx = turretMeshes.length;
-        const c = turretCoords[idx];
+      const lv = GAME.buildings.find(b => b.id === 'turrets').level;
+      const count = Math.min(4, lv);
+      while (turretEntities.length < count) {
+        const idx = turretEntities.length;
+        const pos = turretSlots[idx];
         const tGroup = new THREE.Group();
-        tGroup.position.set(c.x, 0, c.z);
+        tGroup.position.set(pos.x, 1.35, pos.z);
 
-        const ped = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.8, 1.1, 1.2, 8),
-          new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.6, roughness: 0.3 })
+        const mount = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.55, 0.7, 0.6, 10),
+          darkSteelMat
         );
-        ped.position.y = 0.6;
-
         const head = new THREE.Mesh(
-          new THREE.SphereGeometry(0.75, 12, 12),
-          new THREE.MeshStandardMaterial({ color: 0x06b6d4, emissive: 0x0891b2, emissiveIntensity: 0.5 })
+          new THREE.BoxGeometry(0.95, 0.65, 1.1),
+          new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.6, roughness: 0.3 })
         );
-        head.position.y = 1.4;
+        head.position.y = 0.5;
 
-        const barrel = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.18, 0.18, 1.6, 8),
-          new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.8 })
-        );
-        barrel.rotation.x = Math.PI / 2;
-        barrel.position.set(0, 1.4, 0.9);
+        // Doble cañón Gattling
+        const b1 = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 1.4, 8), darkSteelMat);
+        b1.rotation.x = Math.PI / 2;
+        b1.position.set(-0.22, 0.5, -0.8);
+        const b2 = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 1.4, 8), darkSteelMat);
+        b2.rotation.x = Math.PI / 2;
+        b2.position.set(0.22, 0.5, -0.8);
 
-        tGroup.add(ped, head, barrel);
+        tGroup.add(mount, head, b1, b2);
         scene.add(tGroup);
-        turretMeshes.push({ group: tGroup, shootTimer: idx * 0.25 });
+        turretEntities.push({ group: tGroup, shootTimer: idx * 0.18 });
       }
-      document.getElementById('hud-turret-count').textContent = turretMeshes.length;
     }
 
-    function syncBarracksSoldiers3D() {
-      const barracksLv = GAME.buildings.find(b => b.id === 'barracks').level;
-      const desiredAllies = Math.min(4, barracksLv + (GAME.mercenaryActive ? 1 : 0));
-      while (allySoldiers3D.length < desiredAllies) {
-        const idx = allySoldiers3D.length;
-        const g = new THREE.Group();
-        const body = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.42, 0.5, 1.2, 10),
-          new THREE.MeshStandardMaterial({ color: idx === 0 && GAME.mercenaryActive ? 0xfacc15 : 0x10b981 })
-        );
-        body.position.y = 0.6;
-        const head = new THREE.Mesh(
-          new THREE.SphereGeometry(0.38, 10, 10),
-          new THREE.MeshStandardMaterial({ color: 0xfde68a })
-        );
-        head.position.y = 1.45;
-        g.add(body, head);
-        g.position.set(player3D.pos.x + (idx - 1) * 2, 0, player3D.pos.z + 2);
-        scene.add(g);
-        allySoldiers3D.push({ group: g, shootTimer: idx * 0.3, angleOffset: idx * 1.57 });
+    // Marines Defensores 3D (Articulados)
+    const marineEntities = [];
+    function createArticulatedSoldierMesh(armorColorHex, visorColorHex = 0x38bdf8, scale = 1.0) {
+      const root = new THREE.Group();
+      root.scale.set(scale, scale, scale);
+
+      const armorMat = new THREE.MeshStandardMaterial({ color: armorColorHex, roughness: 0.35, metalness: 0.45 });
+      const limbMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.6 });
+      const skinMat = new THREE.MeshStandardMaterial({ color: 0xfde68a, roughness: 0.4 });
+
+      // Piernas
+      const leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.75, 0.28), limbMat);
+      leftLeg.position.set(-0.2, 0.38, 0);
+      const rightLeg = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.75, 0.28), limbMat);
+      rightLeg.position.set(0.2, 0.38, 0);
+
+      // Torso + Hombreras
+      const torso = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.95, 0.48), armorMat);
+      torso.position.set(0, 1.18, 0);
+      torso.castShadow = true;
+
+      const pLeft = new THREE.Mesh(new THREE.SphereGeometry(0.26, 10, 10), armorMat);
+      pLeft.position.set(-0.52, 1.52, 0);
+      const pRight = new THREE.Mesh(new THREE.SphereGeometry(0.26, 10, 10), armorMat);
+      pRight.position.set(0.52, 1.52, 0);
+
+      // Cabeza + Casco + Visor táctico
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.36, 12, 12), skinMat);
+      head.position.set(0, 1.95, 0);
+      head.castShadow = true;
+      const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.39, 12, 12, 0, Math.PI * 2, 0, Math.PI * 0.65), armorMat);
+      helmet.position.set(0, 1.98, 0);
+      const visor = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.16, 0.25), new THREE.MeshBasicMaterial({ color: visorColorHex }));
+      visor.position.set(0, 1.95, 0.28);
+
+      // Rifle de Asalto 3D
+      const rifle = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.22, 1.15), darkSteelMat);
+      rifle.position.set(0.42, 1.22, 0.45);
+
+      root.add(leftLeg, rightLeg, torso, pLeft, pRight, head, helmet, visor, rifle);
+      root.userData = { leftLeg, rightLeg, torso, helmet, visor, armorMat };
+      return root;
+    }
+
+    function syncMarineSquad3D() {
+      const lv = GAME.buildings.find(b => b.id === 'squad').level;
+      const desired = Math.min(4, lv + (GAME.mercenaryActive ? 1 : 0));
+      while (marineEntities.length < desired) {
+        const idx = marineEntities.length;
+        const isMerc = (idx === 0 && GAME.mercenaryActive);
+        const mesh = createArticulatedSoldierMesh(isMerc ? 0xfacc15 : 0x10b981, 0x38bdf8, isMerc ? 1.12 : 0.92);
+        scene.add(mesh);
+        marineEntities.push({
+          mesh,
+          shootTimer: idx * 0.25,
+          offsetAngle: idx * 1.6
+        });
       }
     }
 
     // ============================================================================
-    // 5. HÉROE JUGADOR 3D + SKINS + ESPADAS ORBITALES + MASCOTA 3D
+    // 6. HÉROE COMANDANTE 3D ARTICULADO
     // ============================================================================
-    const playerGroup = new THREE.Group();
-    scene.add(playerGroup);
+    const playerMesh = createArticulatedSoldierMesh(0xf59e0b, 0x38bdf8, 1.18);
+    scene.add(playerMesh);
 
-    const heroBodyMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.3, metalness: 0.5 });
-    const heroBodyMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.58, 0.72, 1.55, 12), heroBodyMat);
-    heroBodyMesh.position.y = 0.8;
-    heroBodyMesh.castShadow = true;
-
-    const heroHeadMesh = new THREE.Mesh(
-      new THREE.SphereGeometry(0.5, 14, 14),
-      new THREE.MeshStandardMaterial({ color: 0xfef3c7, roughness: 0.3 })
+    const playerAuraRing = new THREE.Mesh(
+      new THREE.RingGeometry(0.95, 1.2, 28),
+      new THREE.MeshBasicMaterial({ color: 0x10b981, side: THREE.DoubleSide, transparent: true, opacity: 0.7 })
     );
-    heroHeadMesh.position.y = 1.9;
-    heroHeadMesh.castShadow = true;
-
-    const heroVisorMesh = new THREE.Mesh(
-      new THREE.BoxGeometry(0.65, 0.2, 0.35),
-      new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
-    );
-    heroVisorMesh.position.set(0, 1.92, 0.35);
-
-    // Alas 3D / Halo de Skin
-    const wingMat = new THREE.MeshBasicMaterial({ color: 0xfacc15, side: THREE.DoubleSide, transparent: true, opacity: 0.85 });
-    const leftWing = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.9, 0.08), wingMat);
-    leftWing.position.set(-0.85, 1.35, -0.35);
-    leftWing.rotation.z = 0.35;
-    const rightWing = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.9, 0.08), wingMat);
-    rightWing.position.set(0.85, 1.35, -0.35);
-    rightWing.rotation.z = -0.35;
-
-    const heroAuraRing = new THREE.Mesh(
-      new THREE.RingGeometry(1.05, 1.32, 28),
-      new THREE.MeshBasicMaterial({ color: 0xfacc15, side: THREE.DoubleSide, transparent: true, opacity: 0.75 })
-    );
-    heroAuraRing.rotation.x = -Math.PI / 2;
-    heroAuraRing.position.y = 0.05;
-
-    playerGroup.add(heroBodyMesh, heroHeadMesh, heroVisorMesh, leftWing, rightWing, heroAuraRing);
-
-    // Mascota 3D flotante
-    const petMesh = new THREE.Mesh(
-      new THREE.OctahedronGeometry(0.48, 1),
-      new THREE.MeshStandardMaterial({ color: 0xf97316, emissive: 0xea580c, emissiveIntensity: 0.6 })
-    );
-    scene.add(petMesh);
-
-    // Espadas Orbitales 3D (Guardian Blades)
-    const orbitalBladesGroup = new THREE.Group();
-    scene.add(orbitalBladesGroup);
-    let bladeMeshes = [];
-
-    function rebuildOrbitalBlades3D() {
-      bladeMeshes.forEach(m => orbitalBladesGroup.remove(m));
-      bladeMeshes = [];
-      const count = GAME.weapons.blades.level + 1;
-      for (let i = 0; i < count; i++) {
-        const blade = new THREE.Mesh(
-          new THREE.BoxGeometry(0.28, 0.12, 1.45),
-          new THREE.MeshBasicMaterial({ color: 0x22d3ee })
-        );
-        orbitalBladesGroup.add(blade);
-        bladeMeshes.push(blade);
-      }
-    }
+    playerAuraRing.rotation.x = -Math.PI / 2;
+    playerAuraRing.position.y = 0.04;
+    playerMesh.add(playerAuraRing);
 
     const player3D = {
-      pos: { x: 0, z: 3.5 },
-      vel: { x: 0, z: 0 },
-      speed: 9.8,
+      pos: { x: 0, z: 4.5 },
+      speed: 9.2,
       shootTimer: 0,
-      lightningTimer: 0,
-      novaTimer: 0,
-      padUpgradeCooldown: 0
+      padInvestTimer: 0
     };
 
-    function applyHeroVisuals3D() {
+    function applyHeroSkinVisuals3D() {
       const h = GAME.heroes.find(x => x.id === GAME.selectedHeroId) || GAME.heroes[0];
       const sk = GAME.skins.find(s => s.id === h.skin && s.unlocked);
-      heroBodyMat.color.setHex(sk ? sk.color : h.color);
-      wingMat.color.setHex(sk ? sk.wingColor : h.color);
-      heroAuraRing.material.color.setHex(sk ? sk.wingColor : h.color);
-
-      const eqPet = GAME.pets.find(p => p.equipped) || GAME.pets[0];
-      petMesh.material.color.setHex(eqPet.color);
-      petMesh.material.emissive.setHex(eqPet.color);
+      playerMesh.userData.armorMat.color.setHex(sk ? sk.color : h.color);
+      playerMesh.userData.visor.material.color.setHex(sk ? sk.visorColor : 0x38bdf8);
     }
 
     // ============================================================================
-    // 6. ENTIDADES DINÁMICAS 3D: ENEMIGOS, MONEDAS, GEMAS XP, PROYECTILES, ONDAS
+    // 7. ENEMIGOS 3D ARTICULADOS, JEFE FINAL (OLEADA 5) Y BILLETES DE DINERO (💵)
     // ============================================================================
     const enemies3D = [];
-    const lootDrops3D = [];
-    const projectiles3D = [];
-    const fxRings3D = [];
+    const cashBundles3D = [];
+    const bullets3D = [];
+    const shockwaves3D = [];
 
-    const coinGeo = new THREE.CylinderGeometry(0.36, 0.36, 0.14, 12);
-    const coinMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xca8a04, emissiveIntensity: 0.5, metalness: 0.8, roughness: 0.2 });
-    const xpGemGeo = new THREE.OctahedronGeometry(0.34, 0);
-    const xpGemMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+    // Modelo de Billete de Dinero 3D (Fajo de dólares verde con banda dorada)
+    const cashGeo = new THREE.BoxGeometry(0.75, 0.22, 0.42);
+    const cashMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x15803d, emissiveIntensity: 0.35, roughness: 0.4 });
 
-    function spawnEnemy3D(isBoss = false) {
-      const angle = Math.random() * Math.PI * 2;
-      const dist = 21 + Math.random() * 7;
-      const x = Math.cos(angle) * dist;
-      const z = Math.sin(angle) * dist;
+    function createEnemyMesh3D(isFinalBoss) {
+      const g = new THREE.Group();
+      const scale = isFinalBoss ? 2.45 : (0.92 + Math.random() * 0.22);
+      g.scale.set(scale, scale, scale);
 
-      const scale = isBoss ? 2.3 : (0.85 + Math.random() * 0.35);
-      const colorHex = isBoss ? 0xf43f5e : (Math.random() < 0.5 ? 0xa855f7 : 0xef4444);
+      const skinColor = isFinalBoss ? 0x991b1b : (Math.random() < 0.5 ? 0x4c1d95 : 0x7f1d1d);
+      const bodyMat = new THREE.MeshStandardMaterial({ color: skinColor, roughness: 0.45, metalness: 0.3 });
 
-      const group = new THREE.Group();
-      const body = new THREE.Mesh(
-        isBoss ? new THREE.DodecahedronGeometry(1.05 * scale, 0) : new THREE.BoxGeometry(0.95 * scale, 1.15 * scale, 0.95 * scale),
-        new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.4, metalness: 0.3 })
+      const torso = new THREE.Mesh(new THREE.BoxGeometry(0.85, 1.05, 0.55), bodyMat);
+      torso.position.y = 1.1;
+      torso.castShadow = true;
+
+      const head = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.55, 0.55), bodyMat);
+      head.position.y = 1.9;
+
+      const eyes = new THREE.Mesh(
+        new THREE.BoxGeometry(0.46, 0.14, 0.15),
+        new THREE.MeshBasicMaterial({ color: isFinalBoss ? 0xfacc15 : 0xf43f5e })
       );
-      body.position.y = 0.65 * scale;
-      body.castShadow = true;
-      group.add(body);
+      eyes.position.set(0, 1.92, 0.25);
 
-      group.position.set(x, 0, z);
-      scene.add(group);
+      const leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.85, 0.26), bodyMat);
+      leftArm.position.set(-0.6, 1.15, 0.2);
+      leftArm.rotation.x = -0.6;
+      const rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.85, 0.26), bodyMat);
+      rightArm.position.set(0.6, 1.15, 0.2);
+      rightArm.rotation.x = -0.6;
 
-      const baseHp = (110 * Math.pow(1.18, GAME.wave - 1)) * (isBoss ? 9.0 : 1.0);
+      g.add(torso, head, eyes, leftArm, rightArm);
+
+      if (isFinalBoss) {
+        // Cuernos y Martillo Demoledor del Jefe Final (Oleada 5)
+        const hornMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.8 });
+        const hL = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.75, 6), hornMat);
+        hL.position.set(-0.35, 2.35, 0);
+        hL.rotation.z = 0.4;
+        const hR = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.75, 6), hornMat);
+        hR.position.set(0.35, 2.35, 0);
+        hR.rotation.z = -0.4;
+        g.add(hL, hR);
+      }
+
+      g.userData = { torso, bodyMat };
+      return g;
+    }
+
+    function startWave(waveNum) {
+      GAME.wave = waveNum;
+      GAME.phase = 'combat';
+      document.getElementById('intermission-banner').classList.add('hidden');
+      document.getElementById('intermission-banner').classList.remove('flex');
+
+      const isBossWave = (GAME.wave === 5);
+      const stageMult = Math.pow(1.35, GAME.stage - 1);
+
+      if (isBossWave) {
+        sfxBossSiren();
+        GAME.enemiesToSpawnInWave = 6;
+        // Generar al Jefe Final en la Puerta Norte Central
+        const bossMesh = createEnemyMesh3D(true);
+        bossMesh.position.set(0, 0, -13.5);
+        scene.add(bossMesh);
+
+        const bossMaxHp = Math.round(2400 * stageMult);
+        enemies3D.push({
+          mesh: bossMesh,
+          x: 0,
+          z: -13.5,
+          hp: bossMaxHp,
+          maxHp: bossMaxHp,
+          atk: Math.round(55 * stageMult),
+          speed: 2.3,
+          radius: 1.9,
+          isBoss: true,
+          hitFlash: 0,
+          slamTimer: 0
+        });
+        document.getElementById('boss-hp-banner').classList.remove('hidden');
+        document.getElementById('boss-hp-banner').classList.add('flex');
+        showToast('👹 ¡OLEADA 5/5: EL JEFE FINAL HA ROTO LA PUERTA NORTE!');
+      } else {
+        document.getElementById('boss-hp-banner').classList.add('hidden');
+        document.getElementById('boss-hp-banner').classList.remove('flex');
+        GAME.enemiesToSpawnInWave = 6 + GAME.wave * 3;
+      }
+
+      updateHUD();
+    }
+
+    function spawnRegularEnemyFromGates() {
+      const gatesX = [-7.0, 0.0, 7.0];
+      const gx = gatesX[Math.floor(Math.random() * gatesX.length)] + (Math.random() - 0.5) * 1.5;
+      const gz = -13.6;
+
+      const stageMult = Math.pow(1.35, GAME.stage - 1);
+      const hp = Math.round((130 + GAME.wave * 35) * stageMult);
+      const mesh = createEnemyMesh3D(false);
+      mesh.position.set(gx, 0, gz);
+      scene.add(mesh);
+
       enemies3D.push({
-        group,
-        body,
-        x,
-        z,
-        hp: baseHp,
-        maxHp: baseHp,
-        speed: isBoss ? 3.2 : (3.8 + Math.random() * 1.4),
-        radius: isBoss ? 1.8 : 0.85,
-        isBoss,
+        mesh,
+        x: gx,
+        z: gz,
+        hp,
+        maxHp: hp,
+        atk: Math.round(16 * stageMult),
+        speed: 3.4 + Math.random() * 0.9,
+        radius: 0.85,
+        isBoss: false,
         hitFlash: 0
       });
     }
 
-    function spawnBossWaveNow() {
-      GAME.wave++;
-      spawnEnemy3D(true);
-      for (let i = 0; i < 6; i++) spawnEnemy3D(false);
-      showToast(`👹 ¡Jefe 3D de Oleada ${GAME.wave} ha invadido el mapa!`);
-    }
-
-    function spawnLootDrop3D(x, z, goldVal, xpVal) {
-      if (lootDrops3D.length > 90) return; // Cap de rendimiento móvil
-      const isCoin = Math.random() < 0.65 || goldVal > 30;
-      const mesh = new THREE.Mesh(isCoin ? coinGeo : xpGemGeo, isCoin ? coinMat : xpGemMat);
-      if (isCoin) mesh.rotation.x = Math.PI / 2;
-      mesh.position.set(x + (Math.random() - 0.5), 0.45, z + (Math.random() - 0.5));
+    function spawnCashBundle3D(x, z, dollarAmount, autoMagnet = false) {
+      const mesh = new THREE.Mesh(cashGeo, cashMat);
+      mesh.position.set(x + (Math.random() - 0.5) * 1.4, 0.35, z + (Math.random() - 0.5) * 1.4);
+      mesh.rotation.y = Math.random() * Math.PI;
+      mesh.castShadow = true;
       scene.add(mesh);
 
-      lootDrops3D.push({
+      cashBundles3D.push({
         mesh,
         x: mesh.position.x,
         z: mesh.position.z,
-        gold: goldVal,
-        xp: xpVal,
-        magnetized: false
+        amount: dollarAmount,
+        magnetized: autoMagnet
       });
     }
 
-    function fireProjectile3D(fromX, fromZ, toX, toZ, dmg, colorHex = 0xfacc15, speed = 22) {
+    function triggerWaveClearCashShower() {
+      GAME.phase = 'intermission';
+      sfxUpgrade();
+
+      const armoryLv = GAME.buildings.find(b => b.id === 'armory').level;
+      const bundleCount = 10 + GAME.wave * 2;
+      const bundleVal = Math.round((22 + GAME.wave * 10) * (1 + (armoryLv - 1) * 0.3));
+
+      for (let i = 0; i < bundleCount; i++) {
+        const angle = (i / bundleCount) * Math.PI * 2;
+        const r = 2.2 + (i % 3) * 1.5;
+        spawnCashBundle3D(
+          player3D.pos.x + Math.cos(angle) * r,
+          Math.min(7.5, Math.max(-6, player3D.pos.z + Math.sin(angle) * r)),
+          bundleVal,
+          true
+        );
+      }
+
+      if (GAME.wave === 5) {
+        // ¡Jefe Final derrotado! Pasa al siguiente Nivel
+        GAME.gems += 250;
+        GAME.tickets += 3;
+        showToast(`🏆 ¡JEFE FINAL DERROTADO! +$${bundleCount * bundleVal}, +250 💎 y +3 🎟️. ¡Avanzas al NIVEL ${GAME.stage + 1}!`);
+        GAME.stage++;
+        GAME.wave = 1;
+        GAME.wallHp = GAME.wallMaxHp;
+      } else {
+        showToast(`💵 ¡OLEADA ${GAME.wave}/5 ELIMINADA! +$${bundleCount * bundleVal} en efectivo para mejorar tu Base.`);
+        GAME.wave++;
+      }
+
+      const banner = document.getElementById('intermission-banner');
+      const nextBtn = document.getElementById('btn-next-wave');
+      nextBtn.textContent = GAME.wave === 5 ? `👹 ¡LANZAR OLEADA 5/5 (JEFE FINAL)!` : `⚔️ LANZAR OLEADA ${GAME.wave}/5`;
+      banner.classList.remove('hidden');
+      banner.classList.add('flex');
+      updateHUD();
+      renderQuickBasePads();
+    }
+
+    function startNextWaveNow() {
+      startWave(GAME.wave);
+    }
+
+    function forceBossWave5() {
+      // Limpiar enemigos actuales y saltar directo al Jefe Final (Oleada 5/5)
+      enemies3D.forEach(e => scene.remove(e.mesh));
+      enemies3D.length = 0;
+      startWave(5);
+    }
+
+    // ============================================================================
+    // 8. HABILIDADES ACTIVAS CON COOLDOWN (MISILES, TORMENTA ELECTRO, MURO+HP)
+    // ============================================================================
+    function castSkill(idx) {
+      const sk = GAME.skills[idx];
+      if (sk.timer > 0) {
+        showToast(`⏳ [${sk.name}] en enfriamiento (${sk.timer.toFixed(1)}s)`);
+        return;
+      }
+      sk.timer = sk.cooldown;
+      const atk = getHeroTotalAtk();
+
+      if (idx === 0) {
+        // 💣 Ataque Aéreo de Misiles
+        sfxExplosion();
+        for (let m = 0; m < 5; m++) {
+          setTimeout(() => {
+            const tx = (Math.random() - 0.5) * 14;
+            const tz = -2 - Math.random() * 9;
+            spawnShockwave3D(tx, tz, 4.5, 0xf97316);
+            enemies3D.forEach(en => {
+              if (Math.hypot(en.x - tx, en.z - tz) < 5.0) {
+                const dmg = Math.round(atk * 4.2);
+                en.hp -= dmg;
+                en.hitFlash = 0.22;
+                spawnFloatingText(en.x, 2.2, en.z, `💣-${dmg}`, '#fb923c');
+              }
+            });
+          }, m * 120);
+        }
+        showToast('💣 ¡Ataque Aéreo de Misiles desplegado!');
+      } else if (idx === 1) {
+        // ⚡ Sobrecarga Eléctrica
+        sfxUpgrade();
+        GAME.overdriveTimer = 6.0;
+        spawnShockwave3D(player3D.pos.x, player3D.pos.z, 9.0, 0x38bdf8);
+        enemies3D.forEach(en => {
+          const dmg = Math.round(atk * 3.1);
+          en.hp -= dmg;
+          en.hitFlash = 0.25;
+          spawnFloatingText(en.x, 2.4, en.z, `⚡-${dmg}`, '#38bdf8');
+        });
+        showToast('⚡ ¡Sobrecarga Electro! Cadencia x2 durante 6 segundos.');
+      } else if (idx === 2) {
+        // 🛡️ Reparar Muro + Botiquín
+        sfxUpgrade();
+        GAME.wallHp = Math.min(GAME.wallMaxHp, GAME.wallHp + Math.round(GAME.wallMaxHp * 0.5));
+        spawnShockwave3D(0, 1.6, 8.0, 0x10b981);
+        enemies3D.forEach(en => {
+          if (en.z > -3) en.z -= 3.2; // Empujar enemigos hacia atrás
+        });
+        updateHUD();
+        showToast('🛡️ ¡Barricada reparada +50% HP y onda de empuje activada!');
+      }
+    }
+
+    function spawnShockwave3D(x, z, maxR, colorHex) {
+      const mesh = new THREE.Mesh(
+        new THREE.RingGeometry(0.4, 0.85, 32),
+        new THREE.MeshBasicMaterial({ color: colorHex, side: THREE.DoubleSide, transparent: true, opacity: 0.9 })
+      );
+      mesh.rotation.x = -Math.PI / 2;
+      mesh.position.set(x, 0.12, z);
+      scene.add(mesh);
+      shockwaves3D.push({ mesh, scale: 1, maxScale: maxR, life: 0.45 });
+    }
+
+    function fireBullet3D(fromX, fromZ, toX, toZ, dmg, colorHex = 0xfef08a, speed = 28) {
       const dx = toX - fromX;
       const dz = toZ - fromZ;
       const len = Math.hypot(dx, dz) || 1;
       const mesh = new THREE.Mesh(
-        new THREE.SphereGeometry(0.26, 8, 8),
+        new THREE.BoxGeometry(0.14, 0.14, 0.65),
         new THREE.MeshBasicMaterial({ color: colorHex })
       );
-      mesh.position.set(fromX, 1.1, fromZ);
+      mesh.position.set(fromX, 1.25, fromZ);
+      mesh.lookAt(toX, 1.25, toZ);
       scene.add(mesh);
 
-      projectiles3D.push({
+      bullets3D.push({
         mesh,
         x: fromX,
         z: fromZ,
         vx: (dx / len) * speed,
         vz: (dz / len) * speed,
         dmg,
-        life: 1.4
+        life: 1.1
       });
     }
 
-    function spawnFxRing3D(x, z, maxRadius, colorHex) {
-      const mesh = new THREE.Mesh(
-        new THREE.RingGeometry(0.3, 0.65, 28),
-        new THREE.MeshBasicMaterial({ color: colorHex, side: THREE.DoubleSide, transparent: true, opacity: 0.9 })
-      );
-      mesh.rotation.x = -Math.PI / 2;
-      mesh.position.set(x, 0.12, z);
-      scene.add(mesh);
-      fxRings3D.push({ mesh, scale: 1, maxScale: maxRadius, life: 0.45 });
-    }
-
-    // Proyectar coordenadas 3D a etiquetas de daño 2D en pantalla
-    function spawnFloatingDamage3D(worldX, worldY, worldZ, text, color = '#fde047') {
+    function spawnFloatingText(wx, wy, wz, text, color = '#fde047') {
       const layer = document.getElementById('floating-dmg-layer');
-      if (layer.children.length > 18) return;
+      if (layer.children.length > 20) return;
 
-      const vec = new THREE.Vector3(worldX, worldY, worldZ);
-      vec.project(camera);
+      const v = new THREE.Vector3(wx, wy, wz);
+      v.project(camera);
       const w = hostEl.clientWidth;
       const h = hostEl.clientHeight;
-      const sx = (vec.x * 0.5 + 0.5) * w;
-      const sy = (-vec.y * 0.5 + 0.5) * h;
-
+      const sx = (v.x * 0.5 + 0.5) * w;
+      const sy = (-v.y * 0.5 + 0.5) * h;
       if (sx < 0 || sx > w || sy < 0 || sy > h) return;
 
       const el = document.createElement('div');
@@ -778,476 +1032,446 @@
       el.style.left = `${sx}px`;
       el.style.top = `${sy}px`;
       el.style.color = color;
-      el.style.textShadow = '0 2px 4px rgba(0,0,0,0.9)';
+      el.style.textShadow = '0 2px 4px rgba(0,0,0,0.95)';
       el.textContent = text;
       layer.appendChild(el);
 
       requestAnimationFrame(() => {
-        el.style.transform = 'translateY(-28px) scale(1.1)';
+        el.style.transform = 'translateY(-26px) scale(1.08)';
         el.style.opacity = '0';
       });
-      setTimeout(() => el.remove(), 500);
+      setTimeout(() => el.remove(), 480);
     }
 
     // ============================================================================
-    // 7. CONTROLES: JOYSTICK VIRTUAL MÓVIL, ARRASTRE TÁCTIL Y TECLADO
+    // 9. JOYSTICK TÁCTIL Y TECLADO
     // ============================================================================
     const inputState = { dx: 0, dz: 0, active: false };
-    const keysPressed = {};
-
-    window.addEventListener('keydown', e => { keysPressed[e.key.toLowerCase()] = true; });
-    window.addEventListener('keyup', e => { keysPressed[e.key.toLowerCase()] = false; });
+    const keys = {};
+    window.addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; });
+    window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
 
     const joyZone = document.getElementById('joystick-zone');
     const joyKnob = document.getElementById('joystick-knob');
     let joyCenter = { x: 0, y: 0 };
 
-    function handleJoyStart(clientX, clientY) {
-      const rect = joyZone.getBoundingClientRect();
-      joyCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-      inputState.active = true;
-      handleJoyMove(clientX, clientY);
-    }
-
-    function handleJoyMove(clientX, clientY) {
-      if (!inputState.active) return;
-      const dx = clientX - joyCenter.x;
-      const dy = clientY - joyCenter.y;
-      const maxR = 34;
-      const dist = Math.hypot(dx, dy);
-      const clamped = Math.min(maxR, dist);
-      const angle = Math.atan2(dy, dx);
-      const kx = Math.cos(angle) * clamped;
-      const ky = Math.sin(angle) * clamped;
-
-      joyKnob.style.transform = `translate(${kx}px, ${ky}px)`;
-      if (dist > 4) {
-        inputState.dx = Math.cos(angle);
-        inputState.dz = Math.sin(angle);
-      } else {
-        inputState.dx = 0;
-        inputState.dz = 0;
-      }
-    }
-
-    function handleJoyEnd() {
-      inputState.active = false;
-      inputState.dx = 0;
-      inputState.dz = 0;
-      joyKnob.style.transform = 'translate(0px, 0px)';
-    }
-
     joyZone.addEventListener('pointerdown', e => {
       joyZone.setPointerCapture(e.pointerId);
-      handleJoyStart(e.clientX, e.clientY);
+      const r = joyZone.getBoundingClientRect();
+      joyCenter = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+      inputState.active = true;
     });
-    joyZone.addEventListener('pointermove', e => handleJoyMove(e.clientX, e.clientY));
-    joyZone.addEventListener('pointerup', handleJoyEnd);
-    joyZone.addEventListener('pointercancel', handleJoyEnd);
-
-    // También permitir arrastrar directamente sobre el lienzo 3D
-    let canvasDrag = { active: false, sx: 0, sy: 0 };
-    hostEl.addEventListener('pointerdown', e => {
-      canvasDrag = { active: true, sx: e.clientX, sy: e.clientY };
-    });
-    window.addEventListener('pointermove', e => {
-      if (!canvasDrag.active || inputState.active) return;
-      const dx = e.clientX - canvasDrag.sx;
-      const dy = e.clientY - canvasDrag.sy;
+    joyZone.addEventListener('pointermove', e => {
+      if (!inputState.active) return;
+      const dx = e.clientX - joyCenter.x;
+      const dy = e.clientY - joyCenter.y;
       const dist = Math.hypot(dx, dy);
-      if (dist > 8) {
-        inputState.dx = dx / dist;
-        inputState.dz = dy / dist;
-      }
+      const maxR = 34;
+      const cl = Math.min(maxR, dist);
+      const a = Math.atan2(dy, dx);
+      joyKnob.style.transform = `translate(${Math.cos(a) * cl}px, ${Math.sin(a) * cl}px)`;
+      if (dist > 4) { inputState.dx = Math.cos(a); inputState.dz = Math.sin(a); }
+      else { inputState.dx = 0; inputState.dz = 0; }
     });
-    window.addEventListener('pointerup', () => {
-      if (canvasDrag.active) {
-        canvasDrag.active = false;
-        if (!inputState.active) { inputState.dx = 0; inputState.dz = 0; }
-      }
-    });
+    const endJoy = () => {
+      inputState.active = false;
+      inputState.dx = 0; inputState.dz = 0;
+      joyKnob.style.transform = 'translate(0px, 0px)';
+    };
+    joyZone.addEventListener('pointerup', endJoy);
+    joyZone.addEventListener('pointercancel', endJoy);
 
     function toggleAutoPilot() {
       GAME.autoPilot = !GAME.autoPilot;
       const btn = document.getElementById('btn-autopilot');
       btn.textContent = GAME.autoPilot ? '🤖 IA: ON' : '🤖 IA: OFF';
       btn.className = GAME.autoPilot
-        ? 'btn-pop px-2.5 py-1 rounded-xl bg-emerald-600 text-white font-extrabold text-xs shadow'
-        : 'btn-pop px-2.5 py-1 rounded-xl bg-slate-700 text-white font-extrabold text-xs shadow';
+        ? 'btn-tactile px-2 py-1 rounded-xl bg-amber-500 text-black font-extrabold text-xs shadow'
+        : 'btn-tactile px-2 py-1 rounded-xl bg-slate-700 text-white font-extrabold text-xs shadow';
     }
 
     // ============================================================================
-    // 8. CÁLCULO DE DAÑO DEL JUGADOR Y ARMAS 3D
+    // 10. CÁLCULOS Y MEJORAS DE LA BASE CON DINERO (💵)
     // ============================================================================
-    function getTotalPlayerAtk() {
+    function getHeroTotalAtk() {
       const h = GAME.heroes.find(x => x.id === GAME.selectedHeroId) || GAME.heroes[0];
-      let skinBonus = 0;
-      GAME.skins.forEach(s => { if (s.unlocked) skinBonus += s.bonusPct; });
-      const pet = GAME.pets.find(p => p.equipped) || GAME.pets[0];
-      const citadelLv = GAME.buildings.find(b => b.id === 'citadel').level;
-      const mercMult = GAME.mercenaryActive ? 1.35 : 1.0;
+      const armoryLv = GAME.buildings.find(b => b.id === 'armory').level;
+      const bunkerLv = GAME.buildings.find(b => b.id === 'bunker').level;
+      let skinB = 0;
+      GAME.skins.forEach(s => { if (s.unlocked) skinB += s.bonusPct; });
 
-      const raw = h.baseAtk * (1 + (h.level - 1) * 0.15) * (1 + (h.stars - 1) * 0.35);
-      return Math.round(raw * (1 + skinBonus + pet.bonus + citadelLv * 0.08) * mercMult);
+      return Math.round(h.baseAtk * (1 + (h.level - 1) * 0.15) * (1 + (h.stars - 1) * 0.3) * (1 + (armoryLv - 1) * 0.2 + (bunkerLv - 1) * 0.25 + skinB));
+    }
+
+    function getBuildingCost(b) {
+      return Math.round(b.baseCost * Math.pow(1.30, b.level - 1));
+    }
+
+    function upgradeBuildingById(id, fromPadWalk = false) {
+      const b = GAME.buildings.find(x => x.id === id);
+      const cost = getBuildingCost(b);
+      if (GAME.cash < cost) {
+        if (!fromPadWalk) showToast(`💵 Necesitas $${cost} para mejorar [${b.name}]. ¡Elimina la oleada!`);
+        return;
+      }
+      GAME.cash -= cost;
+      b.level++;
+      sfxUpgrade();
+
+      if (id === 'wall') {
+        GAME.wallMaxHp += 600;
+        GAME.wallHp = GAME.wallMaxHp;
+      } else if (id === 'turrets') {
+        syncTurrets3D();
+      } else if (id === 'squad') {
+        syncMarineSquad3D();
+      } else if (id === 'bunker') {
+        bunkerBase.scale.y = 1 + (b.level - 1) * 0.16;
+      }
+
+      spawnShockwave3D(b.x, b.z, 3.2, b.color);
+      spawnFloatingText(b.x, 2.3, b.z, `⬆️ ${b.name} NV.${b.level}!`, '#4ade80');
+      updateHUD();
+      renderQuickBasePads();
+      if (GAME.activeDrawer === 'base') renderDrawer('base');
+    }
+
+    function renderQuickBasePads() {
+      const box = document.getElementById('quick-base-pads');
+      box.innerHTML = GAME.buildings.map(b => {
+        const cost = getBuildingCost(b);
+        const can = GAME.cash >= cost;
+        return `
+          <button onclick="upgradeBuildingById('${b.id}', false)" class="btn-tactile glass-hud rounded-xl p-1.5 flex flex-col items-center text-center border ${
+            can ? 'border-emerald-400 bg-emerald-500/20' : 'border-white/10 opacity-80'
+          }">
+            <span class="text-sm">${b.icon} <strong class="text-xs">Nv.${b.level}</strong></span>
+            <span class="text-xs font-bold truncate w-full">${b.name.split(' ')[1]}</span>
+            <span class="text-xs font-black ${can ? 'text-emerald-300' : 'text-slate-400'}">💵$${cost}</span>
+          </button>
+        `;
+      }).join('');
     }
 
     function updateHUD() {
-      document.getElementById('res-gold').textContent = Math.floor(GAME.gold).toLocaleString();
+      document.getElementById('stage-badge').textContent = `NIVEL ${GAME.stage}`;
+      document.getElementById('wave-title-txt').textContent =
+        GAME.wave === 5 ? `💀 OLEADA 5 / 5 (JEFE FINAL)` : `OLEADA ${GAME.wave} / 5`;
+
+      const totalLeft = enemies3D.length + GAME.enemiesToSpawnInWave;
+      document.getElementById('enemies-left-txt').textContent =
+        GAME.phase === 'intermission' ? '¡Fase de Mejora ($)!' : `Restantes: ${totalLeft}`;
+
+      for (let w = 1; w <= 4; w++) {
+        const pill = document.getElementById(`w-pill-${w}`);
+        pill.className = w <= GAME.wave ? 'w-6 h-2 rounded-full bg-emerald-400' : 'w-6 h-2 rounded-full bg-slate-700';
+      }
+
+      const wallPct = Math.max(0, Math.min(100, Math.round((GAME.wallHp / GAME.wallMaxHp) * 100)));
+      document.getElementById('hud-wall-hp').textContent = `${wallPct}%`;
+      document.getElementById('hud-wall-bar').style.width = `${wallPct}%`;
+
+      document.getElementById('res-cash').textContent = `$${Math.floor(GAME.cash).toLocaleString()}`;
       document.getElementById('res-gems').textContent = Math.floor(GAME.gems).toLocaleString();
       document.getElementById('res-tickets').textContent = GAME.tickets;
-      document.getElementById('hud-run-lv').textContent = `⚡ NV. BATALLA ${GAME.runLevel}`;
-      document.getElementById('hud-wave-txt').textContent = `OLEADA ${GAME.wave} • ENJAMBRE 3D`;
-      document.getElementById('hud-kills').textContent = `💀 ${GAME.kills}`;
-      document.getElementById('xp-bar-fill').style.width = `${Math.min(100, (GAME.runXp / GAME.runXpNext) * 100)}%`;
-
-      const citLv = GAME.buildings.find(b => b.id === 'citadel').level;
-      document.getElementById('hud-base-lv').textContent = citLv;
-      document.getElementById('hud-power').textContent = (getTotalPlayerAtk() * 14).toLocaleString();
     }
 
     // ============================================================================
-    // 9. BUCLE PRINCIPAL DE SIMULACIÓN 3D (60 FPS)
+    // 11. BUCLE PRINCIPAL DE ACTUALIZACIÓN 3D (60 FPS)
     // ============================================================================
-    let lastFrameTime = performance.now();
-    let enemySpawnTimer = 0;
-    let mineCoinTimer = 0;
-    let orbitalAngle = 0;
+    let lastTime = performance.now();
 
     function animate3D(now) {
-      const dt = Math.min(0.05, (now - lastFrameTime) / 1000);
-      lastFrameTime = now;
+      const dt = Math.min(0.05, (now - lastTime) / 1000);
+      lastTime = now;
 
-      // 1. Determinar dirección de movimiento (Teclado / Joystick / Auto-Pilot IA)
-      let moveX = inputState.dx;
-      let moveZ = inputState.dz;
+      if (GAME.overdriveTimer > 0) GAME.overdriveTimer = Math.max(0, GAME.overdriveTimer - dt);
+      muzzleFlashLight.intensity = Math.max(0, muzzleFlashLight.intensity - 18 * dt);
 
-      if (keysPressed['w'] || keysPressed['arrowup']) moveZ -= 1;
-      if (keysPressed['s'] || keysPressed['arrowdown']) moveZ += 1;
-      if (keysPressed['a'] || keysPressed['arrowleft']) moveX -= 1;
-      if (keysPressed['d'] || keysPressed['arrowright']) moveX += 1;
-
-      const manualInput = Math.hypot(moveX, moveZ) > 0.05;
-
-      if (!manualInput && GAME.autoPilot) {
-        // IA inteligente: busca monedas cercanas o kitea enemigos alrededor de la base
-        let targetDrop = null;
-        let bestDist = 14;
-        lootDrops3D.forEach(d => {
-          const dist = Math.hypot(d.x - player3D.pos.x, d.z - player3D.pos.z);
-          if (dist < bestDist) { bestDist = dist; targetDrop = d; }
-        });
-
-        if (targetDrop) {
-          const dx = targetDrop.x - player3D.pos.x;
-          const dz = targetDrop.z - player3D.pos.z;
-          const l = Math.hypot(dx, dz) || 1;
-          moveX = dx / l;
-          moveZ = dz / l;
+      // Cooldowns de las 3 habilidades
+      GAME.skills.forEach((sk, idx) => {
+        if (sk.timer > 0) {
+          sk.timer = Math.max(0, sk.timer - dt);
+          document.getElementById(`skill-cd-${idx}`).textContent = `${sk.timer.toFixed(1)}s`;
         } else {
-          // Patrulla orbital táctica alrededor de tu Base 3D
-          const patrolAngle = now * 0.00085;
-          const tx = Math.cos(patrolAngle) * 7.5;
-          const tz = Math.sin(patrolAngle) * 7.5;
+          document.getElementById(`skill-cd-${idx}`).textContent = 'LISTO';
+        }
+      });
+
+      // 1. Movimiento del Héroe dentro del Recinto Cerrado
+      let mx = inputState.dx;
+      let mz = inputState.dz;
+      if (keys['w'] || keys['arrowup']) mz -= 1;
+      if (keys['s'] || keys['arrowdown']) mz += 1;
+      if (keys['a'] || keys['arrowleft']) mx -= 1;
+      if (keys['d'] || keys['arrowright']) mx += 1;
+
+      const hasManual = Math.hypot(mx, mz) > 0.05;
+
+      if (!hasManual && GAME.autoPilot) {
+        // Si hay billetes de dinero en el suelo, el héroe corre a recogerlos
+        if (cashBundles3D.length > 0) {
+          const targetCash = cashBundles3D[0];
+          const dx = targetCash.x - player3D.pos.x;
+          const dz = targetCash.z - player3D.pos.z;
+          const l = Math.hypot(dx, dz) || 1;
+          mx = dx / l; mz = dz / l;
+        } else if (GAME.phase === 'intermission') {
+          // Si estamos en fase de mejora y nos alcanza el dinero para un edificio, camina al Pad 3D
+          const affordable = GAME.buildings.find(b => GAME.cash >= getBuildingCost(b));
+          if (affordable) {
+            const dx = affordable.x - player3D.pos.x;
+            const dz = affordable.z - player3D.pos.z;
+            const l = Math.hypot(dx, dz) || 1;
+            mx = dx / l; mz = dz / l;
+          }
+        } else {
+          // En combate, patrulla detrás o delante de la línea de barricada disparando
+          const tx = Math.sin(now * 0.0012) * 5.5;
+          const tz = 3.2;
           const dx = tx - player3D.pos.x;
           const dz = tz - player3D.pos.z;
           const l = Math.hypot(dx, dz) || 1;
-          moveX = dx / l;
-          moveZ = dz / l;
+          if (l > 0.4) { mx = dx / l; mz = dz / l; }
         }
       }
 
-      const mLen = Math.hypot(moveX, moveZ);
-      if (mLen > 0.01) {
-        player3D.pos.x += (moveX / mLen) * player3D.speed * dt;
-        player3D.pos.z += (moveZ / mLen) * player3D.speed * dt;
-        playerGroup.rotation.y = Math.atan2(moveX, moveZ);
+      const mLen = Math.hypot(mx, mz);
+      if (mLen > 0.02) {
+        player3D.pos.x += (mx / mLen) * player3D.speed * dt;
+        player3D.pos.z += (mz / mLen) * player3D.speed * dt;
+
+        // Animar piernas al correr
+        const swing = Math.sin(now * 0.018) * 0.55;
+        playerMesh.userData.leftLeg.rotation.x = swing;
+        playerMesh.userData.rightLeg.rotation.x = -swing;
+      } else {
+        playerMesh.userData.leftLeg.rotation.x = 0;
+        playerMesh.userData.rightLeg.rotation.x = 0;
       }
 
-      // Limitar al mapa
-      player3D.pos.x = Math.max(-24, Math.min(24, player3D.pos.x));
-      player3D.pos.z = Math.max(-24, Math.min(24, player3D.pos.z));
+      // Colisión estricta con los muros del recinto cerrado
+      player3D.pos.x = Math.max(ARENA_BOUNDS.minX, Math.min(ARENA_BOUNDS.maxX, player3D.pos.x));
+      player3D.pos.z = Math.max(ARENA_BOUNDS.minZ, Math.min(ARENA_BOUNDS.maxZ, player3D.pos.z));
+      playerMesh.position.set(player3D.pos.x, 0, player3D.pos.z);
 
-      // Animación de caminar 3D
-      const bob = Math.abs(Math.sin(now * 0.012)) * 0.22;
-      playerGroup.position.set(player3D.pos.x, bob, player3D.pos.z);
-
-      // Seguimiento suave de Cámara 3D Isométrica Táctica
-      camera.position.x += (player3D.pos.x * 0.55 - camera.position.x) * 6 * dt;
-      camera.position.y = 23.5;
-      camera.position.z += (player3D.pos.z * 0.55 + 17.5 - camera.position.z) * 6 * dt;
-      camera.lookAt(player3D.pos.x * 0.45, 0.5, player3D.pos.z * 0.45 - 1.5);
-
-      // Animar Cristal de la Ciudadela y Mina 3D
-      citadelCrystalMesh.rotation.y += 1.6 * dt;
-      citadelCrystalMesh.position.y = 3.1 + Math.sin(now * 0.004) * 0.25;
-      mineDrill.rotation.y += 4.0 * dt;
-
-      // Animar Mascota 3D flotando junto al Héroe
-      const petOrbit = now * 0.003;
-      petMesh.position.set(
-        player3D.pos.x + Math.cos(petOrbit) * 1.6,
-        2.35 + Math.sin(now * 0.006) * 0.25,
-        player3D.pos.z + Math.sin(petOrbit) * 1.6
-      );
-      petMesh.rotation.y += 2.5 * dt;
-
-      // 2. Actualizar Espadas Orbitales 3D (Guardian Blades)
-      orbitalAngle += 4.2 * dt;
-      orbitalBladesGroup.position.set(player3D.pos.x, 1.0, player3D.pos.z);
-      const bladeRadius = 3.2;
-      const atk = getTotalPlayerAtk();
-
-      bladeMeshes.forEach((bMesh, idx) => {
-        const a = orbitalAngle + (idx * Math.PI * 2) / bladeMeshes.length;
-        const bx = Math.cos(a) * bladeRadius;
-        const bz = Math.sin(a) * bladeRadius;
-        bMesh.position.set(bx, 0, bz);
-        bMesh.rotation.y = -a;
-
-        // Colisión de cada espada orbital con enemigos 3D
-        const worldBx = player3D.pos.x + bx;
-        const worldBz = player3D.pos.z + bz;
-        enemies3D.forEach(en => {
-          if (en.hp > 0 && Math.hypot(en.x - worldBx, en.z - worldBz) < en.radius + 0.75) {
-            const bladeDmg = Math.round(atk * 0.55);
-            en.hp -= bladeDmg;
-            en.hitFlash = 0.12;
-            spawnFloatingDamage3D(en.x, 1.8, en.z, `${bladeDmg}`, '#22d3ee');
-          }
-        });
-      });
-
-      // 3. Disparo Automático del Héroe + Aliados del Cuartel + Torretas 3D
-      player3D.shootTimer += dt;
-      const fireInterval = Math.max(0.22, 0.65 - GAME.weapons.blaster.level * 0.06);
-      if (player3D.shootTimer >= fireInterval && enemies3D.length > 0) {
-        player3D.shootTimer = 0;
-        let nearest = null;
-        let minDist = 999;
-        enemies3D.forEach(en => {
-          const d = Math.hypot(en.x - player3D.pos.x, en.z - player3D.pos.z);
-          if (d < minDist) { minDist = d; nearest = en; }
-        });
-        if (nearest && minDist < 19) {
-          sfxShoot();
-          const shots = Math.min(5, GAME.weapons.blaster.level);
-          for (let s = 0; s < shots; s++) {
-            const spread = (s - (shots - 1) / 2) * 0.9;
-            fireProjectile3D(player3D.pos.x, player3D.pos.z, nearest.x + spread, nearest.z + spread, atk, 0xfacc15, 24);
-          }
-        }
+      // Mirar hacia el enemigo más cercano al disparar, o hacia la dirección de movimiento
+      if (enemies3D.length > 0) {
+        playerMesh.lookAt(enemies3D[0].x, 0, enemies3D[0].z);
+      } else if (mLen > 0.02) {
+        playerMesh.rotation.y = Math.atan2(mx, mz);
       }
 
-      // Rayo Celestial 3D (Cada 3.2s)
-      player3D.lightningTimer += dt;
-      if (player3D.lightningTimer >= Math.max(1.5, 3.4 - GAME.weapons.lightning.level * 0.3) && enemies3D.length > 0) {
-        player3D.lightningTimer = 0;
-        const target = enemies3D[Math.floor(Math.random() * enemies3D.length)];
-        if (target) {
-          const lDmg = Math.round(atk * (1.8 + GAME.weapons.lightning.level * 0.45));
-          target.hp -= lDmg;
-          target.hitFlash = 0.2;
-          spawnFxRing3D(target.x, target.z, 3.2, 0x38bdf8);
-          spawnFloatingDamage3D(target.x, 2.4, target.z, `⚡${lDmg}`, '#38bdf8');
-        }
-      }
+      // Cámara 3D Táctica enfocando el recinto cerrado
+      camera.position.x += (player3D.pos.x * 0.42 - camera.position.x) * 5 * dt;
+      camera.position.y = 21.5;
+      camera.position.z += (player3D.pos.z * 0.35 + 17.5 - camera.position.z) * 5 * dt;
+      camera.lookAt(player3D.pos.x * 0.3, 0.6, player3D.pos.z * 0.25 - 1.5);
 
-      // Nova de Plasma 3D alrededor del héroe
-      player3D.novaTimer += dt;
-      if (player3D.novaTimer >= 3.8) {
-        player3D.novaTimer = 0;
-        const novaRadius = 4.5 + GAME.weapons.nova.level * 0.6;
-        spawnFxRing3D(player3D.pos.x, player3D.pos.z, novaRadius, 0xf97316);
-        enemies3D.forEach(en => {
-          if (Math.hypot(en.x - player3D.pos.x, en.z - player3D.pos.z) <= novaRadius) {
-            const nDmg = Math.round(atk * (1.2 + GAME.weapons.nova.level * 0.3));
-            en.hp -= nDmg;
-            en.hitFlash = 0.15;
-            spawnFloatingDamage3D(en.x, 1.5, en.z, `🔥${nDmg}`, '#fb923c');
-          }
-        });
-      }
+      bunkerRadar.rotation.y += 1.8 * dt;
 
-      // Torretas Automáticas 3D de la Base
-      const turretLv = GAME.buildings.find(b => b.id === 'turrets').level;
-      turretMeshes.forEach(t => {
-        t.shootTimer += dt;
-        if (t.shootTimer >= 0.75 && enemies3D.length > 0) {
-          t.shootTimer = 0;
-          const target = enemies3D[0];
-          t.group.lookAt(target.x, 1.2, target.z);
-          fireProjectile3D(
-            t.group.position.x,
-            t.group.position.z,
-            target.x,
-            target.z,
-            Math.round(atk * (0.65 + turretLv * 0.2)),
-            0x06b6d4,
-            25
-          );
-        }
-      });
-
-      // Soldados IA del Cuartel siguiendo al Héroe
-      allySoldiers3D.forEach((ally, idx) => {
-        const targetX = player3D.pos.x + Math.cos(ally.angleOffset + now * 0.001) * 2.6;
-        const targetZ = player3D.pos.z + Math.sin(ally.angleOffset + now * 0.001) * 2.6;
-        ally.group.position.x += (targetX - ally.group.position.x) * 4 * dt;
-        ally.group.position.z += (targetZ - ally.group.position.z) * 4 * dt;
-
-        ally.shootTimer += dt;
-        if (ally.shootTimer >= 0.9 && enemies3D.length > 0) {
-          ally.shootTimer = 0;
-          const target = enemies3D[Math.floor(Math.random() * enemies3D.length)];
-          if (target) {
-            fireProjectile3D(ally.group.position.x, ally.group.position.z, target.x, target.z, Math.round(atk * 0.55), 0x10b981, 22);
-          }
-        }
-      });
-
-      // 4. Mina de Oro 3D escupiendo monedas físicas e Ingreso Pasivo
-      const mineLv = GAME.buildings.find(b => b.id === 'mine').level;
-      const citLv = GAME.buildings.find(b => b.id === 'citadel').level;
-      GAME.gold += (citLv * 2.5 + mineLv * 3.5) * dt;
-
-      mineCoinTimer += dt;
-      if (mineCoinTimer >= Math.max(1.4, 3.6 - mineLv * 0.2)) {
-        mineCoinTimer = 0;
-        spawnLootDrop3D(7 + (Math.random() * 2 - 1), -6 + (Math.random() * 2 - 1), 15 * mineLv, 10);
-      }
-
-      // 5. Caminar sobre los Pads 3D de la Base para mejorar automáticamente
-      player3D.padUpgradeCooldown = Math.max(0, player3D.padUpgradeCooldown - dt);
+      // 2. Caminar sobre los Pads 3D de la Base para invertir Dinero ($)
+      player3D.padInvestTimer = Math.max(0, player3D.padInvestTimer - dt);
       GAME.buildings.forEach(b => {
-        const ring = padMeshes[b.id];
-        if (ring) {
-          ring.rotation.z += 0.8 * dt;
-          const distToPad = Math.hypot(player3D.pos.x - b.x, player3D.pos.z - b.z);
-          const cost = getBuildingCost(b);
-          if (distToPad < 2.1 && GAME.gold >= cost && player3D.padUpgradeCooldown <= 0) {
-            player3D.padUpgradeCooldown = 0.9;
+        const pm = padMeshes[b.id];
+        if (pm) {
+          pm.ring.rotation.z += 0.9 * dt;
+          const d = Math.hypot(player3D.pos.x - b.x, player3D.pos.z - b.z);
+          if (d < 1.95 && GAME.cash >= getBuildingCost(b) && player3D.padInvestTimer <= 0) {
+            player3D.padInvestTimer = 0.75;
             upgradeBuildingById(b.id, true);
           }
         }
       });
 
-      // 6. Spawner de Hordas 3D continuo
-      enemySpawnTimer += dt;
-      const maxEnemiesOnScreen = Math.min(36, 12 + GAME.wave * 3);
-      if (enemySpawnTimer >= 0.65 && enemies3D.length < maxEnemiesOnScreen) {
-        enemySpawnTimer = 0;
-        spawnEnemy3D(false);
+      // 3. Spawner de Enemigos de la Oleada Actual desde las 3 Puertas Norte
+      if (GAME.phase === 'combat' && GAME.enemiesToSpawnInWave > 0) {
+        GAME.spawnCooldown -= dt;
+        if (GAME.spawnCooldown <= 0) {
+          GAME.spawnCooldown = 0.75;
+          GAME.enemiesToSpawnInWave--;
+          spawnRegularEnemyFromGates();
+          updateHUD();
+        }
       }
 
-      // 7. Mover Enemigos + Daño del Domo Escudo + Limpieza de Muertos
-      const domeLv = GAME.buildings.find(b => b.id === 'dome').level;
+      // 4. Disparo del Héroe, Torretas Gattling y Marines 3D
+      const atk = getHeroTotalAtk();
+      const speedBoost = GAME.overdriveTimer > 0 ? 2.2 : 1.0;
+
+      player3D.shootTimer += dt * speedBoost;
+      const armoryLv = GAME.buildings.find(b => b.id === 'armory').level;
+      const fireDelay = Math.max(0.16, 0.38 - armoryLv * 0.02);
+
+      if (player3D.shootTimer >= fireDelay && enemies3D.length > 0) {
+        player3D.shootTimer = 0;
+        const target = enemies3D[0];
+        sfxRifle();
+        muzzleFlashLight.position.set(player3D.pos.x, 1.8, player3D.pos.z - 0.5);
+        muzzleFlashLight.intensity = 2.2;
+
+        const pellets = Math.min(4, 1 + Math.floor(armoryLv / 2));
+        for (let p = 0; p < pellets; p++) {
+          const spread = (p - (pellets - 1) / 2) * 0.55;
+          fireBullet3D(player3D.pos.x, player3D.pos.z, target.x + spread, target.z, atk, 0xfef08a, 30);
+        }
+      }
+
+      // Disparo de Torretas Gattling en la Barricada
+      const turretLv = GAME.buildings.find(b => b.id === 'turrets').level;
+      turretEntities.forEach(t => {
+        t.shootTimer += dt * speedBoost;
+        if (t.shootTimer >= 0.45 && enemies3D.length > 0) {
+          t.shootTimer = 0;
+          const target = enemies3D[Math.floor(Math.random() * enemies3D.length)];
+          t.group.lookAt(target.x, 1.35, target.z);
+          fireBullet3D(
+            t.group.position.x,
+            t.group.position.z,
+            target.x,
+            target.z,
+            Math.round(atk * (0.45 + turretLv * 0.15)),
+            0xf97316,
+            28
+          );
+        }
+      });
+
+      // Marines Defensores 3D
+      marineEntities.forEach((m, idx) => {
+        const tx = player3D.pos.x + Math.cos(m.offsetAngle + now * 0.0008) * 2.2;
+        const tz = Math.max(2.2, player3D.pos.z + Math.sin(m.offsetAngle + now * 0.0008) * 1.8);
+        m.mesh.position.x += (tx - m.mesh.position.x) * 4 * dt;
+        m.mesh.position.z += (tz - m.mesh.position.z) * 4 * dt;
+
+        if (enemies3D.length > 0) {
+          const target = enemies3D[0];
+          m.mesh.lookAt(target.x, 0, target.z);
+          m.shootTimer += dt * speedBoost;
+          if (m.shootTimer >= 0.65) {
+            m.shootTimer = 0;
+            fireBullet3D(m.mesh.position.x, m.mesh.position.z, target.x, target.z, Math.round(atk * 0.5), 0x38bdf8, 26);
+          }
+        }
+      });
+
+      // 5. Actualizar Enemigos y Jefe Final (Colisión con la Barricada en Z = 1.6)
+      const wallLv = GAME.buildings.find(b => b.id === 'wall').level;
       for (let i = enemies3D.length - 1; i >= 0; i--) {
         const en = enemies3D[i];
-        const dx = player3D.pos.x - en.x;
-        const dz = player3D.pos.z - en.z;
+
+        // Si el muro sigue en pie, los enemigos chocan contra la barricada en Z = 1.2
+        const stopZ = GAME.wallHp > 0 ? 1.15 : player3D.pos.z;
+        const targetX = GAME.wallHp > 0 ? en.x * 0.92 : player3D.pos.x;
+        const targetZ = Math.min(stopZ, player3D.pos.z);
+
+        const dx = targetX - en.x;
+        const dz = targetZ - en.z;
         const dist = Math.hypot(dx, dz) || 1;
 
-        // Si entra al Domo de la Base, se ralentiza
-        const distBase = Math.hypot(en.x, en.z);
-        const domeSlow = distBase < 9.8 ? Math.max(0.4, 0.85 - domeLv * 0.05) : 1.0;
+        if (dist > 0.45) {
+          en.x += (dx / dist) * en.speed * dt;
+          en.z += (dz / dist) * en.speed * dt;
+        } else if (GAME.wallHp > 0) {
+          // Golpeando el muro defensivo (y recibiendo daño eléctrico del muro)
+          GAME.wallHp = Math.max(0, GAME.wallHp - en.atk * dt);
+          en.hp -= (10 * wallLv) * dt;
+        }
 
-        en.x += (dx / dist) * en.speed * domeSlow * dt;
-        en.z += (dz / dist) * en.speed * domeSlow * dt;
-        en.group.position.set(en.x, 0, en.z);
-        en.group.lookAt(player3D.pos.x, 0, player3D.pos.z);
+        en.mesh.position.set(en.x, 0, en.z);
+        en.mesh.lookAt(player3D.pos.x, 0, player3D.pos.z);
+
+        if (en.isBoss) {
+          document.getElementById('boss-hp-num').textContent = `${Math.max(0, Math.round(en.hp))} HP`;
+          document.getElementById('boss-hp-fill').style.width = `${Math.max(0, (en.hp / en.maxHp) * 100)}%`;
+        }
 
         if (en.hitFlash > 0) {
           en.hitFlash -= dt;
-          en.body.material.emissive.setHex(0xffffff);
-          en.body.material.emissiveIntensity = 0.6;
+          en.mesh.userData.bodyMat.emissive.setHex(0xffffff);
+          en.mesh.userData.bodyMat.emissiveIntensity = 0.55;
         } else {
-          en.body.material.emissive.setHex(0x000000);
-          en.body.material.emissiveIntensity = 0;
+          en.mesh.userData.bodyMat.emissive.setHex(0x000000);
+          en.mesh.userData.bodyMat.emissiveIntensity = 0;
         }
 
         if (en.hp <= 0) {
-          scene.remove(en.group);
-          const goldReward = Math.round((14 + GAME.wave * 5) * (1 + GAME.weapons.magnet.level * 0.25) * (en.isBoss ? 8 : 1));
-          const xpReward = en.isBoss ? 120 : 28;
-          spawnLootDrop3D(en.x, en.z, goldReward, xpReward);
-          spawnFxRing3D(en.x, en.z, en.isBoss ? 3.5 : 1.4, en.isBoss ? 0xfacc15 : 0xf43f5e);
-          GAME.kills++;
-          if (GAME.kills % 18 === 0) {
-            GAME.wave++;
-            if (GAME.wave % 3 === 0) spawnEnemy3D(true);
-          }
+          scene.remove(en.mesh);
+          const cashDrop = Math.round((15 + GAME.wave * 6) * (en.isBoss ? 10 : 1));
+          spawnCashBundle3D(en.x, en.z, cashDrop, false);
+          spawnShockwave3D(en.x, en.z, en.isBoss ? 4.0 : 1.3, en.isBoss ? 0xfacc15 : 0xef4444);
           enemies3D.splice(i, 1);
           updateHUD();
-          renderQuickBasePads();
+
+          // ¿Se terminó la oleada?
+          if (enemies3D.length === 0 && GAME.enemiesToSpawnInWave === 0 && GAME.phase === 'combat') {
+            triggerWaveClearCashShower();
+          }
         }
       }
 
-      // 8. Actualizar Proyectiles 3D
-      for (let i = projectiles3D.length - 1; i >= 0; i--) {
-        const p = projectiles3D[i];
-        p.x += p.vx * dt;
-        p.z += p.vz * dt;
-        p.life -= dt;
-        p.mesh.position.set(p.x, 1.1, p.z);
+      // 6. Actualizar Proyectiles 3D
+      for (let i = bullets3D.length - 1; i >= 0; i--) {
+        const b = bullets3D[i];
+        b.x += b.vx * dt;
+        b.z += b.vz * dt;
+        b.life -= dt;
+        b.mesh.position.set(b.x, 1.25, b.z);
 
         let hit = false;
         for (let j = 0; j < enemies3D.length; j++) {
           const en = enemies3D[j];
-          if (Math.hypot(en.x - p.x, en.z - p.z) < en.radius + 0.45) {
-            en.hp -= p.dmg;
-            en.hitFlash = 0.1;
-            spawnFloatingDamage3D(en.x, 1.6, en.z, `${p.dmg}`, '#fde047');
+          if (Math.hypot(en.x - b.x, en.z - b.z) < en.radius + 0.45) {
+            en.hp -= b.dmg;
+            en.hitFlash = 0.09;
+            spawnFloatingText(en.x, 1.8, en.z, `${b.dmg}`, '#fde047');
             hit = true;
             break;
           }
         }
-
-        if (hit || p.life <= 0) {
-          scene.remove(p.mesh);
-          projectiles3D.splice(i, 1);
+        if (hit || b.life <= 0) {
+          scene.remove(b.mesh);
+          bullets3D.splice(i, 1);
         }
       }
 
-      // 9. Imán de Monedas 3D y Cristales XP
-      const pickupRadius = 4.2 + GAME.weapons.magnet.level * 1.6;
-      for (let i = lootDrops3D.length - 1; i >= 0; i--) {
-        const d = lootDrops3D[i];
-        d.mesh.rotation.z += 3.5 * dt;
-        d.mesh.rotation.y += 3.5 * dt;
+      // 7. Recolección Magnética de Billetes de Dinero 3D (💵)
+      for (let i = cashBundles3D.length - 1; i >= 0; i--) {
+        const c = cashBundles3D[i];
+        c.mesh.rotation.y += 3.0 * dt;
+        const dist = Math.hypot(player3D.pos.x - c.x, player3D.pos.z - c.z);
+        if (dist < 5.5) c.magnetized = true;
 
-        const dist = Math.hypot(player3D.pos.x - d.x, player3D.pos.z - d.z);
-        if (dist < pickupRadius) d.magnetized = true;
-
-        if (d.magnetized) {
-          const dx = player3D.pos.x - d.x;
-          const dz = player3D.pos.z - d.z;
+        if (c.magnetized) {
+          const dx = player3D.pos.x - c.x;
+          const dz = player3D.pos.z - c.z;
           const l = Math.hypot(dx, dz) || 1;
-          d.x += (dx / l) * 20 * dt;
-          d.z += (dz / l) * 20 * dt;
-          d.mesh.position.set(d.x, 0.55, d.z);
+          c.x += (dx / l) * 22 * dt;
+          c.z += (dz / l) * 22 * dt;
+          c.mesh.position.set(c.x, 0.6, c.z);
 
-          if (dist < 1.05) {
-            sfxCoin();
-            GAME.gold += d.gold;
-            addRunXp(d.xp);
-            scene.remove(d.mesh);
-            lootDrops3D.splice(i, 1);
+          if (dist < 1.1) {
+            sfxCash();
+            GAME.cash += c.amount;
+            spawnFloatingText(player3D.pos.x, 2.3, player3D.pos.z, `💵+$${c.amount}`, '#4ade80');
+            scene.remove(c.mesh);
+            cashBundles3D.splice(i, 1);
             updateHUD();
             renderQuickBasePads();
           }
         }
       }
 
-      // 10. Animar Ondas de Choque 3D
-      for (let i = fxRings3D.length - 1; i >= 0; i--) {
-        const r = fxRings3D[i];
-        r.life -= dt;
-        r.scale += (r.maxScale - r.scale) * 10 * dt;
-        r.mesh.scale.set(r.scale, r.scale, 1);
-        r.mesh.material.opacity = Math.max(0, r.life * 2);
-        if (r.life <= 0) {
-          scene.remove(r.mesh);
-          fxRings3D.splice(i, 1);
+      // 8. Animar Ondas 3D
+      for (let i = shockwaves3D.length - 1; i >= 0; i--) {
+        const s = shockwaves3D[i];
+        s.life -= dt;
+        s.scale += (s.maxScale - s.scale) * 10 * dt;
+        s.mesh.scale.set(s.scale, s.scale, 1);
+        s.mesh.material.opacity = Math.max(0, s.life * 2);
+        if (s.life <= 0) {
+          scene.remove(s.mesh);
+          shockwaves3D.splice(i, 1);
         }
       }
 
@@ -1256,404 +1480,182 @@
     }
 
     // ============================================================================
-    // 10. EXPERIENCIA ROGUELITE, HABILIDADES Y CONSTRUCCIÓN DE BASE 3D
-    // ============================================================================
-    function addRunXp(amount) {
-      GAME.runXp += amount;
-      if (GAME.runXp >= GAME.runXpNext) {
-        GAME.runXp -= GAME.runXpNext;
-        GAME.runLevel++;
-        GAME.runXpNext = Math.round(GAME.runXpNext * 1.25);
-        sfxLevelUp();
-        showSkillChoiceBanner();
-      }
-    }
-
-    function showSkillChoiceBanner() {
-      const banner = document.getElementById('skill-choice-banner');
-      const row = document.getElementById('skill-cards-row');
-      const keys = Object.keys(GAME.weapons);
-      const shuffled = keys.sort(() => Math.random() - 0.5).slice(0, 3);
-
-      row.innerHTML = shuffled.map(k => {
-        const w = GAME.weapons[k];
-        return `
-          <button onclick="selectWeaponUpgrade('${k}')" class="btn-pop bg-slate-900/95 border border-amber-400/50 rounded-xl p-2 flex flex-col items-center text-center gap-1">
-            <span class="font-extrabold text-xs text-amber-300">${w.name}</span>
-            <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold text-xs">Nv.${w.level} → ${w.level + 1}</span>
-          </button>
-        `;
-      }).join('');
-
-      banner.classList.remove('hidden');
-      banner.classList.add('flex');
-    }
-
-    function selectWeaponUpgrade(key) {
-      GAME.weapons[key].level++;
-      if (key === 'blades') rebuildOrbitalBlades3D();
-      sfxBuild();
-      document.getElementById('skill-choice-banner').classList.add('hidden');
-      document.getElementById('skill-choice-banner').classList.remove('flex');
-      showToast(`🌟 ¡ Mejoraste [${GAME.weapons[key].name}] a Nivel ${GAME.weapons[key].level}!`);
-    }
-
-    function vacuumAllLoot() {
-      lootDrops3D.forEach(d => { d.magnetized = true; });
-      sfxBuild();
-      showToast('🧲 ¡Imán 3D activado! Atrayendo todas las monedas y cristales.');
-    }
-
-    function castUltimate3D() {
-      sfxLevelUp();
-      const atk = getTotalPlayerAtk();
-      spawnFxRing3D(player3D.pos.x, player3D.pos.z, 14, 0xfacc15);
-      enemies3D.forEach(en => {
-        const dmg = Math.round(atk * 4.5);
-        en.hp -= dmg;
-        en.hitFlash = 0.25;
-        spawnFloatingDamage3D(en.x, 2.2, en.z, `💥ULTI ${dmg}`, '#fde047');
-      });
-      showToast('⚡ ¡Habilidad Definitiva 3D [Juicio del Alba] desatada!');
-    }
-
-    function getBuildingCost(b) {
-      return Math.round(b.baseCost * Math.pow(1.32, b.level - 1));
-    }
-
-    function renderQuickBasePads() {
-      const container = document.getElementById('quick-base-pads');
-      container.innerHTML = GAME.buildings.map(b => {
-        const cost = getBuildingCost(b);
-        const canAfford = GAME.gold >= cost;
-        return `
-          <button onclick="upgradeBuildingById('${b.id}', false)" class="btn-pop glass-panel rounded-xl p-1.5 flex flex-col items-center text-center border ${
-            canAfford ? 'border-amber-400 bg-amber-500/20' : 'border-white/10 opacity-80'
-          }">
-            <span class="text-sm">${b.icon} <strong class="text-xs">Nv.${b.level}</strong></span>
-            <span class="text-xs font-bold truncate w-full">${b.name.split(' ')[1]}</span>
-            <span class="text-xs font-extrabold ${canAfford ? 'text-amber-300' : 'text-slate-400'}">🪙${cost}</span>
-          </button>
-        `;
-      }).join('');
-    }
-
-    function upgradeBuildingById(id, fromWalkPad) {
-      const b = GAME.buildings.find(x => x.id === id);
-      const cost = getBuildingCost(b);
-      if (GAME.gold < cost) {
-        if (!fromWalkPad) showToast(`🪙 Necesitas ${cost} monedas de oro. ¡Elimina enemigos o recoge monedas 3D!`);
-        return;
-      }
-      GAME.gold -= cost;
-      b.level++;
-      sfxBuild();
-
-      // Escalar visualmente el edificio 3D
-      if (id === 'citadel') {
-        citadelBaseTower.scale.y = 1 + (b.level - 1) * 0.18;
-      } else if (id === 'turrets') {
-        syncTurrets3D();
-      } else if (id === 'barracks') {
-        syncBarracksSoldiers3D();
-      } else if (id === 'dome') {
-        domeMesh.material.opacity = Math.min(0.38, 0.14 + b.level * 0.03);
-      }
-
-      spawnFxRing3D(b.x, b.z, 3.8, b.color);
-      spawnFloatingDamage3D(b.x, 2.5, b.z, `⬆️ ${b.name} NV.${b.level}!`, '#34d399');
-      updateHUD();
-      renderQuickBasePads();
-      if (GAME.activeDrawer === 'base') renderDrawerContent('base');
-    }
-
-    // ============================================================================
-    // 11. CAJÓN MÓVIL INFERIOR (BASE, ARMAS, GACHA, HÉROES/SKINS, TIENDA/CLAN)
+    // 12. MENÚS DESLIZANTES (BASE, HÉROES/SKINS, GACHA, TIENDA)
     // ============================================================================
     function openDrawer(tab) {
       GAME.activeDrawer = tab;
-      const drawer = document.getElementById('bottom-drawer');
-      drawer.classList.remove('translate-y-full');
-      renderDrawerContent(tab);
+      document.getElementById('bottom-drawer').classList.remove('translate-y-full');
+      renderDrawer(tab);
     }
-
     function closeDrawer() {
       GAME.activeDrawer = null;
       document.getElementById('bottom-drawer').classList.add('translate-y-full');
     }
 
-    function renderDrawerContent(tab) {
-      const titleEl = document.getElementById('drawer-title');
-      const contentEl = document.getElementById('drawer-content');
+    function renderDrawer(tab) {
+      const title = document.getElementById('drawer-title');
+      const box = document.getElementById('drawer-content');
 
       if (tab === 'base') {
-        titleEl.textContent = '🏰 Construcción y Mejoras de Base 3D';
-        contentEl.innerHTML = GAME.buildings.map(b => {
+        title.textContent = '🏗️ Mejoras de la Base Fortificada (Con Dinero 💵)';
+        box.innerHTML = GAME.buildings.map(b => {
           const cost = getBuildingCost(b);
           return `
-            <div class="p-3 rounded-2xl bg-slate-900/90 border border-white/10 flex items-center justify-between gap-3">
+            <div class="p-3 rounded-2xl bg-slate-900/95 border border-white/10 flex items-center justify-between gap-3">
               <div>
-                <div class="flex items-center gap-2">
-                  <span class="text-lg">${b.icon}</span>
-                  <strong class="text-sm text-white">${b.name} (Nivel ${b.level})</strong>
-                </div>
+                <strong class="text-sm text-white">${b.icon} ${b.name} (Nv.${b.level})</strong>
                 <p class="text-xs text-slate-300 mt-0.5">${b.desc}</p>
               </div>
-              <button onclick="upgradeBuildingById('${b.id}', false)" class="btn-pop px-3.5 py-2 rounded-xl bg-amber-500 text-black font-extrabold text-xs shrink-0">
-                Mejorar (🪙 ${cost})
+              <button onclick="upgradeBuildingById('${b.id}', false)" class="btn-tactile px-3.5 py-2 rounded-xl bg-emerald-500 text-black font-black text-xs shrink-0">
+                Mejorar (💵$${cost})
               </button>
             </div>
           `;
         }).join('');
-      } else if (tab === 'weapons') {
-        titleEl.textContent = '🌀 Arsenal 3D (Estilo Survivor.io)';
-        contentEl.innerHTML = Object.keys(GAME.weapons).map(k => {
-          const w = GAME.weapons[k];
-          const cost = w.level * 120;
-          return `
-            <div class="p-3 rounded-2xl bg-slate-900/90 border border-white/10 flex items-center justify-between gap-3">
-              <div>
-                <strong class="text-sm text-amber-300">${w.name} • Nv.${w.level}</strong>
-                <p class="text-xs text-slate-300 mt-0.5">${w.desc}</p>
-              </div>
-              <button onclick="upgradeWeaponWithGold('${k}')" class="btn-pop px-3 py-2 rounded-xl bg-cyan-400 text-black font-extrabold text-xs shrink-0">
-                Subir (🪙 ${cost})
-              </button>
+      } else if (tab === 'heroes') {
+        title.textContent = '🌟 Comandantes 3D y Exotrajes (Skins)';
+        const hHtml = GAME.heroes.map(h => `
+          <div class="p-2.5 rounded-2xl bg-slate-900/95 border ${GAME.selectedHeroId === h.id ? 'border-emerald-400' : 'border-white/10'} flex items-center justify-between">
+            <div>
+              <span class="px-1.5 py-0.5 rounded bg-rose-600 text-white font-black text-xs">${h.rarity}</span>
+              <strong class="text-sm ml-1">${h.icon} ${h.name} Nv.${h.level}</strong>
+              <span class="text-amber-400 ml-1">${'★'.repeat(h.stars)}</span>
             </div>
-          `;
-        }).join('');
-      } else if (tab === 'gacha') {
-        titleEl.textContent = `🎲 Portal Gacha 3D (Pity: ${GAME.pityCounter}/70)`;
-        contentEl.innerHTML = `
-          <div class="p-3.5 rounded-2xl bg-gradient-to-r from-indigo-950 via-purple-900 to-amber-900 border border-amber-400/40 text-white">
-            <h3 class="font-black text-sm mb-1">🌟 Invocación Astral Rate-Up (Seraphina & Malakor UR)</h3>
-            <p class="text-xs text-purple-100 mb-3">Soft Pity desde tirada 50. Los duplicados suben las Estrellas (1★ a 5★) y multiplican tu daño 3D.</p>
-            <div class="grid grid-cols-2 gap-2">
-              <button onclick="pullGacha3D(1)" class="btn-pop py-2.5 rounded-xl bg-white/15 border border-white/25 font-bold text-xs">
-                🎲 Invocar x1 (1 🎟️)
-              </button>
-              <button onclick="pullGacha3D(10)" class="btn-pop py-2.5 rounded-xl bg-amber-400 text-black font-black text-xs shadow-lg">
-                🌟 Invocar x10 (10 🎟️ o 2700 💎)
-              </button>
+            <div class="flex gap-1.5">
+              <button onclick="selectHero('${h.id}')" class="btn-tactile px-2.5 py-1.5 rounded-xl bg-white/10 font-bold text-xs">Equipar</button>
+              <button onclick="levelHero('${h.id}')" class="btn-tactile px-2.5 py-1.5 rounded-xl bg-amber-500 text-black font-black text-xs">⬆️ Nv</button>
             </div>
           </div>
-          <div id="gacha-drawer-results" class="grid grid-cols-5 gap-1.5 pt-1"></div>
-        `;
-      } else if (tab === 'heroes') {
-        titleEl.textContent = '🌟 Héroes 3D, Ascensión y Skins en Vivo';
-        const heroesHtml = GAME.heroes.map(h => {
-          const isSel = GAME.selectedHeroId === h.id;
-          return `
-            <div class="p-2.5 rounded-2xl bg-slate-900/90 border ${isSel ? 'border-amber-400' : 'border-white/10'} flex items-center justify-between gap-2">
-              <div>
-                <div class="flex items-center gap-1.5">
-                  <span class="px-1.5 py-0.5 rounded bg-rose-600 text-white font-black text-xs">${h.rarity}</span>
-                  <strong class="text-sm">${h.icon} ${h.name} Nv.${h.level}</strong>
-                  <span class="text-amber-400 font-bold">${'★'.repeat(h.stars)}</span>
-                </div>
-                <span class="text-xs text-slate-400">Copias Duplicadas: ${h.dupes}</span>
-              </div>
-              <div class="flex items-center gap-1.5">
-                <button onclick="selectHero3D('${h.id}')" class="btn-pop px-2.5 py-1.5 rounded-xl ${isSel ? 'bg-emerald-600 text-white' : 'bg-white/10 text-white'} font-bold text-xs">
-                  ${isSel ? '✓ En 3D' : 'Usar 3D'}
-                </button>
-                <button onclick="upgradeHero3D('${h.id}')" class="btn-pop px-2.5 py-1.5 rounded-xl bg-amber-500 text-black font-extrabold text-xs">
-                  ⬆️ Nv/★
-                </button>
-              </div>
-            </div>
-          `;
-        }).join('');
+        `).join('');
 
-        const skinsHtml = GAME.skins.map(sk => `
-          <div class="p-2.5 rounded-2xl bg-slate-900/90 border border-cyan-500/30 flex items-center justify-between gap-2">
+        const sHtml = GAME.skins.map(sk => `
+          <div class="p-2.5 rounded-2xl bg-slate-900/95 border border-cyan-500/30 flex items-center justify-between">
             <div>
-              <strong class="text-xs text-cyan-300">👗 Skin 3D: ${sk.name}</strong>
+              <strong class="text-xs text-cyan-300">👗 ${sk.name}</strong>
               <p class="text-xs text-slate-400">${sk.desc}</p>
             </div>
-            <button onclick="equipSkin3D('${sk.id}')" class="btn-pop px-3 py-1.5 rounded-xl bg-cyan-400 text-black font-extrabold text-xs shrink-0">
-              ${sk.unlocked ? 'Equipar 3D' : '🔓 Probar Gratis'}
+            <button onclick="equipSkin('${sk.id}')" class="btn-tactile px-3 py-1.5 rounded-xl bg-cyan-400 text-black font-black text-xs">
+              ${sk.unlocked ? 'Equipar' : '🔓 Probar Gratis'}
             </button>
           </div>
         `).join('');
-
-        contentEl.innerHTML = `<div class="space-y-2">${heroesHtml}<h4 class="font-bold text-amber-300 pt-2">👗 Skins 3D con Bono Global</h4>${skinsHtml}</div>`;
+        box.innerHTML = `<div class="space-y-2">${hHtml}<h4 class="font-bold text-amber-300 pt-2">👗 Skins Tácticas 3D</h4>${sHtml}</div>`;
+      } else if (tab === 'gacha') {
+        title.textContent = '🎲 Reclutamiento Gacha de Comandantes';
+        box.innerHTML = `
+          <div class="p-4 rounded-2xl bg-gradient-to-r from-indigo-950 via-purple-900 to-emerald-950 border border-emerald-400/40 text-white">
+            <h3 class="font-black text-sm mb-1">🌟 Cápsula de Élite Militar & Astral</h3>
+            <p class="text-xs text-slate-200 mb-3">Recluta copias duplicadas para ascender estrellas (1★ a 5★) y multiplicar el daño de tus armas y torretas.</p>
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="doGacha(1)" class="btn-tactile py-2.5 rounded-xl bg-white/15 border border-white/25 font-bold text-xs">Invocar x1 (1 🎟️)</button>
+              <button onclick="doGacha(10)" class="btn-tactile py-2.5 rounded-xl bg-amber-400 text-black font-black text-xs">Invocar x10 (10 🎟️)</button>
+            </div>
+          </div>
+          <div id="gacha-out" class="grid grid-cols-5 gap-1.5 pt-2"></div>
+        `;
       } else if (tab === 'shop') {
-        titleEl.textContent = '💎 Mascotas 3D, Clan Mercenario y Ofertas $0.99';
-        const petsHtml = GAME.pets.map(p => `
-          <div class="p-2.5 rounded-2xl bg-slate-900/90 border ${p.equipped ? 'border-amber-400' : 'border-white/10'} flex items-center justify-between">
-            <span>${p.icon} <strong>${p.name}</strong> (+${Math.round(p.bonus * 100)}% ATK)</span>
-            <button onclick="equipPet3D('${p.id}')" class="btn-pop px-3 py-1 rounded-xl ${p.equipped ? 'bg-emerald-600 text-white' : 'bg-amber-500 text-black'} font-bold text-xs">
-              ${p.equipped ? '✓ Activa' : 'Equipar'}
-            </button>
-          </div>
-        `).join('');
-
-        contentEl.innerHTML = `
-          <div class="p-3 rounded-2xl bg-gradient-to-r from-amber-500/25 to-rose-500/25 border border-amber-400 flex items-center justify-between gap-2">
+        title.textContent = '💎 Refuerzos de Clan y Ofertas LiveOps';
+        box.innerHTML = `
+          <div class="p-3 rounded-2xl bg-gradient-to-r from-amber-500/25 to-emerald-500/25 border border-amber-400 flex items-center justify-between gap-2">
             <div>
-              <span class="px-2 py-0.5 rounded bg-rose-600 text-white font-black text-xs">🔥 PACK 1.ª COMPRA $0.99 (1200% VALOR)</span>
-              <p class="text-xs text-white font-bold mt-1">Desbloquea Skin Cyber-Valquiria 3D + Mascota Fénix UR + 2,500 💎</p>
+              <span class="px-2 py-0.5 rounded bg-rose-600 text-white font-black text-xs">🔥 PACK $0.99 INICIO (1200% VALOR)</span>
+              <p class="text-xs font-bold mt-1">Exotraje Cyber-Valquiria 3D + $2,000 Efectivo + 2,500 💎</p>
             </div>
-            <button onclick="claimStarterBundle3D()" class="btn-pop px-3 py-2 rounded-xl bg-amber-400 text-black font-black text-xs shrink-0">
-              Simular Gratis
-            </button>
+            <button onclick="buyStarter()" class="btn-tactile px-3 py-2 rounded-xl bg-amber-400 text-black font-black text-xs shrink-0">Simular Gratis</button>
           </div>
-          <div class="p-3 rounded-2xl bg-slate-900/90 border border-emerald-500/40 flex items-center justify-between gap-2">
+          <div class="p-3 rounded-2xl bg-slate-900/95 border border-emerald-500/40 flex items-center justify-between gap-2">
             <div>
-              <strong class="text-xs text-emerald-300">🛡️ Clan: Alquilar Mercenario UR (LordDrakon)</strong>
-              <p class="text-xs text-slate-400">Añade un soldado UR 5★ en 3D que te sigue y dispara contigo (+35% Poder).</p>
+              <strong class="text-xs text-emerald-300">🛡️ Clan: Desplegar Mercenario Pesado UR</strong>
+              <p class="text-xs text-slate-400">Añade un soldado UR dorado en el patio que dispara junto a ti.</p>
             </div>
-            <button onclick="hireClanMercenary3D()" class="btn-pop px-3 py-1.5 rounded-xl bg-emerald-500 text-black font-extrabold text-xs shrink-0">
-              ${GAME.mercenaryActive ? '✓ En Escuadrón' : 'Contratar Gratis'}
+            <button onclick="hireMerc()" class="btn-tactile px-3 py-2 rounded-xl bg-emerald-500 text-black font-black text-xs shrink-0">
+              ${GAME.mercenaryActive ? '✓ Activo' : 'Solicitar Gratis'}
             </button>
           </div>
-          <h4 class="font-bold text-amber-300 pt-1">🐾 Santuario de Mascotas 3D</h4>
-          <div class="space-y-1.5">${petsHtml}</div>
         `;
       }
     }
 
-    function upgradeWeaponWithGold(key) {
-      const w = GAME.weapons[key];
-      const cost = w.level * 120;
-      if (GAME.gold < cost) {
-        showToast(`🪙 Necesitas ${cost} monedas de oro.`);
-        return;
-      }
-      GAME.gold -= cost;
-      w.level++;
-      if (key === 'blades') rebuildOrbitalBlades3D();
-      sfxBuild();
-      updateHUD();
-      renderDrawerContent('weapons');
-      showToast(`🌀 ¡[${w.name}] subió a Nivel ${w.level}!`);
+    function selectHero(id) {
+      const h = GAME.heroes.find(x => x.id === id);
+      h.unlocked = true;
+      GAME.selectedHeroId = id;
+      applyHeroSkinVisuals3D();
+      sfxUpgrade();
+      renderDrawer('heroes');
     }
-
-    function pullGacha3D(count) {
-      if (GAME.tickets >= count) {
-        GAME.tickets -= count;
-      } else if (GAME.gems >= count * 270) {
-        GAME.gems -= count * 270;
-      } else {
-        showToast('🎁 ¡Toca el botón rojo VIP20K arriba para recibir +25 Tickets gratis!');
-        return;
-      }
-
-      sfxLevelUp();
-      const pulled = [];
-      for (let i = 0; i < count; i++) {
-        GAME.pityCounter++;
+    function levelHero(id) {
+      const h = GAME.heroes.find(x => x.id === id);
+      h.level += 2;
+      sfxUpgrade();
+      renderDrawer('heroes');
+    }
+    function equipSkin(id) {
+      const sk = GAME.skins.find(s => s.id === id);
+      sk.unlocked = true;
+      const h = GAME.heroes.find(x => x.id === sk.heroId);
+      if (h) { h.skin = id; GAME.selectedHeroId = h.id; }
+      applyHeroSkinVisuals3D();
+      sfxUpgrade();
+      renderDrawer('heroes');
+      showToast(`👗 ¡Exotraje 3D [${sk.name}] equipado!`);
+    }
+    function doGacha(n) {
+      if (GAME.tickets >= n) GAME.tickets -= n;
+      else { GAME.tickets += 20; GAME.tickets -= n; }
+      sfxUpgrade();
+      const res = [];
+      for (let i = 0; i < n; i++) {
         const h = GAME.heroes[Math.floor(Math.random() * GAME.heroes.length)];
-        if (!h.unlocked) h.unlocked = true;
-        else {
-          h.dupes++;
-          if (h.dupes >= h.stars && h.stars < 5) {
-            h.dupes -= h.stars;
-            h.stars++;
-          }
-        }
-        pulled.push(h);
+        h.unlocked = true;
+        h.stars = Math.min(5, h.stars + (Math.random() < 0.35 ? 1 : 0));
+        res.push(h);
       }
       updateHUD();
-      const box = document.getElementById('gacha-drawer-results');
-      if (box) {
-        box.innerHTML = pulled.map(h => `
+      const out = document.getElementById('gacha-out');
+      if (out) {
+        out.innerHTML = res.map(h => `
           <div class="p-2 rounded-xl bg-slate-900 border border-amber-400/50 flex flex-col items-center text-center">
             <span class="text-lg">${h.icon}</span>
-            <span class="font-bold text-xs truncate w-full">${h.name}</span>
+            <span class="font-bold text-xs truncate w-full">${h.name.split(' ')[1]}</span>
             <span class="text-amber-400 text-xs">${'★'.repeat(h.stars)}</span>
           </div>
         `).join('');
       }
-      showToast(`🎲 ¡Invocación x${count} completada! Héroes ascendidos.`);
     }
-
-    function selectHero3D(id) {
-      const h = GAME.heroes.find(x => x.id === id);
-      h.unlocked = true;
-      GAME.selectedHeroId = id;
-      applyHeroVisuals3D();
-      sfxBuild();
-      renderDrawerContent('heroes');
-      updateHUD();
-      showToast(`🌟 ¡Héroe 3D cambiado a ${h.name}!`);
-    }
-
-    function upgradeHero3D(id) {
-      const h = GAME.heroes.find(x => x.id === id);
-      h.level += 2;
-      if (h.dupes > 0 && h.stars < 5) { h.dupes--; h.stars++; }
-      sfxBuild();
-      renderDrawerContent('heroes');
-      updateHUD();
-      showToast(`⬆️ ¡${h.name} subió a Nv.${h.level} (${h.stars}★)!`);
-    }
-
-    function equipSkin3D(skinId) {
-      const sk = GAME.skins.find(s => s.id === skinId);
-      sk.unlocked = true;
-      const h = GAME.heroes.find(x => x.id === sk.heroId);
-      if (h) {
-        h.unlocked = true;
-        h.skin = skinId;
-        GAME.selectedHeroId = h.id;
-      }
-      applyHeroVisuals3D();
-      sfxLevelUp();
-      renderDrawerContent('heroes');
-      updateHUD();
-      showToast(`👗 ¡Skin 3D [${sk.name}] equipada en vivo!`);
-    }
-
-    function equipPet3D(petId) {
-      GAME.pets.forEach(p => { p.equipped = (p.id === petId); if (p.id === petId) p.unlocked = true; });
-      applyHeroVisuals3D();
-      sfxBuild();
-      renderDrawerContent('shop');
-      updateHUD();
-      showToast('🐾 ¡Mascota 3D equipada!');
-    }
-
-    function claimStarterBundle3D() {
+    function buyStarter() {
+      GAME.cash += 2000;
       GAME.gems += 2500;
-      GAME.gold += 600;
-      equipSkin3D('SK01');
-      equipPet3D('P03');
-      showToast('🔥 ¡Pack $0.99 activado! Seraphina Cyber-Valquiria 3D + Fénix UR listos.');
-    }
-
-    function hireClanMercenary3D() {
-      GAME.mercenaryActive = true;
-      syncBarracksSoldiers3D();
-      sfxLevelUp();
-      renderDrawerContent('shop');
-      updateHUD();
-      showToast('🛡️ ¡Mercenario UR 3D desplegado junto a tu héroe!');
-    }
-
-    function claimVipBonus() {
-      GAME.tickets += 25;
-      GAME.gems += 3000;
-      GAME.gold += 500;
-      sfxLevelUp();
+      equipSkin('SK01');
       updateHUD();
       renderQuickBasePads();
-      showToast('🎁 ¡Código VIP20K activado! +25 Tickets, +3,000 Gemas y +500 Monedas 3D.');
+      showToast('🔥 ¡Pack $0.99 activado! +$2,000 Efectivo y Exotraje Cyber-Valquiria.');
     }
-
+    function hireMerc() {
+      GAME.mercenaryActive = true;
+      syncMarineSquad3D();
+      sfxUpgrade();
+      renderDrawer('shop');
+      showToast('🛡️ ¡Mercenario Pesado UR desplegado en tu Base 3D!');
+    }
+    function claimVipCash() {
+      GAME.cash += 1000;
+      GAME.tickets += 10;
+      sfxUpgrade();
+      updateHUD();
+      renderQuickBasePads();
+      showToast('💵 ¡Suministro VIP recibido! +$1,000 en efectivo para mejorar tu Base.');
+    }
     function toggleFrameMode() {
       GAME.framedMode = !GAME.framedMode;
-      const frame = document.getElementById('phone-container');
-      const btn = document.getElementById('btn-frame-mode');
+      const f = document.getElementById('phone-container');
+      const b = document.getElementById('btn-frame-mode');
       if (GAME.framedMode) {
-        frame.classList.add('framed-mode');
-        frame.classList.remove('fullscreen-mode');
-        btn.textContent = '🖥️ Full';
+        f.classList.add('framed-mode'); f.classList.remove('fullscreen-mode');
+        b.textContent = '🖥️ Full';
       } else {
-        frame.classList.remove('framed-mode');
-        frame.classList.add('fullscreen-mode');
-        btn.textContent = '📱 9:16';
+        f.classList.remove('framed-mode'); f.classList.add('fullscreen-mode');
+        b.textContent = '📱 9:16';
       }
       setTimeout(resize3D, 60);
     }
@@ -1664,36 +1666,29 @@
       el.textContent = msg;
       el.classList.remove('hidden');
       clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => el.classList.add('hidden'), 2600);
+      toastTimer = setTimeout(() => el.classList.add('hidden'), 2800);
     }
 
     // ============================================================================
-    // 12. INICIO DE LA APLICACIÓN 3D
+    // 13. ARRANQUE DEL JUEGO 3D
     // ============================================================================
     window.addEventListener('DOMContentLoaded', () => {
       resize3D();
-      rebuildOrbitalBlades3D();
       syncTurrets3D();
-      syncBarracksSoldiers3D();
-      applyHeroVisuals3D();
+      syncMarineSquad3D();
+      applyHeroSkinVisuals3D();
       renderQuickBasePads();
-      updateHUD();
-
-      // Oleada inicial de enemigos y monedas 3D en el suelo
-      for (let i = 0; i < 10; i++) spawnEnemy3D(false);
-      for (let c = 0; c < 8; c++) {
-        spawnLootDrop3D((Math.random() - 0.5) * 10, (Math.random() - 0.5) * 10, 25, 20);
-      }
+      startWave(1);
 
       const bar = document.getElementById('load-bar');
       const st = document.getElementById('load-status');
-      setTimeout(() => { bar.style.width = '75%'; st.textContent = 'Activando Base 3D, Torretas y Espadas Orbitales...'; }, 180);
-      setTimeout(() => { bar.style.width = '100%'; st.textContent = '¡Beta 2.0 Lista!'; }, 360);
+      setTimeout(() => { bar.style.width = '75%'; st.textContent = 'Levantando muros fortificados, barricada y torretas...'; }, 160);
+      setTimeout(() => { bar.style.width = '100%'; st.textContent = '¡Recinto Táctico 3D Listo!'; }, 340);
       setTimeout(() => {
         const ov = document.getElementById('loading-overlay');
         ov.style.opacity = '0';
         setTimeout(() => ov.style.display = 'none', 400);
-      }, 500);
+      }, 480);
 
       requestAnimationFrame(animate3D);
     });
