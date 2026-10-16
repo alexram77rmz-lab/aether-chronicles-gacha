@@ -1,2153 +1,1701 @@
 <!DOCTYPE html>
-<html lang="es" class="dark scroll-smooth">
+<html lang="es" class="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#08080a" />
-  <title>Aether Chronicles: Idle Gacha RPG — Official Web Build</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23f59e0b'/%3E%3Cstop offset='50%25' stop-color='%239333ea'/%3E%3Cstop offset='100%25' stop-color='%234f46e5'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Cpath d='M36 10L18 36h14l-4 18 18-26H32l4-18z' fill='%23fff'/%3E%3C/svg%3E" />
+  <title>Aether Survivor 3D — Beta 2.0 (Mobile Gacha & Base RPG)</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23f59e0b'/%3E%3Cpath d='M36 8L16 36h15l-3 20 20-28H33l3-20z' fill='%2308080a'/%3E%3C/svg%3E" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
-    :root {
-      --bg-main: #08080a;
-      --bg-card: #111116;
-      --bg-sub: #181820;
-      --border-col: #272732;
-      --text-main: #ffffff;
-      --text-muted: #94a3b8;
-    }
-    html.light {
-      --bg-main: #f1f5f9;
-      --bg-card: #ffffff;
-      --bg-sub: #f8fafc;
-      --border-col: #cbd5e1;
-      --text-main: #0f172a;
-      --text-muted: #475569;
-    }
-    body {
-      background-color: var(--bg-main);
-      color: var(--text-main);
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+    html, body {
+      margin: 0; padding: 0; width: 100%; height: 100%;
+      background: #05060a; color: #f8fafc;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      overflow-x: hidden;
-      max-width: 100vw;
+      overflow: hidden;
     }
-    .card-surface {
-      background-color: var(--bg-card);
-      border: 1px solid var(--border-col);
+    /* Contenedor que simula celular 9:16 en PC y ocupa 100% en móvil real */
+    .phone-viewport-wrapper {
+      width: 100vw;
+      height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, #1e1b4b 0%, #05060a 75%);
     }
-    .sub-surface {
-      background-color: var(--bg-sub);
-      border: 1px solid var(--border-col);
+    .phone-frame {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      max-width: 450px;
+      max-height: 920px;
+      background: #090d16;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.85), 0 0 0 2px rgba(255, 255, 255, 0.08);
     }
-    .btn-tactile {
-      transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    @media (min-width: 500px) {
+      .phone-frame.framed-mode {
+        height: 94dvh;
+        border-radius: 34px;
+        border: 5px solid #1e293b;
+      }
+      .phone-frame.fullscreen-mode {
+        max-width: 100vw;
+        max-height: 100dvh;
+        height: 100dvh;
+        border-radius: 0;
+        border: none;
+      }
+    }
+    .btn-pop {
+      transition: transform 0.12s ease, filter 0.15s ease;
       cursor: pointer;
     }
-    .btn-tactile:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 20px -4px rgba(245, 158, 11, 0.35);
-      filter: brightness(1.06);
+    .btn-pop:hover { filter: brightness(1.1); transform: translateY(-2px); }
+    .btn-pop:active { transform: scale(0.93); }
+    .glass-panel {
+      background: rgba(12, 15, 26, 0.84);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
     }
-    .btn-tactile:active {
-      transform: scale(0.95);
+    .drawer-sheet {
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    @keyframes floatSlow {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-5px); }
-    }
-    .float-anim { animation: floatSlow 2.6s ease-in-out infinite; }
-    .tab-section {
-      transition: opacity 0.28s ease, transform 0.28s ease;
-    }
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.22); border-radius: 999px; }
   </style>
 </head>
-<body class="antialiased select-none pb-24 md:pb-8">
+<body>
 
-  <!-- LOADING SCREEN -->
-  <div id="loading-screen" class="fixed inset-0 z-50 bg-[#08080a] flex flex-col items-center justify-center p-6 transition-opacity duration-500">
-    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500 via-purple-600 to-indigo-600 flex items-center justify-center text-3xl shadow-2xl mb-4 animate-bounce">
+  <!-- PANTALLA DE CARGA BETA 2.0 -->
+  <div id="loading-overlay" class="fixed inset-0 z-50 bg-[#05060a] flex flex-col items-center justify-center p-6 transition-opacity duration-500">
+    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 via-orange-500 to-rose-600 flex items-center justify-center text-3xl shadow-2xl mb-3 animate-bounce">
       ⚡
     </div>
-    <h1 class="text-xl md:text-2xl font-extrabold text-white tracking-wider mb-1">AETHER CHRONICLES</h1>
-    <p class="text-xs text-amber-400 font-semibold uppercase tracking-widest mb-5">Gacha Idle RPG • WebGL / HTML5 Engine</p>
-    <div class="w-64 h-2.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
-      <div id="loading-bar" class="h-full bg-gradient-to-r from-amber-500 via-purple-500 to-cyan-400 transition-all duration-300" style="width: 15%"></div>
+    <span class="px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-extrabold text-xs mb-1">
+      BETA 2.0 • 3D SURVIVOR & BASE ENGINE
+    </span>
+    <h1 class="text-xl font-black tracking-wider text-white">AETHER SURVIVOR 3D</h1>
+    <p class="text-xs text-slate-400 mt-1 mb-5 text-center max-w-xs">
+      Motor 3D WebGL + C++ Spatial Grid • Construcción de Base en Vivo, Hordas, Armas Orbitales y Gacha RPG
+    </p>
+    <div class="w-60 h-2.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+      <div id="load-bar" class="h-full bg-gradient-to-r from-amber-400 via-emerald-400 to-cyan-400 transition-all duration-300" style="width: 25%"></div>
     </div>
-    <p id="loading-text" class="text-xs text-slate-400 mt-2 font-mono">Inicializando motor de combate 60 FPS...</p>
+    <p id="load-status" class="text-xs text-amber-300 font-mono mt-2">Compilando escena 3D, torretas y sombras...</p>
   </div>
 
-  <!-- MAIN CONTAINER -->
-  <div class="max-w-6xl mx-auto px-3 pt-3 md:px-5 md:pt-5 flex flex-col gap-3">
+  <div class="phone-viewport-wrapper">
+    <!-- MARCO DE CELULAR (O PANTALLA COMPLETA) -->
+    <div id="phone-container" class="phone-frame framed-mode">
 
-    <!-- HEADER: BRAND, RESOURCES & CONTROLS -->
-    <header class="card-surface rounded-2xl p-3.5 shadow-lg flex flex-wrap items-center justify-between gap-3">
-      <div class="flex items-center gap-3">
-        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500 via-purple-600 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-md">
-          ⚡
-        </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <h1 class="font-extrabold text-base md:text-lg tracking-tight">AETHER CHRONICLES</h1>
-            <span id="vip-badge" class="px-2 py-0.5 text-xs font-bold rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40">VIP 1</span>
-            <span class="hidden sm:inline-block px-2 py-0.5 text-xs font-semibold rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">☁️ Auto-Save</span>
+      <!-- LIENZO 3D THREE.JS (OCUPA TODA LA PANTALLA DEL CELULAR) -->
+      <div id="canvas-3d-host" class="absolute inset-0 z-0"></div>
+
+      <!-- CAPA DE TEXTOS DE DAÑO FLOTANTES 2D PROYECTADOS DESDE 3D -->
+      <div id="floating-dmg-layer" class="absolute inset-0 z-10 pointer-events-none overflow-hidden"></div>
+
+      <!-- ====================================================
+           HUD SUPERIOR MÓVIL (NIVEL XP, RECURSOS, OLEADA)
+           ==================================================== -->
+      <header class="relative z-20 p-2.5 flex flex-col gap-1.5 pointer-events-auto">
+        <!-- BARRA DE EXPERIENCIA ESTILO SURVIVOR.IO -->
+        <div class="w-full h-5 bg-slate-950/90 rounded-full border border-white/15 overflow-hidden relative flex items-center px-2.5 shadow">
+          <div id="xp-bar-fill" class="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 transition-all duration-200" style="width: 20%"></div>
+          <div class="relative z-10 w-full flex items-center justify-between text-xs font-extrabold text-white drop-shadow">
+            <span id="hud-run-lv">⚡ NV. BATALLA 1</span>
+            <span id="hud-wave-txt" class="text-amber-300">OLEADA 1 • HORDA DEL VACÍO</span>
+            <span id="hud-kills">💀 0</span>
           </div>
-          <p class="text-xs text-[var(--text-muted)]">
-            <span data-i18n="squadPower">Poder de Escuadrón:</span> <span id="top-power" class="font-bold text-amber-400">18,450</span>
-            <span class="mx-1">•</span>
-            <span data-i18n="skinBonus">Bono Skins:</span> <span id="top-skin-bonus" class="font-semibold text-emerald-400">+3% ATK/HP</span>
-          </p>
         </div>
+
+        <!-- FILA DE MONEDAS, GEMAS, TICKETS Y CONTROLES -->
+        <div class="flex items-center justify-between gap-1.5">
+          <div class="flex items-center gap-1.5">
+            <div class="glass-panel rounded-xl px-2.5 py-1 flex items-center gap-1 text-xs font-bold">
+              <span>🪙</span>
+              <span id="res-gold" class="text-amber-400 font-extrabold">350</span>
+            </div>
+            <div class="glass-panel rounded-xl px-2.5 py-1 flex items-center gap-1 text-xs font-bold">
+              <span>💎</span>
+              <span id="res-gems" class="text-sky-400 font-extrabold">5,400</span>
+            </div>
+            <div class="glass-panel rounded-xl px-2.5 py-1 flex items-center gap-1 text-xs font-bold">
+              <span>🎟️</span>
+              <span id="res-tickets" class="text-purple-400 font-extrabold">20</span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1">
+            <button onclick="claimVipBonus()" class="btn-pop px-2 py-1 rounded-xl bg-rose-600 text-white font-extrabold text-xs shadow">
+              🎁 VIP20K
+            </button>
+            <button onclick="toggleFrameMode()" id="btn-frame-mode" class="btn-pop glass-panel px-2 py-1 rounded-xl text-xs font-bold hidden sm:inline-block" title="Cambiar Vista Celular / Pantalla Completa">
+              🖥️ Full
+            </button>
+            <button onclick="toggleSound()" id="btn-sound" class="btn-pop glass-panel px-2 py-1 rounded-xl text-xs font-bold">
+              🔊
+            </button>
+          </div>
+        </div>
+
+        <!-- MINI-BANNER DE PODER Y ESTADO DE LA BASE 3D -->
+        <div class="flex items-center justify-between gap-1.5">
+          <div class="glass-panel rounded-xl px-2.5 py-1 text-xs flex items-center gap-2">
+            <span>🏰 Base Nv.<strong id="hud-base-lv" class="text-amber-400">1</strong></span>
+            <span>•</span>
+            <span>🗼 Torretas: <strong id="hud-turret-count" class="text-cyan-400">1</strong></span>
+            <span>•</span>
+            <span>⚔️ Poder: <strong id="hud-power" class="text-emerald-400">2,450</strong></span>
+          </div>
+
+          <div class="flex items-center gap-1">
+            <button onclick="toggleAutoPilot()" id="btn-autopilot" class="btn-pop px-2.5 py-1 rounded-xl bg-emerald-600 text-white font-extrabold text-xs shadow">
+              🤖 IA: ON
+            </button>
+            <button onclick="spawnBossWaveNow()" class="btn-pop px-2.5 py-1 rounded-xl bg-amber-500 text-black font-extrabold text-xs shadow">
+              👹 Jefe 3D
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- ====================================================
+           TARJETA EMERGENTE ROGUELITE (ESTILO SURVIVOR.IO)
+           ==================================================== -->
+      <div id="skill-choice-banner" class="relative z-20 mx-2.5 mt-1 glass-panel border-2 border-amber-400 rounded-2xl p-2.5 hidden flex-col gap-2 shadow-2xl">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-black text-amber-300 uppercase tracking-wide">🌟 ¡SUBISTE DE NIVEL! ELIGE ARMA 3D</span>
+          <span class="text-xs text-slate-300">Toca una tarjeta</span>
+        </div>
+        <div id="skill-cards-row" class="grid grid-cols-3 gap-1.5"></div>
       </div>
 
-      <!-- CURRENCIES & SETTINGS -->
-      <div class="flex flex-wrap items-center gap-2">
-        <div class="sub-surface rounded-xl px-3 py-1.5 flex items-center gap-1.5 text-xs font-semibold">
-          <span>🪙</span>
-          <span class="text-[var(--text-muted)]">Oro:</span>
-          <span id="res-gold" class="text-amber-400 font-bold">12,500</span>
-        </div>
-        <div class="sub-surface rounded-xl px-3 py-1.5 flex items-center gap-1.5 text-xs font-semibold">
-          <span>💎</span>
-          <span class="text-[var(--text-muted)]">Gemas:</span>
-          <span id="res-gems" class="text-sky-400 font-bold">5,400</span>
-        </div>
-        <div class="sub-surface rounded-xl px-3 py-1.5 flex items-center gap-1.5 text-xs font-semibold">
-          <span>🎟️</span>
-          <span class="text-[var(--text-muted)]">Tickets:</span>
-          <span id="res-tickets" class="text-purple-400 font-bold">20</span>
-        </div>
-        <div class="sub-surface rounded-xl px-3 py-1.5 flex items-center gap-1.5 text-xs font-semibold">
-          <span>🛡️</span>
-          <span class="text-[var(--text-muted)]">Clan:</span>
-          <span id="res-clan" class="text-emerald-400 font-bold">1,200</span>
-        </div>
-        <button id="btn-sound" onclick="toggleSound()" class="sub-surface btn-tactile rounded-xl px-3 py-1.5 text-xs font-bold">
-          🔊 SFX
-        </button>
-        <button id="btn-lang" onclick="toggleLang()" class="sub-surface btn-tactile rounded-xl px-2.5 py-1.5 text-xs font-bold">
-          🌐 ES
-        </button>
-        <button id="btn-theme" onclick="toggleTheme()" class="sub-surface btn-tactile rounded-xl px-2.5 py-1.5 text-xs font-bold">
-          🌙
-        </button>
-      </div>
-    </header>
+      <!-- ESPACIADOR CENTRAL (DEJA VER EL MUNDO 3D, JOYSTICK Y BASE) -->
+      <div class="relative z-10 flex-1 pointer-events-none flex flex-col justify-end p-2.5">
 
-    <!-- PROMO HOOK BANNER -->
-    <div class="bg-gradient-to-r from-amber-500/20 via-purple-600/20 to-rose-500/20 border border-amber-500/40 rounded-2xl p-2.5 px-4 flex flex-wrap items-center justify-between gap-2">
-      <div class="flex items-center gap-2 text-xs md:text-sm">
-        <span class="px-2 py-0.5 rounded-md bg-rose-600 text-white font-bold text-xs">🔥 GANCHO 20K DESCARGAS</span>
-        <span class="font-medium">Canjea el código viral <strong>VIP20K</strong> (+100 Tickets) o prueba el <strong>Pack $0.99 Seraphina UR</strong>.</span>
-      </div>
-      <div class="flex items-center gap-2">
-        <button onclick="claimPromoCode()" class="btn-tactile px-3 py-1.5 rounded-xl bg-amber-500 text-black font-extrabold text-xs">
-          🎁 Código VIP20K (+25 🎟️ + 3,000 💎)
-        </button>
-        <button onclick="switchTab('shop')" class="btn-tactile px-3 py-1.5 rounded-xl bg-purple-600 text-white font-bold text-xs">
-          ⚡ Oferta $0.99 UR
-        </button>
-      </div>
-    </div>
+        <!-- ACCIONES RÁPIDAS DE MEJORA DE BASE 3D CON MONEDAS (ESTILO DUCK SURVIVAL) -->
+        <div class="pointer-events-auto mb-2">
+          <div class="flex items-center justify-between mb-1 px-1">
+            <span class="text-xs font-extrabold text-amber-300 drop-shadow">
+              🏗️ MEJORA TU BASE 3D (Camina a los círculos o toca aquí con 🪙)
+            </span>
+            <span id="joystick-hint" class="text-xs text-cyan-300 font-semibold drop-shadow">
+              🕹️ Arrastra para moverte
+            </span>
+          </div>
+          <div id="quick-base-pads" class="grid grid-cols-5 gap-1.5"></div>
+        </div>
 
-    <!-- DESKTOP NAVIGATION BAR -->
-    <nav class="hidden md:grid grid-cols-6 gap-2">
-      <button onclick="switchTab('battle')" id="tab-btn-battle" class="btn-tactile px-3 py-2.5 rounded-xl font-bold text-sm border flex items-center justify-center gap-1.5 bg-amber-500 text-black border-amber-400 shadow">
-        <span>⚔️</span> <span>Batalla Idle</span>
-      </button>
-      <button onclick="switchTab('heroes')" id="tab-btn-heroes" class="btn-tactile px-3 py-2.5 rounded-xl font-bold text-sm border flex items-center justify-center gap-1.5 card-surface">
-        <span>🌟</span> <span>Héroes & Skins</span>
-      </button>
-      <button onclick="switchTab('gacha')" id="tab-btn-gacha" class="btn-tactile px-3 py-2.5 rounded-xl font-bold text-sm border flex items-center justify-center gap-1.5 card-surface">
-        <span>🎲</span> <span>Portal Gacha</span>
-      </button>
-      <button onclick="switchTab('pets')" id="tab-btn-pets" class="btn-tactile px-3 py-2.5 rounded-xl font-bold text-sm border flex items-center justify-center gap-1.5 card-surface">
-        <span>🐾</span> <span>Mascotas</span>
-      </button>
-      <button onclick="switchTab('clan')" id="tab-btn-clan" class="btn-tactile px-3 py-2.5 rounded-xl font-bold text-sm border flex items-center justify-center gap-1.5 card-surface">
-        <span>🛡️</span> <span>Clan & Raid</span>
-      </button>
-      <button onclick="switchTab('shop')" id="tab-btn-shop" class="btn-tactile px-3 py-2.5 rounded-xl font-bold text-sm border flex items-center justify-center gap-1.5 card-surface">
-        <span>💎</span> <span>Ofertas & 20K</span>
-      </button>
-    </nav>
+        <!-- ZONA DEL JOYSTICK TÁCTIL + HABILIDAD DEFINITIVA -->
+        <div class="flex items-end justify-between px-2 pb-1">
+          <!-- JOYSTICK VISUAL -->
+          <div id="joystick-zone" class="pointer-events-auto w-24 h-24 rounded-full bg-black/45 border-2 border-white/25 backdrop-blur-sm relative flex items-center justify-center touch-none shadow-lg">
+            <div id="joystick-knob" class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-md border border-white/60 transition-transform duration-75"></div>
+            <span class="absolute -top-5 text-xs font-bold text-white/75">MOVER 3D</span>
+          </div>
 
-    <!-- ==========================================
-         TAB 1: BATALLA IDLE EN TIEMPO REAL
-         ========================================== -->
-    <section id="tab-battle" class="tab-section flex flex-col gap-3">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
-
-        <!-- LEFT COLUMN: BATTLE CANVAS + SQUAD HUD -->
-        <div class="lg:col-span-2 card-surface rounded-2xl p-3.5 flex flex-col gap-3">
-          <div class="flex flex-wrap items-center justify-between gap-2">
+          <!-- BOTONES DE ACCIÓN DERECHA: ULTI + IMÁN + COFRE -->
+          <div class="pointer-events-auto flex flex-col items-end gap-2">
             <div class="flex items-center gap-2">
-              <span id="stage-badge" class="px-2.5 py-1 rounded-lg bg-indigo-500/20 text-indigo-400 border border-indigo-500/40 font-extrabold text-xs">
-                PISO 1 - 1
-              </span>
-              <span id="wave-status" class="text-xs font-semibold text-[var(--text-muted)]">
-                Oleada 1/5 • Enemigos del Vacío
-              </span>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-semibold text-xs">
-                ✨ Aura Elemental Activa: +15% ATK/HP
-              </span>
-            </div>
-          </div>
-
-          <!-- 2D BATTLE ARENA CANVAS -->
-          <div class="relative rounded-xl overflow-hidden border border-slate-800 bg-slate-950 shadow-inner">
-            <canvas id="battle-canvas" width="760" height="340" class="w-full h-[270px] sm:h-[340px] block"></canvas>
-
-            <!-- TOP CANVAS OVERLAY -->
-            <div class="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none">
-              <div class="bg-black/70 backdrop-blur px-3 py-1 rounded-lg border border-white/10 text-white text-xs flex items-center gap-2">
-                <span>🐾 <strong id="hud-pet-name" class="text-amber-300">Ignis (Dragón)</strong></span>
-                <div class="w-20 h-2 bg-white/20 rounded-full overflow-hidden">
-                  <div id="hud-pet-bar" class="h-full bg-amber-400 transition-all duration-100" style="width: 45%"></div>
-                </div>
-              </div>
-              <div id="boss-timer-box" class="hidden bg-rose-950/90 px-3 py-1 rounded-lg border border-rose-500/50 text-rose-200 text-xs font-bold">
-                🔥 JEFE DE PISO • <span id="boss-timer">25.0s</span>
-              </div>
-            </div>
-
-            <!-- BOTTOM CANVAS CONTROLS -->
-            <div class="absolute bottom-2.5 left-2.5 right-2.5 flex flex-wrap items-center justify-between gap-2">
-              <div class="flex items-center gap-1.5">
-                <button onclick="cycleSpeed()" id="btn-speed" class="btn-tactile px-3 py-1.5 rounded-lg bg-amber-500 text-black font-extrabold text-xs shadow">
-                  ⏩ Velocidad x1
-                </button>
-                <button onclick="toggleAutoUlt()" id="btn-auto-ult" class="btn-tactile px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-bold text-xs shadow">
-                  ⚡ Auto-Ulti: ON
-                </button>
-              </div>
-              <button onclick="triggerBossNow()" class="btn-tactile px-3.5 py-1.5 rounded-lg bg-rose-600 text-white font-extrabold text-xs shadow">
-                👹 Desafiar Jefe Ahora
+              <button onclick="vacuumAllLoot()" class="btn-pop px-3 py-2 rounded-2xl glass-panel border border-cyan-400/50 text-cyan-300 font-extrabold text-xs shadow-lg">
+                🧲 Imán 3D
+              </button>
+              <button onclick="castUltimate3D()" id="btn-ult-3d" class="btn-pop px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-black font-black text-xs shadow-xl border border-white/40">
+                ⚡ ULTI SOLAR (LISTA)
               </button>
             </div>
           </div>
-
-          <!-- SQUAD ACTIVE CARDS -->
-          <div>
-            <div class="flex items-center justify-between mb-1.5">
-              <span class="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">Escuadrón en Campo (Toca un héroe con 100% energía para lanzar su Definitiva)</span>
-              <button onclick="switchTab('heroes')" class="text-xs font-bold text-amber-400 hover:underline cursor-pointer">Editar Héroes / Skins →</button>
-            </div>
-            <div id="battle-squad-cards" class="grid grid-cols-5 gap-2"></div>
-          </div>
-        </div>
-
-        <!-- RIGHT COLUMN: AFK CHEST + QUEST + LOG -->
-        <div class="flex flex-col gap-3">
-          <!-- AFK CHEST -->
-          <div class="card-surface rounded-2xl p-3.5 flex flex-col gap-2.5">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="text-2xl float-anim">🧰</span>
-                <div>
-                  <h3 class="font-bold text-sm">Cofre de Botín AFK</h3>
-                  <p class="text-xs text-[var(--text-muted)]">Farmeo automático 24/7</p>
-                </div>
-              </div>
-              <span id="afk-timer" class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-mono text-xs font-bold">00:12:45</span>
-            </div>
-
-            <div class="grid grid-cols-2 gap-2 sub-surface rounded-xl p-2.5 text-xs">
-              <div>
-                <span class="text-[var(--text-muted)] block">Producción:</span>
-                <span id="afk-rate-gold" class="font-bold text-amber-400">+420 Oro / min</span>
-              </div>
-              <div>
-                <span class="text-[var(--text-muted)] block">Acumulado:</span>
-                <span id="afk-stored-gold" class="font-bold text-emerald-400">1,850 Oro • 45 💎</span>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-2">
-              <button onclick="claimAfkChest(false)" class="btn-tactile py-2.5 px-3 rounded-xl bg-amber-500 text-black font-extrabold text-xs">
-                ✨ Reclamar Botín
-              </button>
-              <button onclick="claimAfkChest(true)" class="btn-tactile py-2.5 px-3 rounded-xl bg-purple-600 text-white font-bold text-xs">
-                ⚡ Rápido 2h (50💎)
-              </button>
-            </div>
-          </div>
-
-          <!-- LAUNCH QUEST -->
-          <div class="card-surface rounded-2xl p-3.5 flex flex-col gap-2">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-amber-400 uppercase">🎯 Misión Guía FTUE</span>
-              <span id="quest-counter" class="text-xs text-[var(--text-muted)]">Misión #1</span>
-            </div>
-            <p id="quest-desc" class="text-sm font-semibold">Sube el nivel de tus héroes o realiza una Invocación Gacha x10</p>
-            <div class="flex items-center justify-between mt-1">
-              <span class="text-xs text-sky-400 font-bold">Recompensa: +1,000 💎 + 5 🎟️</span>
-              <button onclick="claimQuestReward()" class="btn-tactile px-3.5 py-1.5 rounded-xl bg-emerald-600 text-white font-bold text-xs">
-                Reclamar
-              </button>
-            </div>
-          </div>
-
-          <!-- LIVE BATTLE LOG -->
-          <div class="card-surface rounded-2xl p-3.5 flex-1 flex flex-col">
-            <div class="flex items-center justify-between mb-2">
-              <h3 class="font-bold text-xs uppercase tracking-wider text-[var(--text-muted)]">📜 Crónica de Combate</h3>
-              <button onclick="resetSaveData()" class="text-xs text-rose-400 hover:underline cursor-pointer">Reiniciar Partida</button>
-            </div>
-            <div id="combat-log" class="sub-surface rounded-xl p-2.5 text-xs space-y-1.5 h-36 overflow-y-auto font-mono"></div>
-          </div>
         </div>
 
       </div>
-    </section>
 
-    <!-- ==========================================
-         TAB 2: HÉROES, ASCENSIÓN Y SKINS
-         ========================================== -->
-    <section id="tab-heroes" class="tab-section hidden flex-col gap-3">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
-        <div class="lg:col-span-2 card-surface rounded-2xl p-4 flex flex-col gap-3">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <h2 class="font-bold text-base">🌟 Roster de Héroes y Cristal de Resonancia</h2>
-              <p class="text-xs text-[var(--text-muted)]">Equipa hasta 5 héroes. Los duplicados del Gacha permiten Ascender de 1★ a 5★ Despertar.</p>
-            </div>
-            <button onclick="levelUpAllSquad()" class="btn-tactile px-3.5 py-2 rounded-xl bg-amber-500 text-black font-extrabold text-xs">
-              ⬆️ Subir Nivel Escuadrón
-            </button>
-          </div>
-          <div id="heroes-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[460px] overflow-y-auto pr-1"></div>
+      <!-- ====================================================
+           CAJÓN DESLIZANTE (BOTTOM DRAWER PARA BASE, GACHA, HÉROES, CLAN, TIENDA)
+           ==================================================== -->
+      <div id="bottom-drawer" class="drawer-sheet translate-y-full absolute left-0 right-0 bottom-14 z-30 h-[66%] glass-panel rounded-t-3xl p-4 flex flex-col gap-3 shadow-2xl pointer-events-auto">
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <h2 id="drawer-title" class="font-extrabold text-base text-amber-400">🏰 Construcción de Base 3D</h2>
+          <button onclick="closeDrawer()" class="btn-pop px-3 py-1 rounded-xl bg-white/10 text-xs font-bold">
+            ✕ Volver al 3D
+          </button>
         </div>
-
-        <div class="card-surface rounded-2xl p-4 flex flex-col gap-3">
-          <div id="hero-detail-panel"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==========================================
-         TAB 3: PORTAL GACHA & PITY
-         ========================================== -->
-    <section id="tab-gacha" class="tab-section hidden flex-col gap-3">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
-        <div class="lg:col-span-2 card-surface rounded-2xl p-4 flex flex-col justify-between gap-4">
-          <div class="bg-gradient-to-br from-indigo-950 via-purple-900 to-amber-900 border border-amber-500/40 rounded-2xl p-5 text-white">
-            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-              <span class="px-2.5 py-1 rounded-full bg-amber-500 text-black font-extrabold text-xs">🌟 BANNER ASTRAL RATE-UP</span>
-              <span class="text-xs bg-black/50 px-2.5 py-1 rounded-lg border border-white/15">
-                Pity SSR/UR: <strong id="gacha-pity-count" class="text-amber-400">0</strong> / 70
-              </span>
-            </div>
-            <h2 class="text-xl md:text-2xl font-extrabold tracking-tight mb-1">Portal del Trono Celestial</h2>
-            <p class="text-xs md:text-sm text-purple-100 max-w-xl mb-4">
-              Probabilidad aumentada para <strong>Seraphina (Valquiria Solar UR)</strong> y <strong>Malakor (Rey del Vacío UR)</strong>. Soft Pity desde tirada 50 (+2.5%/tirada).
-            </p>
-
-            <div class="mb-4">
-              <div class="flex justify-between text-xs mb-1">
-                <span>Progreso hacia Pity Garantizado (SSR/UR)</span>
-                <span id="gacha-pity-prob" class="font-bold text-amber-300">Prob. SSR+ actual: 5.0%</span>
-              </div>
-              <div class="w-full h-2.5 bg-black/50 rounded-full overflow-hidden border border-white/10">
-                <div id="gacha-pity-bar" class="h-full bg-gradient-to-r from-purple-400 via-amber-400 to-rose-500 transition-all duration-300" style="width: 0%"></div>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-              <button onclick="doGachaPull(1)" class="btn-tactile py-3 px-4 rounded-xl bg-white/15 border border-white/25 text-white font-bold text-xs md:text-sm flex flex-col items-center">
-                <span>🎲 Invocar x1</span>
-                <span class="text-xs text-amber-300 mt-0.5">1 🎟️ o 300 💎</span>
-              </button>
-              <button onclick="doGachaPull(10)" class="btn-tactile py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-extrabold text-xs md:text-sm flex flex-col items-center shadow-lg">
-                <span>🌟 Invocar x10 (¡Mejor Valor!)</span>
-                <span class="text-xs text-slate-900 mt-0.5">10 🎟️ o 2,700 💎 (-10%)</span>
-              </button>
-              <button onclick="claimPromoCode()" class="btn-tactile py-3 px-4 rounded-xl bg-rose-600 text-white font-bold text-xs md:text-sm flex flex-col items-center">
-                <span>🎁 Bono VIP20K</span>
-                <span class="text-xs text-rose-100 mt-0.5">+25 Tickets Gratis</span>
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <div class="flex items-center justify-between mb-2">
-              <h3 class="font-bold text-sm">Resultado de la Invocación</h3>
-              <span id="gacha-total-pulls" class="text-xs text-[var(--text-muted)]">Tiradas totales: 0</span>
-            </div>
-            <div id="gacha-results-grid" class="grid grid-cols-2 sm:grid-cols-5 gap-2 min-h-[120px] sub-surface rounded-xl p-3 items-center justify-center">
-              <p class="col-span-full text-center text-xs text-[var(--text-muted)]">
-                Haz clic en "Invocar x10" para abrir portales y reclutar héroes SSR/UR.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div class="card-surface rounded-2xl p-4 flex flex-col gap-3">
-          <h3 class="font-bold text-sm">📊 Tabla de Probabilidades & Wishlist</h3>
-          <div class="space-y-2 text-xs">
-            <div class="p-2.5 rounded-xl sub-surface flex justify-between">
-              <span class="font-bold text-rose-400">🌈 UR (Mítico Astral)</span>
-              <span class="font-mono font-bold">0.8% (Pity: 20%)</span>
-            </div>
-            <div class="p-2.5 rounded-xl sub-surface flex justify-between">
-              <span class="font-bold text-amber-400">🟨 SSR (Legendario)</span>
-              <span class="font-mono font-bold">4.2% (Pity: 80%)</span>
-            </div>
-            <div class="p-2.5 rounded-xl sub-surface flex justify-between">
-              <span class="font-bold text-purple-400">🟪 SR (Épico)</span>
-              <span class="font-mono font-bold">43.0%</span>
-            </div>
-            <div class="p-2.5 rounded-xl sub-surface flex justify-between">
-              <span class="font-bold text-sky-400">🟦 R (Común)</span>
-              <span class="font-mono font-bold">52.0%</span>
-            </div>
-          </div>
-
-          <!-- CODIGO DE REGALO / PRE-REGISTRO CON VALIDACION EN TIEMPO REAL -->
-          <div class="border-t border-[var(--border-col)] pt-3 flex flex-col gap-2">
-            <h4 class="font-bold text-xs uppercase text-amber-400">🔑 Canjear Código de Regalo / Creador</h4>
-            <p class="text-xs text-[var(--text-muted)]">Prueba códigos como <code>VIP20K</code>, <code>AETHER777</code> o <code>GACHAGOD</code>:</p>
-            <div class="flex gap-2">
-              <input id="gift-code-input" type="text" placeholder="Ej: VIP20K" oninput="validateGiftInput()" class="flex-1 sub-surface rounded-xl px-3 py-2 text-xs font-mono uppercase focus:outline-none border border-slate-700" />
-              <button onclick="redeemCustomCode()" class="btn-tactile px-3.5 py-2 rounded-xl bg-amber-500 text-black font-extrabold text-xs">
-                Canjear
-              </button>
-            </div>
-            <span id="gift-code-feedback" class="text-xs hidden"></span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==========================================
-         TAB 4: SANTUARIO DE MASCOTAS
-         ========================================== -->
-    <section id="tab-pets" class="tab-section hidden flex-col gap-3">
-      <div class="card-surface rounded-2xl p-4">
-        <div class="mb-3">
-          <h2 class="font-bold text-base">🐾 Santuario de Mascotas Divinas (Companions)</h2>
-          <p class="text-xs text-[var(--text-muted)]">
-            La mascota equipada acompaña a tu escuadrón en combate y lanza su habilidad definitiva automáticamente cada pocos segundos.
-          </p>
-        </div>
-        <div id="pets-grid" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
-      </div>
-    </section>
-
-    <!-- ==========================================
-         TAB 5: CLAN, JEFE ABISAL & MERCENARIO
-         ========================================== -->
-    <section id="tab-clan" class="tab-section hidden flex-col gap-3">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
-        <div class="lg:col-span-2 card-surface rounded-2xl p-4 flex flex-col gap-4">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold text-xs">CLAN NIVEL 7 • 29/30 MIEMBROS</span>
-              <h2 class="font-bold text-lg mt-0.5">🛡️ Orden del Éter Inmortal</h2>
-            </div>
-            <button onclick="shareClanInvite()" class="btn-tactile px-3 py-1.5 rounded-xl bg-indigo-600 text-white font-bold text-xs">
-              🔗 Invitar Amigo al Clan (+500 💎)
-            </button>
-          </div>
-
-          <div class="bg-gradient-to-r from-rose-950/90 via-purple-950/90 to-slate-900 border border-rose-500/40 rounded-2xl p-4 text-white">
-            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-              <div>
-                <h3 class="font-extrabold text-base text-rose-300">🐉 Jefe de Clan Diario: Behemoth Abisal</h3>
-                <p class="text-xs text-rose-100/80">Suma daño con tu clan para desbloquear cofres diarios de Gemas y Monedas de Clan.</p>
-              </div>
-              <span class="px-2.5 py-1 rounded-lg bg-black/50 text-amber-300 font-mono text-xs font-bold">
-                Tu Récord Hoy: <span id="clan-boss-dmg">0</span> DMG
-              </span>
-            </div>
-            <div class="w-full h-3 bg-black/60 rounded-full overflow-hidden border border-white/10 my-2.5">
-              <div id="clan-boss-bar" class="h-full bg-gradient-to-r from-rose-500 to-amber-400 transition-all duration-300" style="width: 35%"></div>
-            </div>
-            <div class="flex flex-wrap items-center justify-between gap-2 mt-3">
-              <span class="text-xs text-rose-200">Cofre de Clan: <strong>1.5M / 3.0M Daño Acumulado</strong></span>
-              <button onclick="attackClanBoss()" class="btn-tactile px-4 py-2 rounded-xl bg-rose-500 text-white font-extrabold text-xs shadow">
-                ⚔️ Atacar Jefe de Clan (+600 🛡️ & +250 💎)
-              </button>
-            </div>
-          </div>
-
-          <div class="sub-surface rounded-2xl p-3.5 flex flex-wrap items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
-              <div class="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-500 flex items-center justify-center text-2xl">
-                👑
-              </div>
-              <div>
-                <div class="flex items-center gap-2">
-                  <h4 class="font-bold text-sm">Alquiler de Mercenario VIP (Líder: LordDrakon)</h4>
-                  <span class="px-2 py-0.5 rounded bg-amber-500 text-black font-bold text-xs">UR 5★ Nv.100</span>
-                </div>
-                <p class="text-xs text-[var(--text-muted)]">
-                  Pide prestado el héroe estrella del clan para ganar +35% Poder de Escuadrón inmediato.
-                </p>
-              </div>
-            </div>
-            <button id="btn-mercenary" onclick="hireMercenary()" class="btn-tactile px-3.5 py-2 rounded-xl bg-amber-500 text-black font-extrabold text-xs">
-              🤝 Contratar Mercenario (Gratis)
-            </button>
-          </div>
-        </div>
-
-        <div class="card-surface rounded-2xl p-4 flex flex-col gap-3">
-          <div>
-            <h3 class="font-bold text-sm">🔬 Árbol Tecnológico de Clan</h3>
-            <p class="text-xs text-[var(--text-muted)]">Mejora permanentemente las estadísticas de todas tus clases.</p>
-          </div>
-          <div id="clan-tech-list" class="space-y-2.5"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==========================================
-         TAB 6: TIENDA LIVEOPS & SIMULADOR 20K
-         ========================================== -->
-    <section id="tab-shop" class="tab-section hidden flex-col gap-3">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
-        <div class="lg:col-span-2 card-surface rounded-2xl p-4 flex flex-col gap-3">
-          <div>
-            <h2 class="font-bold text-base">💎 Ofertas LiveOps de Alta Conversión (Simulación Gratis)</h2>
-            <p class="text-xs text-[var(--text-muted)]">
-              Haz clic en cualquier paquete para simular su compra gratis y comprobar su impacto inmediato en tu cuenta.
-            </p>
-          </div>
-          <div id="shop-offers-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
-        </div>
-
-        <div class="card-surface rounded-2xl p-4 flex flex-col gap-3">
-          <div>
-            <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold text-xs">PROYECCIÓN DE LANZAMIENTO</span>
-            <h3 class="font-bold text-sm mt-1">📈 Calculadora de 20,000+ Descargas</h3>
-            <p class="text-xs text-[var(--text-muted)]">Simula el retorno del primer mes combinando TikTok Hooks, Pre-registro y viralidad de Clan.</p>
-          </div>
-
-          <div class="space-y-3 text-xs">
-            <div>
-              <div class="flex justify-between mb-1">
-                <span>Descargas Base Mes 1</span>
-                <strong id="sim-dl-val" class="text-amber-400">22,500</strong>
-              </div>
-              <input id="sim-dl" type="range" min="10000" max="50000" step="500" value="22500" oninput="updateBusinessSim()" class="w-full accent-amber-500 cursor-pointer" />
-            </div>
-
-            <div>
-              <div class="flex justify-between mb-1">
-                <span>Conversión a Pago (Pack $0.99+)</span>
-                <strong id="sim-conv-val" class="text-emerald-400">5.2%</strong>
-              </div>
-              <input id="sim-conv" type="range" min="2.0" max="12.0" step="0.2" value="5.2" oninput="updateBusinessSim()" class="w-full accent-emerald-500 cursor-pointer" />
-            </div>
-
-            <div>
-              <div class="flex justify-between mb-1">
-                <span>ARPPU 30 Días ($ USD)</span>
-                <strong id="sim-arppu-val" class="text-sky-400">$18.50</strong>
-              </div>
-              <input id="sim-arppu" type="range" min="5" max="45" step="0.5" value="18.5" oninput="updateBusinessSim()" class="w-full accent-sky-500 cursor-pointer" />
-            </div>
-
-            <div class="sub-surface rounded-xl p-3 space-y-2 mt-2">
-              <div class="flex justify-between">
-                <span class="text-[var(--text-muted)]">Jugadores de Pago:</span>
-                <strong id="sim-out-payers" class="font-mono">1,345 usuarios</strong>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-[var(--text-muted)]">Descargas Virales (Clan K-Factor):</span>
-                <strong id="sim-out-viral" class="font-mono text-purple-400">+3,375 orgánicas</strong>
-              </div>
-              <div class="flex justify-between border-t border-[var(--border-col)] pt-2 text-sm">
-                <span class="font-bold">Ingresos Brutos D30:</span>
-                <strong id="sim-out-rev" class="font-mono text-emerald-400 text-base">$24,882 USD</strong>
-              </div>
-            </div>
-          </div>
-        </div>
+        <div id="drawer-content" class="flex-1 overflow-y-auto pr-1 space-y-2.5 text-xs"></div>
       </div>
 
-      <!-- SOCIAL PROOF / PLAYER REVIEWS -->
-      <div class="card-surface rounded-2xl p-4 mt-1">
-        <h3 class="font-bold text-xs uppercase tracking-wider text-amber-400 mb-2.5">⭐ Reseñas de Beta Testers (Social Proof Pre-Lanzamiento)</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-          <div class="sub-surface rounded-xl p-3">
-            <div class="flex items-center justify-between mb-1">
-              <strong class="text-amber-300">⭐⭐⭐⭐⭐ @KaitoGacha</strong>
-              <span class="text-[var(--text-muted)]">VIP 5</span>
-            </div>
-            <p class="text-[var(--text-muted)]">"El sistema de Soft Pity a las 50 tiradas y el código VIP20K enganchan desde el primer minuto. La skin Cyber-Valquiria se ve brutal."</p>
-          </div>
-          <div class="sub-surface rounded-xl p-3">
-            <div class="flex items-center justify-between mb-1">
-              <strong class="text-amber-300">⭐⭐⭐⭐⭐ @ValeriaRPG</strong>
-              <span class="text-[var(--text-muted)]">Líder de Clan</span>
-            </div>
-            <p class="text-[var(--text-muted)]">"Poder alquilar el héroe UR de un compañero de clan me ayudó a pasar el Jefe del Piso 3 sin trabarme."</p>
-          </div>
-          <div class="sub-surface rounded-xl p-3">
-            <div class="flex items-center justify-between mb-1">
-              <strong class="text-amber-300">⭐⭐⭐⭐⭐ @DarkSlime99</strong>
-              <span class="text-[var(--text-muted)]">Tester Móvil</span>
-            </div>
-            <p class="text-[var(--text-muted)]">"Corre súper fluido a 60 FPS tanto en navegador de PC como en el celular. El pack de $0.99 vale totalmente la pena."</p>
-          </div>
-        </div>
-      </div>
-    </section>
+      <!-- ====================================================
+           BARRA DE NAVEGACIÓN INFERIOR PARA CELULAR (6 BOTONES)
+           ==================================================== -->
+      <nav class="relative z-40 bg-[#080b12] border-t border-white/15 grid grid-cols-6 py-1.5 px-1 pointer-events-auto">
+        <button onclick="closeDrawer()" id="nav-world" class="btn-pop flex flex-col items-center justify-center py-1 text-amber-400 font-extrabold text-xs">
+          <span class="text-base">🕹️</span>
+          <span>Mundo 3D</span>
+        </button>
+        <button onclick="openDrawer('base')" id="nav-base" class="btn-pop flex flex-col items-center justify-center py-1 text-slate-300 font-bold text-xs">
+          <span class="text-base">🏰</span>
+          <span>Base 3D</span>
+        </button>
+        <button onclick="openDrawer('weapons')" id="nav-weapons" class="btn-pop flex flex-col items-center justify-center py-1 text-slate-300 font-bold text-xs">
+          <span class="text-base">🌀</span>
+          <span>Armas</span>
+        </button>
+        <button onclick="openDrawer('gacha')" id="nav-gacha" class="btn-pop flex flex-col items-center justify-center py-1 text-slate-300 font-bold text-xs">
+          <span class="text-base">🎲</span>
+          <span>Gacha</span>
+        </button>
+        <button onclick="openDrawer('heroes')" id="nav-heroes" class="btn-pop flex flex-col items-center justify-center py-1 text-slate-300 font-bold text-xs">
+          <span class="text-base">🌟</span>
+          <span>Héroes/Skin</span>
+        </button>
+        <button onclick="openDrawer('shop')" id="nav-shop" class="btn-pop flex flex-col items-center justify-center py-1 text-slate-300 font-bold text-xs">
+          <span class="text-base">💎</span>
+          <span>Clan/Tienda</span>
+        </button>
+      </nav>
 
-    <!-- FOOTER WITH LIVE TRACKER & SOCIALS -->
-    <footer class="card-surface rounded-2xl p-3.5 px-4 flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--text-muted)]">
-      <div class="flex items-center gap-2">
-        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
-        <span>Servidor Global #1 Online • <strong id="live-players-count" class="text-emerald-400">1,428</strong> Jugadores Activos en este momento</span>
-      </div>
-      <div class="flex items-center gap-3">
-        <button onclick="switchTab('gacha')" class="hover:text-amber-400 font-semibold cursor-pointer">🎲 Invocar Ahora</button>
-        <span>•</span>
-        <button onclick="claimPromoCode()" class="hover:text-amber-400 font-semibold cursor-pointer">🎁 Reclamar VIP20K</button>
-      </div>
-    </footer>
-
-  </div>
-
-  <!-- MOBILE ERGONOMIC STICKY BOTTOM BAR -->
-  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 card-surface border-t border-[var(--border-col)] grid grid-cols-6 py-1.5 px-1 shadow-2xl">
-    <button onclick="switchTab('battle')" id="mob-btn-battle" class="flex flex-col items-center justify-center py-1 text-amber-400 font-bold text-xs">
-      <span class="text-base">⚔️</span>
-      <span>Batalla</span>
-    </button>
-    <button onclick="switchTab('heroes')" id="mob-btn-heroes" class="flex flex-col items-center justify-center py-1 text-[var(--text-muted)] font-semibold text-xs">
-      <span class="text-base">🌟</span>
-      <span>Héroes</span>
-    </button>
-    <button onclick="switchTab('gacha')" id="mob-btn-gacha" class="flex flex-col items-center justify-center py-1 text-[var(--text-muted)] font-semibold text-xs">
-      <span class="text-base">🎲</span>
-      <span>Gacha</span>
-    </button>
-    <button onclick="switchTab('pets')" id="mob-btn-pets" class="flex flex-col items-center justify-center py-1 text-[var(--text-muted)] font-semibold text-xs">
-      <span class="text-base">🐾</span>
-      <span>Mascotas</span>
-    </button>
-    <button onclick="switchTab('clan')" id="mob-btn-clan" class="flex flex-col items-center justify-center py-1 text-[var(--text-muted)] font-semibold text-xs">
-      <span class="text-base">🛡️</span>
-      <span>Clan</span>
-    </button>
-    <button onclick="switchTab('shop')" id="mob-btn-shop" class="flex flex-col items-center justify-center py-1 text-[var(--text-muted)] font-semibold text-xs">
-      <span class="text-base">💎</span>
-      <span>Tienda</span>
-    </button>
-  </nav>
-
-  <!-- FLASH OFFER POPUP MODAL -->
-  <div id="popup-offer-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-    <div class="card-surface border-2 border-amber-500 rounded-2xl max-w-md w-full p-5 shadow-2xl flex flex-col gap-3">
-      <div class="flex items-center justify-between">
-        <span class="px-2.5 py-1 rounded-full bg-rose-600 text-white font-extrabold text-xs">⚡ OFERTA RELÁMPAGO • 800% VALOR</span>
-        <button onclick="closeFlashModal()" class="text-xs text-[var(--text-muted)] hover:underline cursor-pointer">Cerrar ✕</button>
-      </div>
-      <h3 class="font-extrabold text-lg">¡Impulso de Ascensión del Despertar!</h3>
-      <p class="text-xs text-[var(--text-muted)]">
-        Este pop-up se activa automáticamente ante un Jefe difícil para maximizar la conversión. ¡Simúlalo gratis!
-      </p>
-      <div class="sub-surface rounded-xl p-3 flex items-center justify-around text-xs font-bold">
-        <span>🎟️ +25 Tickets</span>
-        <span>💎 +2,500 Gemas</span>
-        <span>🪙 +50,000 Oro</span>
-      </div>
-      <button onclick="buyOffer('flash_popup', true)" class="btn-tactile w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-extrabold text-sm">
-        🔥 Reclamar Oferta ($2.99 Simulado Gratis)
-      </button>
     </div>
   </div>
 
-  <!-- TOAST NOTIFICATION -->
-  <div id="toast-box" class="fixed top-4 right-4 bg-slate-900 text-white border border-amber-500 px-4 py-2.5 rounded-xl shadow-2xl text-xs font-bold hidden z-50"></div>
+  <!-- TOAST DE FEEDBACK -->
+  <div id="toast-msg" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white border border-amber-400 px-4 py-2 rounded-2xl shadow-2xl text-xs font-extrabold hidden"></div>
 
   <script>
     // ============================================================================
-    // 1. STATE & TABLES
+    // 1. ESTADO GLOBAL BETA 2.0 (SURVIVOR 3D + BASE + GACHA RPG)
     // ============================================================================
-    const DEFAULT_STATE = {
-      gold: 12500,
+    const GAME = {
+      gold: 350,
       gems: 5400,
       tickets: 20,
       clanCoins: 1200,
-      vipLevel: 1,
       soundOn: true,
-      lang: 'ES',
-      speedMult: 1,
-      autoUlt: true,
-      stageFloor: 1,
-      stageSub: 1,
+      autoPilot: true,
+      framedMode: true,
+      activeDrawer: null,
+
+      // Progresión en partida 3D
+      runLevel: 1,
+      runXp: 0,
+      runXpNext: 100,
       wave: 1,
-      maxWave: 5,
-      afkSeconds: 765,
+      kills: 0,
       pityCounter: 0,
-      totalPulls: 0,
-      selectedHeroId: 'H01',
-      equippedPetId: 'P01',
       mercenaryActive: false,
-      clanBossRecord: 0,
-      questIndex: 1,
-      purchasedOffers: {}
+
+      // Armas estilo Survivor.io
+      weapons: {
+        blades: { level: 2, name: '🌀 Espadas Orbitales 3D', desc: 'Cuchillas de energía que giran alrededor de tu héroe.' },
+        blaster: { level: 1, name: '🏹 Ráfaga Solar 3D', desc: 'Dispara proyectiles automáticos al enemigo más cercano.' },
+        lightning: { level: 1, name: '⚡ Rayo Celestial 3D', desc: 'Impacta con relámpagos del cielo cada 3.5 segundos.' },
+        nova: { level: 1, name: '🔥 Anillo de Plasma 3D', desc: 'Quema y empuja hordas cercanas con ondas expansivas.' },
+        magnet: { level: 1, name: '🧲 Super Imán de Monedas', desc: 'Aumenta el radio de succión y el valor de las monedas +25%.' }
+      },
+
+      // Edificios de la Base 3D (Estilo Duck Survival / Whiteout Survival)
+      buildings: [
+        { id: 'citadel', name: '🏰 Ciudadela', icon: '🏰', level: 1, baseCost: 60, x: 0, z: 0, color: 0xf59e0b, desc: 'Núcleo central: Cura tu vida al acercarte y genera Oro/seg.' },
+        { id: 'turrets', name: '🗼 Torretas', icon: '🗼', level: 1, baseCost: 75, x: -7, z: -6, color: 0x06b6d4, desc: 'Construye hasta 4 torretas láser 3D automáticas (1 por nivel hasta 4, luego sube daño).' },
+        { id: 'mine',    name: '⛏️ Mina Oro', icon: '⛏️', level: 1, baseCost: 65, x: 7, z: -6, color: 0xeab308, desc: 'Extractor 3D que escupe monedas físicas de oro al suelo cada 3.5s.' },
+        { id: 'dome',    name: '🛡️ Domo Escudo', icon: '🛡️', level: 1, baseCost: 80, x: -7, z: 6, color: 0x3b82f6, desc: 'Campo de fuerza hexagonal que ralentiza y daña enemigos dentro de la base.' },
+        { id: 'barracks',name: '⚔️ Cuartel IA', icon: '⚔️', level: 1, baseCost: 90, x: 7, z: 6, color: 0x10b981, desc: 'Despliega aliados soldados 3D que te siguen y disparan contigo.' }
+      ],
+
+      // Roster de Héroes y Skins 3D
+      selectedHeroId: 'H01',
+      heroes: [
+        { id: 'H01', name: 'Seraphina', rarity: 'UR', icon: '☀️', level: 10, stars: 2, dupes: 1, unlocked: true, baseAtk: 180, color: 0xf59e0b, skin: 'default' },
+        { id: 'H02', name: 'Malakor', rarity: 'UR', icon: '🌑', level: 1, stars: 1, dupes: 0, unlocked: false, baseAtk: 210, color: 0xa855f7, skin: 'default' },
+        { id: 'H03', name: 'Kaelen', rarity: 'SSR', icon: '🔥', level: 8, stars: 1, dupes: 0, unlocked: true, baseAtk: 145, color: 0xef4444, skin: 'default' },
+        { id: 'H04', name: 'Lyra', rarity: 'SSR', icon: '🌿', level: 8, stars: 2, dupes: 1, unlocked: true, baseAtk: 135, color: 0x10b981, skin: 'SK04' },
+        { id: 'H05', name: 'Tharok', rarity: 'SSR', icon: '❄️', level: 9, stars: 1, dupes: 0, unlocked: true, baseAtk: 140, color: 0x38bdf8, skin: 'default' }
+      ],
+
+      skins: [
+        { id: 'SK01', heroId: 'H01', name: 'Cyber-Valquiria Neón', unlocked: false, color: 0x06b6d4, wingColor: 0x22d3ee, bonusPct: 0.15, desc: '+15% Daño Global • Cambia a Seraphina en 3D con alas láser cian.' },
+        { id: 'SK02', heroId: 'H02', name: 'Emperador Cósmico', unlocked: false, color: 0xfacc15, wingColor: 0xa855f7, bonusPct: 0.20, desc: '+20% Daño Global • Armadura dorada galáctica en 3D.' },
+        { id: 'SK03', heroId: 'H03', name: 'Kaelen Luna Sangrienta', unlocked: false, color: 0xdc2626, wingColor: 0xf43f5e, bonusPct: 0.10, desc: '+10% Daño Global • Aura carmesí oscura en 3D.' },
+        { id: 'SK04', heroId: 'H04', name: 'Lyra Neko Celestial', unlocked: true, color: 0xf472b6, wingColor: 0xfbcfe8, bonusPct: 0.08, desc: '+8% Daño Global • Halos rosados en 3D.' }
+      ],
+
+      pets: [
+        { id: 'P01', name: 'Ignis (Dragón 3D)', icon: '🐉', rarity: 'Épica', unlocked: true, equipped: true, color: 0xf97316, bonus: 0.10 },
+        { id: 'P02', name: 'Yukiko (Kitsune 3D)', icon: '🦊', rarity: 'SSR', unlocked: true, equipped: false, color: 0x38bdf8, bonus: 0.18 },
+        { id: 'P03', name: 'Aetherion (Fénix UR 3D)', icon: '🦅', rarity: 'UR', unlocked: false, equipped: false, color: 0xfacc15, bonus: 0.35 }
+      ]
     };
 
-    let STATE = Object.assign({}, DEFAULT_STATE);
-
-    const HEROES_DB = [
-      {
-        id: 'H01', name: 'Seraphina', title: 'Valquiria Solar', rarity: 'UR', faction: 'Solar', icon: '☀️',
-        role: 'DPS Burst', pos: 'back', unlocked: true, inSquad: true, level: 12, stars: 2, dupes: 1,
-        baseAtk: 340, baseHp: 1950, color: '#f59e0b',
-        ultName: 'Juicio del Alba', ultDesc: 'Lanza 5 lanzas solares (420% ATK AoE) y escuda al equipo.',
-        equippedSkin: 'default'
-      },
-      {
-        id: 'H02', name: 'Malakor', title: 'Rey del Vacío', rarity: 'UR', faction: 'Abyss', icon: '🌑',
-        role: 'Mago AoE', pos: 'back', unlocked: false, inSquad: false, level: 1, stars: 1, dupes: 0,
-        baseAtk: 375, baseHp: 1800, color: '#a855f7',
-        ultName: 'Singularidad Abisal', ultDesc: 'Agujero negro que causa 380% ATK a todos los enemigos.',
-        equippedSkin: 'default'
-      },
-      {
-        id: 'H03', name: 'Kaelen', title: 'Filo Carmesí', rarity: 'SSR', faction: 'Ignis', icon: '🔥',
-        role: 'Asesino', pos: 'front', unlocked: true, inSquad: true, level: 10, stars: 1, dupes: 0,
-        baseAtk: 285, baseHp: 2200, color: '#ef4444',
-        ultName: 'Danza de Ceniza', ultDesc: 'Corte crítico garantizado de 350% ATK sobre la línea frontal.',
-        equippedSkin: 'default'
-      },
-      {
-        id: 'H04', name: 'Lyra', title: 'Oráculo del Bosque', rarity: 'SSR', faction: 'Sylvan', icon: '🌿',
-        role: 'Healer', pos: 'back', unlocked: true, inSquad: true, level: 10, stars: 2, dupes: 1,
-        baseAtk: 210, baseHp: 2050, color: '#10b981',
-        ultName: 'Lluvia Esmeralda', ultDesc: 'Cura a todo el escuadrón un 280% ATK y sube velocidad.',
-        equippedSkin: 'SK04'
-      },
-      {
-        id: 'H05', name: 'Tharok', title: 'Baluarte Glacial', rarity: 'SSR', faction: 'Frost', icon: '❄️',
-        role: 'Tanque', pos: 'front', unlocked: true, inSquad: true, level: 11, stars: 1, dupes: 0,
-        baseAtk: 185, baseHp: 3400, color: '#38bdf8',
-        ultName: 'Muralla Cero Absoluto', ultDesc: 'Golpe glaciar AoE y escudo de reducción de daño.',
-        equippedSkin: 'default'
-      },
-      {
-        id: 'H06', name: 'Vespera', title: 'Reina de Espinas', rarity: 'SSR', faction: 'Sylvan', icon: '🌿',
-        role: 'Control', pos: 'back', unlocked: false, inSquad: false, level: 1, stars: 1, dupes: 0,
-        baseAtk: 265, baseHp: 1900, color: '#22c55e',
-        ultName: 'Jardín Venenoso', ultDesc: 'Enreda a los enemigos causando daño continuo por 5s.',
-        equippedSkin: 'default'
-      },
-      {
-        id: 'H07', name: 'Ignatius', title: 'Coloso de Magma', rarity: 'SR', faction: 'Ignis', icon: '🔥',
-        role: 'Tanque', pos: 'front', unlocked: true, inSquad: false, level: 8, stars: 2, dupes: 1,
-        baseAtk: 150, baseHp: 2650, color: '#f97316',
-        ultName: 'Coraza Volcánica', ultDesc: 'Explosión ígnea de 220% ATK y escudo ardiente.',
-        equippedSkin: 'default'
-      },
-      {
-        id: 'H08', name: 'Freya', title: 'Arquera Boreal', rarity: 'SR', faction: 'Frost', icon: '❄️',
-        role: 'DPS Rango', pos: 'back', unlocked: true, inSquad: true, level: 9, stars: 2, dupes: 2,
-        baseAtk: 195, baseHp: 1550, color: '#60a5fa',
-        ultName: 'Flecha de Escarcha', ultDesc: 'Lluvia de flechas heladas (230% ATK AoE).',
-        equippedSkin: 'default'
-      }
-    ];
-
-    const SKINS_DB = [
-      {
-        id: 'SK01', heroId: 'H01', name: 'Seraphina Cyber-Valquiria', tier: 'Mítica Live2D',
-        unlocked: false, atkBonus: 0.05, hpBonus: 0.05, visualColor: '#06b6d4', haloColor: '#22d3ee',
-        desc: '+5% ATK/HP Global • Alas de neón cian y láseres orbitales en batalla.'
-      },
-      {
-        id: 'SK02', heroId: 'H02', name: 'Malakor Emperador Cósmico', tier: 'Mítica Live2D',
-        unlocked: false, atkBonus: 0.05, hpBonus: 0.08, visualColor: '#eab308', haloColor: '#fde047',
-        desc: '+5% ATK / +8% HP Global • Armadura estelar dorada y meteoritos.'
-      },
-      {
-        id: 'SK03', heroId: 'H03', name: 'Kaelen Luna de Sangre', tier: 'Épica',
-        unlocked: false, atkBonus: 0.03, hpBonus: 0.02, visualColor: '#dc2626', haloColor: '#fb7185',
-        desc: '+3% ATK Global • Katana demoníaca carmesí con aura oscura.'
-      },
-      {
-        id: 'SK04', heroId: 'H04', name: 'Lyra Neko Celestial', tier: 'Épica (Regalo D3)',
-        unlocked: true, atkBonus: 0.03, hpBonus: 0.03, visualColor: '#f472b6', haloColor: '#fbcfe8',
-        desc: '+3% ATK/HP Global • Espíritu felino rosado y notas musicales.'
-      }
-    ];
-
-    const PETS_DB = [
-      {
-        id: 'P01', name: 'Ignis, Dragón Solar', rarity: 'Épica', icon: '🐉', unlocked: true, level: 5,
-        cooldown: 8, atkBuff: 0.08, hpBuff: 0.05, skillName: 'Aliento de Brasas',
-        desc: 'Causa 250% de daño ígneo a todos los enemigos cada 8s.'
-      },
-      {
-        id: 'P02', name: 'Yukiko, Kitsune Astral', rarity: 'Legendaria', icon: '🦊', unlocked: true, level: 3,
-        cooldown: 7, atkBuff: 0.12, hpBuff: 0.12, skillName: 'Llama Espiritual',
-        desc: 'Cura 20% HP a todo el escuadrón y golpea con fuego azul cada 7s.'
-      },
-      {
-        id: 'P03', name: 'Aetherion, Fénix UR', rarity: 'Mítica UR', icon: '🦅', unlocked: false, level: 1,
-        cooldown: 6, atkBuff: 0.22, hpBuff: 0.20, skillName: 'Supernova Renaciente',
-        desc: 'Devasta el campo con 450% daño verdadero y cura al equipo cada 6s.'
-      }
-    ];
-
-    const CLAN_TECH_DB = [
-      { id: 'CT1', name: 'Vanguardia Inmortal (Tanques)', level: 3, max: 20, cost: 250, bonusPerLv: 0.03 },
-      { id: 'CT2', name: 'Filo del Asalto (Guerreros/Asesinos)', level: 4, max: 20, cost: 250, bonusPerLv: 0.03 },
-      { id: 'CT3', name: 'Arcano Celestial (Magos/Healers)', level: 2, max: 20, cost: 250, bonusPerLv: 0.03 }
-    ];
-
-    const SHOP_OFFERS_DB = [
-      {
-        id: 'starter_pack', title: '🔥 Pack 1.ª Compra: Seraphina UR + Skin', price: '$0.99', badge: '1200% VALOR',
-        desc: 'Convierte al 10% de jugadores Día 1. Desbloquea la Skin Mítica Cyber-Valquiria + 1 copia de Seraphina UR + 1,500 Gemas.',
-        rewardText: 'Skin Cyber-Valquiria + Seraphina Dupe + 1,500 💎'
-      },
-      {
-        id: 'vip_pass', title: '👑 Pase Mensual VIP Astral', price: '$4.99', badge: '850% VALOR',
-        desc: 'Sube a VIP 3, activa +25% Oro AFK permanente, entrega 3,000 Gemas al instante y desbloquea al Fénix Mítico Aetherion.',
-        rewardText: 'Mascota Fénix UR + 3,000 💎 + Bono AFK'
-      },
-      {
-        id: 'growth_fund', title: '📈 Fondo de Crecimiento (Growth Fund)', price: '$19.99', badge: '1500% VALOR',
-        desc: 'El paquete #1 en ingresos en AFK Arena y Legend of Slime. Entrega 12,000 Gemas y 30 Tickets de Invocación.',
-        rewardText: '+12,000 💎 + 30 🎟️ Tickets Gacha'
-      },
-      {
-        id: 'skin_bundle', title: '🌌 Pack Emperador Cósmico (Malakor UR)', price: '$14.99', badge: 'COLECCIÓN',
-        desc: 'Recluta inmediatamente a Malakor (Rey del Vacío UR) + su Skin Mítica Emperador Cósmico (+5% ATK / +8% HP Global).',
-        rewardText: 'Héroe Malakor UR + Skin Cósmica'
-      }
-    ];
-
     // ============================================================================
-    // 2. LOCALSTORAGE SAVE & LOAD
-    // ============================================================================
-    function saveGame() {
-      try {
-        const payload = {
-          state: STATE,
-          heroes: HEROES_DB.map(h => ({ id: h.id, unlocked: h.unlocked, inSquad: h.inSquad, level: h.level, stars: h.stars, dupes: h.dupes, equippedSkin: h.equippedSkin })),
-          skins: SKINS_DB.map(s => ({ id: s.id, unlocked: s.unlocked })),
-          pets: PETS_DB.map(p => ({ id: p.id, unlocked: p.unlocked, level: p.level })),
-          clanTech: CLAN_TECH_DB.map(c => ({ id: c.id, level: c.level }))
-        };
-        localStorage.setItem('aether_chronicles_save_v1', JSON.stringify(payload));
-      } catch (e) {}
-    }
-
-    function loadGame() {
-      try {
-        const raw = localStorage.getItem('aether_chronicles_save_v1');
-        if (!raw) return;
-        const data = JSON.parse(raw);
-        if (data.state) STATE = Object.assign({}, DEFAULT_STATE, data.state);
-        if (data.heroes) {
-          data.heroes.forEach(sh => {
-            const target = HEROES_DB.find(h => h.id === sh.id);
-            if (target) Object.assign(target, sh);
-          });
-        }
-        if (data.skins) {
-          data.skins.forEach(ss => {
-            const target = SKINS_DB.find(s => s.id === ss.id);
-            if (target) target.unlocked = ss.unlocked;
-          });
-        }
-        if (data.pets) {
-          data.pets.forEach(sp => {
-            const target = PETS_DB.find(p => p.id === sp.id);
-            if (target) Object.assign(target, sp);
-          });
-        }
-        if (data.clanTech) {
-          data.clanTech.forEach(sc => {
-            const target = CLAN_TECH_DB.find(c => c.id === sc.id);
-            if (target) target.level = sc.level;
-          });
-        }
-      } catch (e) {}
-    }
-
-    function resetSaveData() {
-      localStorage.removeItem('aether_chronicles_save_v1');
-      location.reload();
-    }
-
-    // ============================================================================
-    // 3. WEB AUDIO SYNTHESIZER
+    // 2. AUDIO SINTETIZADO (MONEDAS, LÁSERES, CONSTRUCCIÓN, GACHA)
     // ============================================================================
     let audioCtx = null;
-    function playTone(freq, type = 'sine', duration = 0.12, vol = 0.07) {
-      if (!STATE.soundOn) return;
+    function playTone(freq, type = 'sine', dur = 0.09, vol = 0.05) {
+      if (!GAME.soundOn) return;
       try {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + duration);
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        o.type = type;
+        o.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        g.gain.setValueAtTime(vol, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+        o.connect(g);
+        g.connect(audioCtx.destination);
+        o.start();
+        o.stop(audioCtx.currentTime + dur);
       } catch (e) {}
     }
-    function sfxHit() { playTone(210 + Math.random() * 80, 'triangle', 0.08, 0.04); }
-    function sfxUlt() {
-      playTone(440, 'sawtooth', 0.15, 0.07);
-      setTimeout(() => playTone(660, 'sawtooth', 0.22, 0.08), 80);
+    function sfxCoin() { playTone(880 + Math.random() * 220, 'sine', 0.07, 0.04); }
+    function sfxShoot() { playTone(320 + Math.random() * 90, 'triangle', 0.06, 0.03); }
+    function sfxBuild() {
+      [440, 554, 659, 880].forEach((f, i) => setTimeout(() => playTone(f, 'triangle', 0.14, 0.07), i * 65));
     }
-    function sfxGachaSSR() {
-      [523, 659, 783, 1046].forEach((n, i) => setTimeout(() => playTone(n, 'triangle', 0.22, 0.09), i * 90));
+    function sfxLevelUp() {
+      [523, 659, 783, 1046].forEach((f, i) => setTimeout(() => playTone(f, 'sawtooth', 0.18, 0.07), i * 80));
     }
 
     function toggleSound() {
-      STATE.soundOn = !STATE.soundOn;
-      document.getElementById('btn-sound').textContent = STATE.soundOn ? '🔊 SFX' : '🔇 MUTE';
-      saveGame();
-    }
-
-    function toggleTheme() {
-      const html = document.documentElement;
-      html.classList.toggle('light');
-      document.getElementById('btn-theme').textContent = html.classList.contains('light') ? '☀️' : '🌙';
-    }
-
-    function toggleLang() {
-      STATE.lang = STATE.lang === 'ES' ? 'EN' : 'ES';
-      document.getElementById('btn-lang').textContent = `🌐 ${STATE.lang}`;
-      showToast(STATE.lang === 'EN' ? '🌐 Language switched to English (UI labels updated)' : '🌐 Idioma cambiado a Español');
+      GAME.soundOn = !GAME.soundOn;
+      document.getElementById('btn-sound').textContent = GAME.soundOn ? '🔊' : '🔇';
     }
 
     // ============================================================================
-    // 4. RPG MATH & SYNERGIES
+    // 3. ESCENA 3D THREE.JS (TERRENO, BASE 3D, HÉROE, TORRETAS, HORDAS, MONEDAS)
     // ============================================================================
-    function StarMult(stars) {
-      return [1, 1.0, 1.25, 1.6, 2.1, 3.0][Math.min(5, stars)] || 1;
+    const hostEl = document.getElementById('canvas-3d-host');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x070b14);
+    scene.fog = new THREE.FogExp2(0x070b14, 0.015);
+
+    const camera = new THREE.PerspectiveCamera(48, 1, 0.1, 160);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    hostEl.appendChild(renderer.domElement);
+
+    function resize3D() {
+      const w = hostEl.clientWidth || 420;
+      const h = hostEl.clientHeight || 780;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    }
+    window.addEventListener('resize', resize3D);
+
+    // Iluminación 3D
+    const ambientLight = new THREE.AmbientLight(0x94a3b8, 0.85);
+    scene.add(ambientLight);
+
+    const dirLight = new THREE.DirectionalLight(0xfffbeb, 1.25);
+    dirLight.position.set(18, 34, 22);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 1024;
+    dirLight.shadow.mapSize.height = 1024;
+    dirLight.shadow.camera.near = 5;
+    dirLight.shadow.camera.far = 90;
+    const d = 28;
+    dirLight.shadow.camera.left = -d;
+    dirLight.shadow.camera.right = d;
+    dirLight.shadow.camera.top = d;
+    dirLight.shadow.camera.bottom = -d;
+    scene.add(dirLight);
+
+    const basePointLight = new THREE.PointLight(0xf59e0b, 1.6, 22);
+    basePointLight.position.set(0, 4, 0);
+    scene.add(basePointLight);
+
+    // Suelo 3D + Cuadrícula Táctica + Decoración de Mapa
+    const groundGeo = new THREE.PlaneGeometry(120, 120);
+    const groundMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.85, metalness: 0.1 });
+    const groundMesh = new THREE.Mesh(groundGeo, groundMat);
+    groundMesh.rotation.x = -Math.PI / 2;
+    groundMesh.receiveShadow = true;
+    scene.add(groundMesh);
+
+    const gridHelper = new THREE.GridHelper(100, 50, 0x38bdf8, 0x1e293b);
+    gridHelper.position.y = 0.02;
+    scene.add(gridHelper);
+
+    // Perímetro luminoso de la Base
+    const baseRingGeo = new THREE.RingGeometry(9.6, 10.0, 48);
+    const baseRingMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b, side: THREE.DoubleSide, transparent: true, opacity: 0.45 });
+    const baseRingMesh = new THREE.Mesh(baseRingGeo, baseRingMat);
+    baseRingMesh.rotation.x = -Math.PI / 2;
+    baseRingMesh.position.y = 0.04;
+    scene.add(baseRingMesh);
+
+    // Domo de Fuerza 3D (Escudo de Base)
+    const domeGeo = new THREE.SphereGeometry(9.8, 28, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+    const domeMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, wireframe: true, transparent: true, opacity: 0.14 });
+    const domeMesh = new THREE.Mesh(domeGeo, domeMat);
+    scene.add(domeMesh);
+
+    // ============================================================================
+    // 4. CONSTRUCCIÓN DE OBJETOS 3D: BASE, PADS, TORRETAS, HÉROE, ALIADOS
+    // ============================================================================
+    const padMeshes = {};
+    const turretMeshes = [];
+    const allySoldiers3D = [];
+
+    // Crear los 5 Pads de Construcción en el suelo 3D
+    const citadelCrystalMesh = new THREE.Mesh(
+      new THREE.OctahedronGeometry(1.15, 0),
+      new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0xd97706, emissiveIntensity: 0.6, metalness: 0.6, roughness: 0.2 })
+    );
+    citadelCrystalMesh.position.set(0, 3.2, 0);
+    citadelCrystalMesh.castShadow = true;
+    scene.add(citadelCrystalMesh);
+
+    const citadelBaseTower = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.4, 2.0, 2.0, 8),
+      new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.5, roughness: 0.4 })
+    );
+    citadelBaseTower.position.set(0, 1.0, 0);
+    citadelBaseTower.castShadow = true;
+    citadelBaseTower.receiveShadow = true;
+    scene.add(citadelBaseTower);
+
+    // Mina de Oro 3D (Extractor giratorio)
+    const mineGroup = new THREE.Group();
+    mineGroup.position.set(7, 0, -6);
+    const mineBase = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.2, 1.5, 1.2, 6),
+      new THREE.MeshStandardMaterial({ color: 0xca8a04, metalness: 0.6, roughness: 0.3 })
+    );
+    mineBase.position.y = 0.6;
+    const mineDrill = new THREE.Mesh(
+      new THREE.ConeGeometry(0.85, 2.2, 6),
+      new THREE.MeshStandardMaterial({ color: 0xfef08a, emissive: 0xca8a04, emissiveIntensity: 0.4 })
+    );
+    mineDrill.position.y = 2.0;
+    mineDrill.rotation.x = Math.PI;
+    mineGroup.add(mineBase, mineDrill);
+    scene.add(mineGroup);
+
+    // Cuartel 3D
+    const barracksMesh = new THREE.Mesh(
+      new THREE.BoxGeometry(2.2, 1.6, 2.2),
+      new THREE.MeshStandardMaterial({ color: 0x059669, roughness: 0.4, metalness: 0.3 })
+    );
+    barracksMesh.position.set(7, 0.8, 6);
+    barracksMesh.castShadow = true;
+    scene.add(barracksMesh);
+
+    // Generador de anillos de Pad interactivos en 3D
+    GAME.buildings.forEach(b => {
+      const ring = new THREE.Mesh(
+        new THREE.RingGeometry(1.8, 2.25, 32),
+        new THREE.MeshBasicMaterial({ color: b.color, side: THREE.DoubleSide, transparent: true, opacity: 0.75 })
+      );
+      ring.rotation.x = -Math.PI / 2;
+      ring.position.set(b.x, 0.05, b.z);
+      scene.add(ring);
+      padMeshes[b.id] = ring;
+    });
+
+    // Crear las 4 posiciones de Torretas Automáticas 3D
+    const turretCoords = [
+      { x: -7, z: -6 },
+      { x: -7, z: 6 },
+      { x: 0, z: -8.5 },
+      { x: 0, z: 8.5 }
+    ];
+
+    function syncTurrets3D() {
+      const desiredCount = Math.min(4, GAME.buildings.find(b => b.id === 'turrets').level);
+      while (turretMeshes.length < desiredCount) {
+        const idx = turretMeshes.length;
+        const c = turretCoords[idx];
+        const tGroup = new THREE.Group();
+        tGroup.position.set(c.x, 0, c.z);
+
+        const ped = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.8, 1.1, 1.2, 8),
+          new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.6, roughness: 0.3 })
+        );
+        ped.position.y = 0.6;
+
+        const head = new THREE.Mesh(
+          new THREE.SphereGeometry(0.75, 12, 12),
+          new THREE.MeshStandardMaterial({ color: 0x06b6d4, emissive: 0x0891b2, emissiveIntensity: 0.5 })
+        );
+        head.position.y = 1.4;
+
+        const barrel = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.18, 0.18, 1.6, 8),
+          new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.8 })
+        );
+        barrel.rotation.x = Math.PI / 2;
+        barrel.position.set(0, 1.4, 0.9);
+
+        tGroup.add(ped, head, barrel);
+        scene.add(tGroup);
+        turretMeshes.push({ group: tGroup, shootTimer: idx * 0.25 });
+      }
+      document.getElementById('hud-turret-count').textContent = turretMeshes.length;
     }
 
-    function getGlobalSkinBonuses() {
-      let atk = 0, hp = 0;
-      SKINS_DB.forEach(s => {
-        if (s.unlocked) { atk += s.atkBonus; hp += s.hpBonus; }
+    function syncBarracksSoldiers3D() {
+      const barracksLv = GAME.buildings.find(b => b.id === 'barracks').level;
+      const desiredAllies = Math.min(4, barracksLv + (GAME.mercenaryActive ? 1 : 0));
+      while (allySoldiers3D.length < desiredAllies) {
+        const idx = allySoldiers3D.length;
+        const g = new THREE.Group();
+        const body = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.42, 0.5, 1.2, 10),
+          new THREE.MeshStandardMaterial({ color: idx === 0 && GAME.mercenaryActive ? 0xfacc15 : 0x10b981 })
+        );
+        body.position.y = 0.6;
+        const head = new THREE.Mesh(
+          new THREE.SphereGeometry(0.38, 10, 10),
+          new THREE.MeshStandardMaterial({ color: 0xfde68a })
+        );
+        head.position.y = 1.45;
+        g.add(body, head);
+        g.position.set(player3D.pos.x + (idx - 1) * 2, 0, player3D.pos.z + 2);
+        scene.add(g);
+        allySoldiers3D.push({ group: g, shootTimer: idx * 0.3, angleOffset: idx * 1.57 });
+      }
+    }
+
+    // ============================================================================
+    // 5. HÉROE JUGADOR 3D + SKINS + ESPADAS ORBITALES + MASCOTA 3D
+    // ============================================================================
+    const playerGroup = new THREE.Group();
+    scene.add(playerGroup);
+
+    const heroBodyMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.3, metalness: 0.5 });
+    const heroBodyMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.58, 0.72, 1.55, 12), heroBodyMat);
+    heroBodyMesh.position.y = 0.8;
+    heroBodyMesh.castShadow = true;
+
+    const heroHeadMesh = new THREE.Mesh(
+      new THREE.SphereGeometry(0.5, 14, 14),
+      new THREE.MeshStandardMaterial({ color: 0xfef3c7, roughness: 0.3 })
+    );
+    heroHeadMesh.position.y = 1.9;
+    heroHeadMesh.castShadow = true;
+
+    const heroVisorMesh = new THREE.Mesh(
+      new THREE.BoxGeometry(0.65, 0.2, 0.35),
+      new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
+    );
+    heroVisorMesh.position.set(0, 1.92, 0.35);
+
+    // Alas 3D / Halo de Skin
+    const wingMat = new THREE.MeshBasicMaterial({ color: 0xfacc15, side: THREE.DoubleSide, transparent: true, opacity: 0.85 });
+    const leftWing = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.9, 0.08), wingMat);
+    leftWing.position.set(-0.85, 1.35, -0.35);
+    leftWing.rotation.z = 0.35;
+    const rightWing = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.9, 0.08), wingMat);
+    rightWing.position.set(0.85, 1.35, -0.35);
+    rightWing.rotation.z = -0.35;
+
+    const heroAuraRing = new THREE.Mesh(
+      new THREE.RingGeometry(1.05, 1.32, 28),
+      new THREE.MeshBasicMaterial({ color: 0xfacc15, side: THREE.DoubleSide, transparent: true, opacity: 0.75 })
+    );
+    heroAuraRing.rotation.x = -Math.PI / 2;
+    heroAuraRing.position.y = 0.05;
+
+    playerGroup.add(heroBodyMesh, heroHeadMesh, heroVisorMesh, leftWing, rightWing, heroAuraRing);
+
+    // Mascota 3D flotante
+    const petMesh = new THREE.Mesh(
+      new THREE.OctahedronGeometry(0.48, 1),
+      new THREE.MeshStandardMaterial({ color: 0xf97316, emissive: 0xea580c, emissiveIntensity: 0.6 })
+    );
+    scene.add(petMesh);
+
+    // Espadas Orbitales 3D (Guardian Blades)
+    const orbitalBladesGroup = new THREE.Group();
+    scene.add(orbitalBladesGroup);
+    let bladeMeshes = [];
+
+    function rebuildOrbitalBlades3D() {
+      bladeMeshes.forEach(m => orbitalBladesGroup.remove(m));
+      bladeMeshes = [];
+      const count = GAME.weapons.blades.level + 1;
+      for (let i = 0; i < count; i++) {
+        const blade = new THREE.Mesh(
+          new THREE.BoxGeometry(0.28, 0.12, 1.45),
+          new THREE.MeshBasicMaterial({ color: 0x22d3ee })
+        );
+        orbitalBladesGroup.add(blade);
+        bladeMeshes.push(blade);
+      }
+    }
+
+    const player3D = {
+      pos: { x: 0, z: 3.5 },
+      vel: { x: 0, z: 0 },
+      speed: 9.8,
+      shootTimer: 0,
+      lightningTimer: 0,
+      novaTimer: 0,
+      padUpgradeCooldown: 0
+    };
+
+    function applyHeroVisuals3D() {
+      const h = GAME.heroes.find(x => x.id === GAME.selectedHeroId) || GAME.heroes[0];
+      const sk = GAME.skins.find(s => s.id === h.skin && s.unlocked);
+      heroBodyMat.color.setHex(sk ? sk.color : h.color);
+      wingMat.color.setHex(sk ? sk.wingColor : h.color);
+      heroAuraRing.material.color.setHex(sk ? sk.wingColor : h.color);
+
+      const eqPet = GAME.pets.find(p => p.equipped) || GAME.pets[0];
+      petMesh.material.color.setHex(eqPet.color);
+      petMesh.material.emissive.setHex(eqPet.color);
+    }
+
+    // ============================================================================
+    // 6. ENTIDADES DINÁMICAS 3D: ENEMIGOS, MONEDAS, GEMAS XP, PROYECTILES, ONDAS
+    // ============================================================================
+    const enemies3D = [];
+    const lootDrops3D = [];
+    const projectiles3D = [];
+    const fxRings3D = [];
+
+    const coinGeo = new THREE.CylinderGeometry(0.36, 0.36, 0.14, 12);
+    const coinMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xca8a04, emissiveIntensity: 0.5, metalness: 0.8, roughness: 0.2 });
+    const xpGemGeo = new THREE.OctahedronGeometry(0.34, 0);
+    const xpGemMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+
+    function spawnEnemy3D(isBoss = false) {
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 21 + Math.random() * 7;
+      const x = Math.cos(angle) * dist;
+      const z = Math.sin(angle) * dist;
+
+      const scale = isBoss ? 2.3 : (0.85 + Math.random() * 0.35);
+      const colorHex = isBoss ? 0xf43f5e : (Math.random() < 0.5 ? 0xa855f7 : 0xef4444);
+
+      const group = new THREE.Group();
+      const body = new THREE.Mesh(
+        isBoss ? new THREE.DodecahedronGeometry(1.05 * scale, 0) : new THREE.BoxGeometry(0.95 * scale, 1.15 * scale, 0.95 * scale),
+        new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.4, metalness: 0.3 })
+      );
+      body.position.y = 0.65 * scale;
+      body.castShadow = true;
+      group.add(body);
+
+      group.position.set(x, 0, z);
+      scene.add(group);
+
+      const baseHp = (110 * Math.pow(1.18, GAME.wave - 1)) * (isBoss ? 9.0 : 1.0);
+      enemies3D.push({
+        group,
+        body,
+        x,
+        z,
+        hp: baseHp,
+        maxHp: baseHp,
+        speed: isBoss ? 3.2 : (3.8 + Math.random() * 1.4),
+        radius: isBoss ? 1.8 : 0.85,
+        isBoss,
+        hitFlash: 0
       });
-      return { atk, hp };
     }
 
-    function getClanTechBonus() {
-      let total = 0;
-      CLAN_TECH_DB.forEach(t => { total += t.level * t.bonusPerLv; });
-      return total / 3;
+    function spawnBossWaveNow() {
+      GAME.wave++;
+      spawnEnemy3D(true);
+      for (let i = 0; i < 6; i++) spawnEnemy3D(false);
+      showToast(`👹 ¡Jefe 3D de Oleada ${GAME.wave} ha invadido el mapa!`);
     }
 
-    function getHeroStats(hero) {
-      const skinB = getGlobalSkinBonuses();
-      const clanB = getClanTechBonus();
-      const pet = PETS_DB.find(p => p.id === STATE.equippedPetId) || PETS_DB[0];
-      const mercMult = STATE.mercenaryActive ? 1.35 : 1.0;
-      const lvMult = 1 + 0.14 * (hero.level - 1);
-      const starM = StarMult(hero.stars);
-      const totalMult = lvMult * starM * (1 + skinB.atk + clanB + pet.atkBuff) * mercMult;
+    function spawnLootDrop3D(x, z, goldVal, xpVal) {
+      if (lootDrops3D.length > 90) return; // Cap de rendimiento móvil
+      const isCoin = Math.random() < 0.65 || goldVal > 30;
+      const mesh = new THREE.Mesh(isCoin ? coinGeo : xpGemGeo, isCoin ? coinMat : xpGemMat);
+      if (isCoin) mesh.rotation.x = Math.PI / 2;
+      mesh.position.set(x + (Math.random() - 0.5), 0.45, z + (Math.random() - 0.5));
+      scene.add(mesh);
 
-      const atk = Math.round(hero.baseAtk * totalMult);
-      const hp = Math.round(hero.baseHp * lvMult * starM * (1 + skinB.hp + clanB + pet.hpBuff) * mercMult);
-      const power = Math.round(atk * 4.2 + hp * 0.85);
-      return { atk, hp, power };
-    }
-
-    function getSquadPower() {
-      const squad = HEROES_DB.filter(h => h.inSquad && h.unlocked);
-      return squad.reduce((sum, h) => sum + getHeroStats(h).power, 0);
-    }
-
-    // ============================================================================
-    // 5. 60 FPS CANVAS BATTLE ENGINE
-    // ============================================================================
-    const canvas = document.getElementById('battle-canvas');
-    const ctx = canvas.getContext('2d');
-
-    let battleUnits = [];
-    let enemyUnits = [];
-    let projectiles = [];
-    let floatingTexts = [];
-    let petEnergy = 40;
-    let bossTimer = 25.0;
-    let shakeFrames = 0;
-
-    function syncSquadToBattle() {
-      const squad = HEROES_DB.filter(h => h.inSquad && h.unlocked).slice(0, 5);
-      const frontSlots = [{ x: 225, y: 160 }, { x: 225, y: 250 }];
-      const backSlots = [{ x: 110, y: 120 }, { x: 85, y: 200 }, { x: 110, y: 275 }];
-      let fIdx = 0, bIdx = 0;
-
-      battleUnits = squad.map((h) => {
-        const st = getHeroStats(h);
-        let pos;
-        if (h.pos === 'front' && fIdx < 2) { pos = frontSlots[fIdx++]; }
-        else if (bIdx < 3) { pos = backSlots[bIdx++]; }
-        else { pos = frontSlots[Math.min(1, fIdx++)]; }
-
-        const existing = battleUnits.find(u => u.id === h.id);
-        return {
-          id: h.id,
-          heroRef: h,
-          x: pos.x,
-          y: pos.y,
-          maxHp: st.hp,
-          hp: existing ? Math.min(st.hp, Math.max(st.hp * 0.4, existing.hp)) : st.hp,
-          atk: st.atk,
-          energy: existing ? existing.energy : 35,
-          atkTimer: Math.random() * 0.8,
-          atkCooldown: h.role === 'Tanque' ? 1.35 : 1.05
-        };
+      lootDrops3D.push({
+        mesh,
+        x: mesh.position.x,
+        z: mesh.position.z,
+        gold: goldVal,
+        xp: xpVal,
+        magnetized: false
       });
-      renderSquadCards();
     }
 
-    function spawnEnemyWave(isBossWave = false) {
-      enemyUnits = [];
-      const difficulty = (STATE.stageFloor - 1) * 5 + STATE.stageSub + (STATE.wave - 1) * 0.4;
-      const baseHp = Math.round(1400 * Math.pow(1.18, difficulty));
-      const baseAtk = Math.round(95 * Math.pow(1.15, difficulty));
+    function fireProjectile3D(fromX, fromZ, toX, toZ, dmg, colorHex = 0xfacc15, speed = 22) {
+      const dx = toX - fromX;
+      const dz = toZ - fromZ;
+      const len = Math.hypot(dx, dz) || 1;
+      const mesh = new THREE.Mesh(
+        new THREE.SphereGeometry(0.26, 8, 8),
+        new THREE.MeshBasicMaterial({ color: colorHex })
+      );
+      mesh.position.set(fromX, 1.1, fromZ);
+      scene.add(mesh);
 
-      if (isBossWave || STATE.wave === STATE.maxWave) {
-        STATE.wave = STATE.maxWave;
-        bossTimer = 25.0;
-        document.getElementById('boss-timer-box').classList.remove('hidden');
-        enemyUnits.push({
-          name: `Arconte del Vacío (Jefe ${STATE.stageFloor}-${STATE.stageSub})`,
-          isBoss: true,
-          x: 590,
-          y: 200,
-          maxHp: baseHp * 4.2,
-          hp: baseHp * 4.2,
-          atk: baseAtk * 1.55,
-          atkTimer: 0.5,
-          color: '#f43f5e',
-          radius: 36
-        });
-        enemyUnits.push({
-          name: 'Centinela Abisal',
-          isBoss: false,
-          x: 495,
-          y: 135,
-          maxHp: baseHp * 1.3,
-          hp: baseHp * 1.3,
-          atk: baseAtk,
-          atkTimer: 0.9,
-          color: '#a855f7',
-          radius: 20
-        });
-        enemyUnits.push({
-          name: 'Centinela Abisal',
-          isBoss: false,
-          x: 495,
-          y: 260,
-          maxHp: baseHp * 1.3,
-          hp: baseHp * 1.3,
-          atk: baseAtk,
-          atkTimer: 1.1,
-          color: '#a855f7',
-          radius: 20
-        });
-        addCombatLog(`👹 ¡JEFE DE PISO APARECE: Arconte del Vacío!`);
+      projectiles3D.push({
+        mesh,
+        x: fromX,
+        z: fromZ,
+        vx: (dx / len) * speed,
+        vz: (dz / len) * speed,
+        dmg,
+        life: 1.4
+      });
+    }
+
+    function spawnFxRing3D(x, z, maxRadius, colorHex) {
+      const mesh = new THREE.Mesh(
+        new THREE.RingGeometry(0.3, 0.65, 28),
+        new THREE.MeshBasicMaterial({ color: colorHex, side: THREE.DoubleSide, transparent: true, opacity: 0.9 })
+      );
+      mesh.rotation.x = -Math.PI / 2;
+      mesh.position.set(x, 0.12, z);
+      scene.add(mesh);
+      fxRings3D.push({ mesh, scale: 1, maxScale: maxRadius, life: 0.45 });
+    }
+
+    // Proyectar coordenadas 3D a etiquetas de daño 2D en pantalla
+    function spawnFloatingDamage3D(worldX, worldY, worldZ, text, color = '#fde047') {
+      const layer = document.getElementById('floating-dmg-layer');
+      if (layer.children.length > 18) return;
+
+      const vec = new THREE.Vector3(worldX, worldY, worldZ);
+      vec.project(camera);
+      const w = hostEl.clientWidth;
+      const h = hostEl.clientHeight;
+      const sx = (vec.x * 0.5 + 0.5) * w;
+      const sy = (-vec.y * 0.5 + 0.5) * h;
+
+      if (sx < 0 || sx > w || sy < 0 || sy > h) return;
+
+      const el = document.createElement('div');
+      el.className = 'absolute font-black text-xs pointer-events-none transition-all duration-500';
+      el.style.left = `${sx}px`;
+      el.style.top = `${sy}px`;
+      el.style.color = color;
+      el.style.textShadow = '0 2px 4px rgba(0,0,0,0.9)';
+      el.textContent = text;
+      layer.appendChild(el);
+
+      requestAnimationFrame(() => {
+        el.style.transform = 'translateY(-28px) scale(1.1)';
+        el.style.opacity = '0';
+      });
+      setTimeout(() => el.remove(), 500);
+    }
+
+    // ============================================================================
+    // 7. CONTROLES: JOYSTICK VIRTUAL MÓVIL, ARRASTRE TÁCTIL Y TECLADO
+    // ============================================================================
+    const inputState = { dx: 0, dz: 0, active: false };
+    const keysPressed = {};
+
+    window.addEventListener('keydown', e => { keysPressed[e.key.toLowerCase()] = true; });
+    window.addEventListener('keyup', e => { keysPressed[e.key.toLowerCase()] = false; });
+
+    const joyZone = document.getElementById('joystick-zone');
+    const joyKnob = document.getElementById('joystick-knob');
+    let joyCenter = { x: 0, y: 0 };
+
+    function handleJoyStart(clientX, clientY) {
+      const rect = joyZone.getBoundingClientRect();
+      joyCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+      inputState.active = true;
+      handleJoyMove(clientX, clientY);
+    }
+
+    function handleJoyMove(clientX, clientY) {
+      if (!inputState.active) return;
+      const dx = clientX - joyCenter.x;
+      const dy = clientY - joyCenter.y;
+      const maxR = 34;
+      const dist = Math.hypot(dx, dy);
+      const clamped = Math.min(maxR, dist);
+      const angle = Math.atan2(dy, dx);
+      const kx = Math.cos(angle) * clamped;
+      const ky = Math.sin(angle) * clamped;
+
+      joyKnob.style.transform = `translate(${kx}px, ${ky}px)`;
+      if (dist > 4) {
+        inputState.dx = Math.cos(angle);
+        inputState.dz = Math.sin(angle);
       } else {
-        document.getElementById('boss-timer-box').classList.add('hidden');
-        const positions = [
-          { x: 500, y: 145 }, { x: 500, y: 250 },
-          { x: 615, y: 125 }, { x: 635, y: 205 }, { x: 615, y: 275 }
-        ];
-        for (let i = 0; i < 4; i++) {
-          enemyUnits.push({
-            name: 'Espectro Corrupto',
-            isBoss: false,
-            x: positions[i].x,
-            y: positions[i].y,
-            maxHp: baseHp,
-            hp: baseHp,
-            atk: baseAtk,
-            atkTimer: Math.random() * 1.2,
-            color: i < 2 ? '#ef4444' : '#8b5cf6',
-            radius: 21
-          });
-        }
+        inputState.dx = 0;
+        inputState.dz = 0;
       }
-      updateStageHeader();
     }
 
-    function triggerBossNow() {
-      STATE.wave = STATE.maxWave;
-      spawnEnemyWave(true);
-      showToast('👹 ¡Desafiando al Jefe de Piso ahora!');
+    function handleJoyEnd() {
+      inputState.active = false;
+      inputState.dx = 0;
+      inputState.dz = 0;
+      joyKnob.style.transform = 'translate(0px, 0px)';
     }
 
-    function castHeroUltimate(heroId) {
-      const unit = battleUnits.find(u => u.id === heroId);
-      if (!unit || enemyUnits.length === 0) return;
-      unit.energy = 0;
-      sfxUlt();
-      shakeFrames = 10;
+    joyZone.addEventListener('pointerdown', e => {
+      joyZone.setPointerCapture(e.pointerId);
+      handleJoyStart(e.clientX, e.clientY);
+    });
+    joyZone.addEventListener('pointermove', e => handleJoyMove(e.clientX, e.clientY));
+    joyZone.addEventListener('pointerup', handleJoyEnd);
+    joyZone.addEventListener('pointercancel', handleJoyEnd);
 
-      const skin = SKINS_DB.find(s => s.id === unit.heroRef.equippedSkin);
-      const beamColor = skin ? skin.visualColor : unit.heroRef.color;
+    // También permitir arrastrar directamente sobre el lienzo 3D
+    let canvasDrag = { active: false, sx: 0, sy: 0 };
+    hostEl.addEventListener('pointerdown', e => {
+      canvasDrag = { active: true, sx: e.clientX, sy: e.clientY };
+    });
+    window.addEventListener('pointermove', e => {
+      if (!canvasDrag.active || inputState.active) return;
+      const dx = e.clientX - canvasDrag.sx;
+      const dy = e.clientY - canvasDrag.sy;
+      const dist = Math.hypot(dx, dy);
+      if (dist > 8) {
+        inputState.dx = dx / dist;
+        inputState.dz = dy / dist;
+      }
+    });
+    window.addEventListener('pointerup', () => {
+      if (canvasDrag.active) {
+        canvasDrag.active = false;
+        if (!inputState.active) { inputState.dx = 0; inputState.dz = 0; }
+      }
+    });
 
-      floatingTexts.push({
-        x: unit.x, y: unit.y - 38,
-        text: `⚡ ${unit.heroRef.ultName.toUpperCase()}!`,
-        color: '#fde047', life: 1.1, vy: -28, size: 13
-      });
+    function toggleAutoPilot() {
+      GAME.autoPilot = !GAME.autoPilot;
+      const btn = document.getElementById('btn-autopilot');
+      btn.textContent = GAME.autoPilot ? '🤖 IA: ON' : '🤖 IA: OFF';
+      btn.className = GAME.autoPilot
+        ? 'btn-pop px-2.5 py-1 rounded-xl bg-emerald-600 text-white font-extrabold text-xs shadow'
+        : 'btn-pop px-2.5 py-1 rounded-xl bg-slate-700 text-white font-extrabold text-xs shadow';
+    }
 
-      if (unit.heroRef.role === 'Healer') {
-        battleUnits.forEach(ally => {
-          const heal = Math.round(unit.atk * 2.6);
-          ally.hp = Math.min(ally.maxHp, ally.hp + heal);
-          floatingTexts.push({
-            x: ally.x, y: ally.y - 25,
-            text: `+${formatNum(heal)} 💚`,
-            color: '#34d399', life: 0.9, vy: -24, size: 12
-          });
+    // ============================================================================
+    // 8. CÁLCULO DE DAÑO DEL JUGADOR Y ARMAS 3D
+    // ============================================================================
+    function getTotalPlayerAtk() {
+      const h = GAME.heroes.find(x => x.id === GAME.selectedHeroId) || GAME.heroes[0];
+      let skinBonus = 0;
+      GAME.skins.forEach(s => { if (s.unlocked) skinBonus += s.bonusPct; });
+      const pet = GAME.pets.find(p => p.equipped) || GAME.pets[0];
+      const citadelLv = GAME.buildings.find(b => b.id === 'citadel').level;
+      const mercMult = GAME.mercenaryActive ? 1.35 : 1.0;
+
+      const raw = h.baseAtk * (1 + (h.level - 1) * 0.15) * (1 + (h.stars - 1) * 0.35);
+      return Math.round(raw * (1 + skinBonus + pet.bonus + citadelLv * 0.08) * mercMult);
+    }
+
+    function updateHUD() {
+      document.getElementById('res-gold').textContent = Math.floor(GAME.gold).toLocaleString();
+      document.getElementById('res-gems').textContent = Math.floor(GAME.gems).toLocaleString();
+      document.getElementById('res-tickets').textContent = GAME.tickets;
+      document.getElementById('hud-run-lv').textContent = `⚡ NV. BATALLA ${GAME.runLevel}`;
+      document.getElementById('hud-wave-txt').textContent = `OLEADA ${GAME.wave} • ENJAMBRE 3D`;
+      document.getElementById('hud-kills').textContent = `💀 ${GAME.kills}`;
+      document.getElementById('xp-bar-fill').style.width = `${Math.min(100, (GAME.runXp / GAME.runXpNext) * 100)}%`;
+
+      const citLv = GAME.buildings.find(b => b.id === 'citadel').level;
+      document.getElementById('hud-base-lv').textContent = citLv;
+      document.getElementById('hud-power').textContent = (getTotalPlayerAtk() * 14).toLocaleString();
+    }
+
+    // ============================================================================
+    // 9. BUCLE PRINCIPAL DE SIMULACIÓN 3D (60 FPS)
+    // ============================================================================
+    let lastFrameTime = performance.now();
+    let enemySpawnTimer = 0;
+    let mineCoinTimer = 0;
+    let orbitalAngle = 0;
+
+    function animate3D(now) {
+      const dt = Math.min(0.05, (now - lastFrameTime) / 1000);
+      lastFrameTime = now;
+
+      // 1. Determinar dirección de movimiento (Teclado / Joystick / Auto-Pilot IA)
+      let moveX = inputState.dx;
+      let moveZ = inputState.dz;
+
+      if (keysPressed['w'] || keysPressed['arrowup']) moveZ -= 1;
+      if (keysPressed['s'] || keysPressed['arrowdown']) moveZ += 1;
+      if (keysPressed['a'] || keysPressed['arrowleft']) moveX -= 1;
+      if (keysPressed['d'] || keysPressed['arrowright']) moveX += 1;
+
+      const manualInput = Math.hypot(moveX, moveZ) > 0.05;
+
+      if (!manualInput && GAME.autoPilot) {
+        // IA inteligente: busca monedas cercanas o kitea enemigos alrededor de la base
+        let targetDrop = null;
+        let bestDist = 14;
+        lootDrops3D.forEach(d => {
+          const dist = Math.hypot(d.x - player3D.pos.x, d.z - player3D.pos.z);
+          if (dist < bestDist) { bestDist = dist; targetDrop = d; }
         });
-      } else {
-        enemyUnits.forEach(en => {
-          const dmg = Math.round(unit.atk * (unit.heroRef.rarity === 'UR' ? 3.8 : 2.9));
-          en.hp -= dmg;
-          projectiles.push({
-            x: unit.x + 20, y: unit.y, tx: en.x, ty: en.y,
-            color: beamColor, radius: 9, progress: 0, speed: 4.5
-          });
-          floatingTexts.push({
-            x: en.x + (Math.random() * 24 - 12), y: en.y - 28,
-            text: `💥 CRIT ${formatNum(dmg)}`,
-            color: '#facc15', life: 0.95, vy: -32, size: 13
-          });
-        });
-      }
-      addCombatLog(`🌟 ${unit.heroRef.name} lanzó [${unit.heroRef.ultName}]!`);
-    }
 
-    function castPetSkill() {
-      const pet = PETS_DB.find(p => p.id === STATE.equippedPetId) || PETS_DB[0];
-      if (enemyUnits.length === 0) return;
-      sfxUlt();
-      const totalSquadAtk = battleUnits.reduce((s, u) => s + u.atk, 0);
-      const dmg = Math.round(totalSquadAtk * (pet.id === 'P03' ? 1.8 : 1.1));
-
-      floatingTexts.push({
-        x: 360, y: 70,
-        text: `${pet.icon} ¡${pet.skillName.toUpperCase()}!`,
-        color: '#38bdf8', life: 1.2, vy: -18, size: 14
-      });
-
-      enemyUnits.forEach(en => {
-        en.hp -= dmg;
-        floatingTexts.push({
-          x: en.x, y: en.y - 20,
-          text: `🔥 ${formatNum(dmg)}`,
-          color: '#fb923c', life: 0.85, vy: -25, size: 12
-        });
-      });
-
-      battleUnits.forEach(ally => {
-        ally.hp = Math.min(ally.maxHp, ally.hp + Math.round(ally.maxHp * 0.15));
-      });
-    }
-
-    let lastTime = performance.now();
-    function updateBattle(now) {
-      const rawDt = Math.min(0.05, (now - lastTime) / 1000);
-      lastTime = now;
-      const dt = rawDt * STATE.speedMult;
-
-      const pet = PETS_DB.find(p => p.id === STATE.equippedPetId) || PETS_DB[0];
-      petEnergy += (100 / pet.cooldown) * dt;
-      if (petEnergy >= 100) {
-        petEnergy = 0;
-        castPetSkill();
-      }
-      document.getElementById('hud-pet-bar').style.width = `${Math.min(100, petEnergy)}%`;
-
-      if (STATE.wave === STATE.maxWave && enemyUnits.length > 0) {
-        bossTimer -= dt;
-        document.getElementById('boss-timer').textContent = `${Math.max(0, bossTimer).toFixed(1)}s`;
-        if (bossTimer <= 0) {
-          addCombatLog(`⚠️ ¡Tiempo agotado contra el Jefe! Se activa Oferta Relámpago.`);
-          STATE.wave = 1;
-          spawnEnemyWave(false);
-          if (!STATE.purchasedOffers['flash_popup']) {
-            document.getElementById('popup-offer-modal').classList.remove('hidden');
-            document.getElementById('popup-offer-modal').classList.add('flex');
-          }
-        }
-      }
-
-      battleUnits.forEach(u => {
-        const st = getHeroStats(u.heroRef);
-        u.maxHp = st.hp;
-        u.atk = st.atk;
-
-        u.atkTimer += dt;
-        if (u.atkTimer >= u.atkCooldown && enemyUnits.length > 0) {
-          u.atkTimer = 0;
-          const target = enemyUnits[0];
-          const isCrit = Math.random() < 0.28;
-          const dmg = Math.round(u.atk * (isCrit ? 1.75 : 1.0));
-          target.hp -= dmg;
-          u.energy = Math.min(100, u.energy + 24);
-          sfxHit();
-
-          const skin = SKINS_DB.find(s => s.id === u.heroRef.equippedSkin);
-          const pColor = skin ? skin.visualColor : u.heroRef.color;
-
-          projectiles.push({
-            x: u.x + 18, y: u.y, tx: target.x, ty: target.y,
-            color: pColor, radius: 5, progress: 0, speed: 5.5
-          });
-
-          floatingTexts.push({
-            x: target.x + (Math.random() * 20 - 10),
-            y: target.y - 20,
-            text: isCrit ? `⚡${formatNum(dmg)}` : `${formatNum(dmg)}`,
-            color: isCrit ? '#fde047' : '#ffffff',
-            life: 0.7,
-            vy: -22,
-            size: isCrit ? 13 : 12
-          });
-
-          if (u.energy >= 100 && STATE.autoUlt) {
-            castHeroUltimate(u.id);
-          }
-        }
-      });
-
-      enemyUnits.forEach(en => {
-        en.atkTimer += dt;
-        if (en.atkTimer >= 1.45 && battleUnits.length > 0) {
-          en.atkTimer = 0;
-          const target = battleUnits[0];
-          const dmg = Math.max(15, Math.round(en.atk * (0.85 + Math.random() * 0.3)));
-          target.hp = Math.max(1, target.hp - dmg);
-          projectiles.push({
-            x: en.x - 18, y: en.y, tx: target.x, ty: target.y,
-            color: en.color, radius: 5, progress: 0, speed: 4.8
-          });
-        }
-      });
-
-      for (let i = enemyUnits.length - 1; i >= 0; i--) {
-        if (enemyUnits[i].hp <= 0) {
-          const killed = enemyUnits[i];
-          const goldDrop = Math.round((65 + STATE.stageFloor * 45 + STATE.stageSub * 20) * (killed.isBoss ? 5 : 1));
-          STATE.gold += goldDrop;
-          if (killed.isBoss) {
-            STATE.gems += 100;
-            addCombatLog(`🏆 ¡Jefe derrotado! +${formatNum(goldDrop)} Oro y +100 Gemas!`);
-          }
-          enemyUnits.splice(i, 1);
-          updateTopBar();
-          saveGame();
-        }
-      }
-
-      if (enemyUnits.length === 0) {
-        if (STATE.wave < STATE.maxWave) {
-          STATE.wave++;
-          spawnEnemyWave(false);
+        if (targetDrop) {
+          const dx = targetDrop.x - player3D.pos.x;
+          const dz = targetDrop.z - player3D.pos.z;
+          const l = Math.hypot(dx, dz) || 1;
+          moveX = dx / l;
+          moveZ = dz / l;
         } else {
-          STATE.wave = 1;
-          STATE.stageSub++;
-          if (STATE.stageSub > 5) {
-            STATE.stageSub = 1;
-            STATE.stageFloor++;
+          // Patrulla orbital táctica alrededor de tu Base 3D
+          const patrolAngle = now * 0.00085;
+          const tx = Math.cos(patrolAngle) * 7.5;
+          const tz = Math.sin(patrolAngle) * 7.5;
+          const dx = tx - player3D.pos.x;
+          const dz = tz - player3D.pos.z;
+          const l = Math.hypot(dx, dz) || 1;
+          moveX = dx / l;
+          moveZ = dz / l;
+        }
+      }
+
+      const mLen = Math.hypot(moveX, moveZ);
+      if (mLen > 0.01) {
+        player3D.pos.x += (moveX / mLen) * player3D.speed * dt;
+        player3D.pos.z += (moveZ / mLen) * player3D.speed * dt;
+        playerGroup.rotation.y = Math.atan2(moveX, moveZ);
+      }
+
+      // Limitar al mapa
+      player3D.pos.x = Math.max(-24, Math.min(24, player3D.pos.x));
+      player3D.pos.z = Math.max(-24, Math.min(24, player3D.pos.z));
+
+      // Animación de caminar 3D
+      const bob = Math.abs(Math.sin(now * 0.012)) * 0.22;
+      playerGroup.position.set(player3D.pos.x, bob, player3D.pos.z);
+
+      // Seguimiento suave de Cámara 3D Isométrica Táctica
+      camera.position.x += (player3D.pos.x * 0.55 - camera.position.x) * 6 * dt;
+      camera.position.y = 23.5;
+      camera.position.z += (player3D.pos.z * 0.55 + 17.5 - camera.position.z) * 6 * dt;
+      camera.lookAt(player3D.pos.x * 0.45, 0.5, player3D.pos.z * 0.45 - 1.5);
+
+      // Animar Cristal de la Ciudadela y Mina 3D
+      citadelCrystalMesh.rotation.y += 1.6 * dt;
+      citadelCrystalMesh.position.y = 3.1 + Math.sin(now * 0.004) * 0.25;
+      mineDrill.rotation.y += 4.0 * dt;
+
+      // Animar Mascota 3D flotando junto al Héroe
+      const petOrbit = now * 0.003;
+      petMesh.position.set(
+        player3D.pos.x + Math.cos(petOrbit) * 1.6,
+        2.35 + Math.sin(now * 0.006) * 0.25,
+        player3D.pos.z + Math.sin(petOrbit) * 1.6
+      );
+      petMesh.rotation.y += 2.5 * dt;
+
+      // 2. Actualizar Espadas Orbitales 3D (Guardian Blades)
+      orbitalAngle += 4.2 * dt;
+      orbitalBladesGroup.position.set(player3D.pos.x, 1.0, player3D.pos.z);
+      const bladeRadius = 3.2;
+      const atk = getTotalPlayerAtk();
+
+      bladeMeshes.forEach((bMesh, idx) => {
+        const a = orbitalAngle + (idx * Math.PI * 2) / bladeMeshes.length;
+        const bx = Math.cos(a) * bladeRadius;
+        const bz = Math.sin(a) * bladeRadius;
+        bMesh.position.set(bx, 0, bz);
+        bMesh.rotation.y = -a;
+
+        // Colisión de cada espada orbital con enemigos 3D
+        const worldBx = player3D.pos.x + bx;
+        const worldBz = player3D.pos.z + bz;
+        enemies3D.forEach(en => {
+          if (en.hp > 0 && Math.hypot(en.x - worldBx, en.z - worldBz) < en.radius + 0.75) {
+            const bladeDmg = Math.round(atk * 0.55);
+            en.hp -= bladeDmg;
+            en.hitFlash = 0.12;
+            spawnFloatingDamage3D(en.x, 1.8, en.z, `${bladeDmg}`, '#22d3ee');
           }
-          battleUnits.forEach(u => { u.hp = u.maxHp; });
-          spawnEnemyWave(false);
-          saveGame();
+        });
+      });
+
+      // 3. Disparo Automático del Héroe + Aliados del Cuartel + Torretas 3D
+      player3D.shootTimer += dt;
+      const fireInterval = Math.max(0.22, 0.65 - GAME.weapons.blaster.level * 0.06);
+      if (player3D.shootTimer >= fireInterval && enemies3D.length > 0) {
+        player3D.shootTimer = 0;
+        let nearest = null;
+        let minDist = 999;
+        enemies3D.forEach(en => {
+          const d = Math.hypot(en.x - player3D.pos.x, en.z - player3D.pos.z);
+          if (d < minDist) { minDist = d; nearest = en; }
+        });
+        if (nearest && minDist < 19) {
+          sfxShoot();
+          const shots = Math.min(5, GAME.weapons.blaster.level);
+          for (let s = 0; s < shots; s++) {
+            const spread = (s - (shots - 1) / 2) * 0.9;
+            fireProjectile3D(player3D.pos.x, player3D.pos.z, nearest.x + spread, nearest.z + spread, atk, 0xfacc15, 24);
+          }
         }
       }
 
-      for (let i = projectiles.length - 1; i >= 0; i--) {
-        projectiles[i].progress += dt * projectiles[i].speed;
-        if (projectiles[i].progress >= 1) projectiles.splice(i, 1);
-      }
-      for (let i = floatingTexts.length - 1; i >= 0; i--) {
-        floatingTexts[i].y += floatingTexts[i].vy * rawDt;
-        floatingTexts[i].life -= rawDt;
-        if (floatingTexts[i].life <= 0) floatingTexts.splice(i, 1);
-      }
-
-      drawBattleCanvas(now);
-      updateSquadCardBars();
-      requestAnimationFrame(updateBattle);
-    }
-
-    function drawBattleCanvas(now) {
-      ctx.save();
-      if (shakeFrames > 0) {
-        shakeFrames--;
-        ctx.translate((Math.random() - 0.5) * 7, (Math.random() - 0.5) * 7);
+      // Rayo Celestial 3D (Cada 3.2s)
+      player3D.lightningTimer += dt;
+      if (player3D.lightningTimer >= Math.max(1.5, 3.4 - GAME.weapons.lightning.level * 0.3) && enemies3D.length > 0) {
+        player3D.lightningTimer = 0;
+        const target = enemies3D[Math.floor(Math.random() * enemies3D.length)];
+        if (target) {
+          const lDmg = Math.round(atk * (1.8 + GAME.weapons.lightning.level * 0.45));
+          target.hp -= lDmg;
+          target.hitFlash = 0.2;
+          spawnFxRing3D(target.x, target.z, 3.2, 0x38bdf8);
+          spawnFloatingDamage3D(target.x, 2.4, target.z, `⚡${lDmg}`, '#38bdf8');
+        }
       }
 
-      const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-      grad.addColorStop(0, '#090d16');
-      grad.addColorStop(0.6, '#1e1b4b');
-      grad.addColorStop(1, '#0f172a');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
-      ctx.lineWidth = 1;
-      for (let x = 40; x < canvas.width; x += 65) {
-        ctx.beginPath();
-        ctx.moveTo(x, 85);
-        ctx.lineTo(x - 35, canvas.height);
-        ctx.stroke();
-      }
-      for (let y = 105; y < canvas.height; y += 45) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(canvas.width, y);
-        ctx.stroke();
+      // Nova de Plasma 3D alrededor del héroe
+      player3D.novaTimer += dt;
+      if (player3D.novaTimer >= 3.8) {
+        player3D.novaTimer = 0;
+        const novaRadius = 4.5 + GAME.weapons.nova.level * 0.6;
+        spawnFxRing3D(player3D.pos.x, player3D.pos.z, novaRadius, 0xf97316);
+        enemies3D.forEach(en => {
+          if (Math.hypot(en.x - player3D.pos.x, en.z - player3D.pos.z) <= novaRadius) {
+            const nDmg = Math.round(atk * (1.2 + GAME.weapons.nova.level * 0.3));
+            en.hp -= nDmg;
+            en.hitFlash = 0.15;
+            spawnFloatingDamage3D(en.x, 1.5, en.z, `🔥${nDmg}`, '#fb923c');
+          }
+        });
       }
 
-      const pet = PETS_DB.find(p => p.id === STATE.equippedPetId) || PETS_DB[0];
-      const petY = 68 + Math.sin(now / 320) * 6;
-      ctx.beginPath();
-      ctx.arc(165, petY, 18, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(251, 191, 36, 0.22)';
-      ctx.fill();
-      ctx.strokeStyle = '#fbbf24';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      ctx.font = '18px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(pet.icon, 165, petY + 6);
+      // Torretas Automáticas 3D de la Base
+      const turretLv = GAME.buildings.find(b => b.id === 'turrets').level;
+      turretMeshes.forEach(t => {
+        t.shootTimer += dt;
+        if (t.shootTimer >= 0.75 && enemies3D.length > 0) {
+          t.shootTimer = 0;
+          const target = enemies3D[0];
+          t.group.lookAt(target.x, 1.2, target.z);
+          fireProjectile3D(
+            t.group.position.x,
+            t.group.position.z,
+            target.x,
+            target.z,
+            Math.round(atk * (0.65 + turretLv * 0.2)),
+            0x06b6d4,
+            25
+          );
+        }
+      });
 
-      battleUnits.forEach((u, idx) => {
-        const bob = Math.sin(now / 240 + idx) * 3;
-        const skin = SKINS_DB.find(s => s.id === u.heroRef.equippedSkin);
-        const bodyColor = skin ? skin.visualColor : u.heroRef.color;
+      // Soldados IA del Cuartel siguiendo al Héroe
+      allySoldiers3D.forEach((ally, idx) => {
+        const targetX = player3D.pos.x + Math.cos(ally.angleOffset + now * 0.001) * 2.6;
+        const targetZ = player3D.pos.z + Math.sin(ally.angleOffset + now * 0.001) * 2.6;
+        ally.group.position.x += (targetX - ally.group.position.x) * 4 * dt;
+        ally.group.position.z += (targetZ - ally.group.position.z) * 4 * dt;
 
-        if (skin || u.heroRef.rarity === 'UR') {
-          ctx.beginPath();
-          ctx.arc(u.x, u.y + bob, 26, 0, Math.PI * 2);
-          ctx.strokeStyle = skin ? skin.haloColor : 'rgba(250, 204, 21, 0.65)';
-          ctx.lineWidth = 2.5;
-          ctx.stroke();
+        ally.shootTimer += dt;
+        if (ally.shootTimer >= 0.9 && enemies3D.length > 0) {
+          ally.shootTimer = 0;
+          const target = enemies3D[Math.floor(Math.random() * enemies3D.length)];
+          if (target) {
+            fireProjectile3D(ally.group.position.x, ally.group.position.z, target.x, target.z, Math.round(atk * 0.55), 0x10b981, 22);
+          }
+        }
+      });
+
+      // 4. Mina de Oro 3D escupiendo monedas físicas e Ingreso Pasivo
+      const mineLv = GAME.buildings.find(b => b.id === 'mine').level;
+      const citLv = GAME.buildings.find(b => b.id === 'citadel').level;
+      GAME.gold += (citLv * 2.5 + mineLv * 3.5) * dt;
+
+      mineCoinTimer += dt;
+      if (mineCoinTimer >= Math.max(1.4, 3.6 - mineLv * 0.2)) {
+        mineCoinTimer = 0;
+        spawnLootDrop3D(7 + (Math.random() * 2 - 1), -6 + (Math.random() * 2 - 1), 15 * mineLv, 10);
+      }
+
+      // 5. Caminar sobre los Pads 3D de la Base para mejorar automáticamente
+      player3D.padUpgradeCooldown = Math.max(0, player3D.padUpgradeCooldown - dt);
+      GAME.buildings.forEach(b => {
+        const ring = padMeshes[b.id];
+        if (ring) {
+          ring.rotation.z += 0.8 * dt;
+          const distToPad = Math.hypot(player3D.pos.x - b.x, player3D.pos.z - b.z);
+          const cost = getBuildingCost(b);
+          if (distToPad < 2.1 && GAME.gold >= cost && player3D.padUpgradeCooldown <= 0) {
+            player3D.padUpgradeCooldown = 0.9;
+            upgradeBuildingById(b.id, true);
+          }
+        }
+      });
+
+      // 6. Spawner de Hordas 3D continuo
+      enemySpawnTimer += dt;
+      const maxEnemiesOnScreen = Math.min(36, 12 + GAME.wave * 3);
+      if (enemySpawnTimer >= 0.65 && enemies3D.length < maxEnemiesOnScreen) {
+        enemySpawnTimer = 0;
+        spawnEnemy3D(false);
+      }
+
+      // 7. Mover Enemigos + Daño del Domo Escudo + Limpieza de Muertos
+      const domeLv = GAME.buildings.find(b => b.id === 'dome').level;
+      for (let i = enemies3D.length - 1; i >= 0; i--) {
+        const en = enemies3D[i];
+        const dx = player3D.pos.x - en.x;
+        const dz = player3D.pos.z - en.z;
+        const dist = Math.hypot(dx, dz) || 1;
+
+        // Si entra al Domo de la Base, se ralentiza
+        const distBase = Math.hypot(en.x, en.z);
+        const domeSlow = distBase < 9.8 ? Math.max(0.4, 0.85 - domeLv * 0.05) : 1.0;
+
+        en.x += (dx / dist) * en.speed * domeSlow * dt;
+        en.z += (dz / dist) * en.speed * domeSlow * dt;
+        en.group.position.set(en.x, 0, en.z);
+        en.group.lookAt(player3D.pos.x, 0, player3D.pos.z);
+
+        if (en.hitFlash > 0) {
+          en.hitFlash -= dt;
+          en.body.material.emissive.setHex(0xffffff);
+          en.body.material.emissiveIntensity = 0.6;
+        } else {
+          en.body.material.emissive.setHex(0x000000);
+          en.body.material.emissiveIntensity = 0;
         }
 
-        ctx.beginPath();
-        ctx.ellipse(u.x, u.y + 22, 18, 6, 0, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(0,0,0,0.45)';
-        ctx.fill();
+        if (en.hp <= 0) {
+          scene.remove(en.group);
+          const goldReward = Math.round((14 + GAME.wave * 5) * (1 + GAME.weapons.magnet.level * 0.25) * (en.isBoss ? 8 : 1));
+          const xpReward = en.isBoss ? 120 : 28;
+          spawnLootDrop3D(en.x, en.z, goldReward, xpReward);
+          spawnFxRing3D(en.x, en.z, en.isBoss ? 3.5 : 1.4, en.isBoss ? 0xfacc15 : 0xf43f5e);
+          GAME.kills++;
+          if (GAME.kills % 18 === 0) {
+            GAME.wave++;
+            if (GAME.wave % 3 === 0) spawnEnemy3D(true);
+          }
+          enemies3D.splice(i, 1);
+          updateHUD();
+          renderQuickBasePads();
+        }
+      }
 
-        ctx.beginPath();
-        ctx.arc(u.x, u.y + bob, 19, 0, Math.PI * 2);
-        ctx.fillStyle = bodyColor;
-        ctx.fill();
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 2;
-        ctx.stroke();
+      // 8. Actualizar Proyectiles 3D
+      for (let i = projectiles3D.length - 1; i >= 0; i--) {
+        const p = projectiles3D[i];
+        p.x += p.vx * dt;
+        p.z += p.vz * dt;
+        p.life -= dt;
+        p.mesh.position.set(p.x, 1.1, p.z);
 
-        ctx.font = '15px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(u.heroRef.icon, u.x, u.y + bob + 5);
-
-        if (skin) {
-          ctx.font = 'bold 10px sans-serif';
-          ctx.fillStyle = '#22d3ee';
-          ctx.fillText('★SKIN', u.x, u.y - 34);
+        let hit = false;
+        for (let j = 0; j < enemies3D.length; j++) {
+          const en = enemies3D[j];
+          if (Math.hypot(en.x - p.x, en.z - p.z) < en.radius + 0.45) {
+            en.hp -= p.dmg;
+            en.hitFlash = 0.1;
+            spawnFloatingDamage3D(en.x, 1.6, en.z, `${p.dmg}`, '#fde047');
+            hit = true;
+            break;
+          }
         }
 
-        ctx.font = 'bold 11px sans-serif';
-        ctx.fillStyle = '#f8fafc';
-        ctx.fillText(`${u.heroRef.name} ${'★'.repeat(u.heroRef.stars)}`, u.x, u.y + 36);
+        if (hit || p.life <= 0) {
+          scene.remove(p.mesh);
+          projectiles3D.splice(i, 1);
+        }
+      }
 
-        const barW = 46;
-        const hpPct = Math.max(0, Math.min(1, u.hp / u.maxHp));
-        ctx.fillStyle = 'rgba(0,0,0,0.7)';
-        ctx.fillRect(u.x - barW / 2, u.y - 30, barW, 5);
-        ctx.fillStyle = '#22c55e';
-        ctx.fillRect(u.x - barW / 2, u.y - 30, barW * hpPct, 5);
+      // 9. Imán de Monedas 3D y Cristales XP
+      const pickupRadius = 4.2 + GAME.weapons.magnet.level * 1.6;
+      for (let i = lootDrops3D.length - 1; i >= 0; i--) {
+        const d = lootDrops3D[i];
+        d.mesh.rotation.z += 3.5 * dt;
+        d.mesh.rotation.y += 3.5 * dt;
 
-        const enPct = Math.max(0, Math.min(1, u.energy / 100));
-        ctx.fillStyle = 'rgba(0,0,0,0.7)';
-        ctx.fillRect(u.x - barW / 2, u.y - 24, barW, 4);
-        ctx.fillStyle = '#facc15';
-        ctx.fillRect(u.x - barW / 2, u.y - 24, barW * enPct, 4);
-      });
+        const dist = Math.hypot(player3D.pos.x - d.x, player3D.pos.z - d.z);
+        if (dist < pickupRadius) d.magnetized = true;
 
-      enemyUnits.forEach((en, idx) => {
-        const bob = Math.sin(now / 260 + idx * 2) * 3.5;
-        const r = en.radius || 21;
+        if (d.magnetized) {
+          const dx = player3D.pos.x - d.x;
+          const dz = player3D.pos.z - d.z;
+          const l = Math.hypot(dx, dz) || 1;
+          d.x += (dx / l) * 20 * dt;
+          d.z += (dz / l) * 20 * dt;
+          d.mesh.position.set(d.x, 0.55, d.z);
 
-        ctx.beginPath();
-        ctx.ellipse(en.x, en.y + r + 4, r * 0.9, 7, 0, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(0,0,0,0.5)';
-        ctx.fill();
+          if (dist < 1.05) {
+            sfxCoin();
+            GAME.gold += d.gold;
+            addRunXp(d.xp);
+            scene.remove(d.mesh);
+            lootDrops3D.splice(i, 1);
+            updateHUD();
+            renderQuickBasePads();
+          }
+        }
+      }
 
-        ctx.beginPath();
-        ctx.arc(en.x, en.y + bob, r, 0, Math.PI * 2);
-        ctx.fillStyle = en.color;
-        ctx.fill();
-        ctx.strokeStyle = en.isBoss ? '#fde047' : '#fda4af';
-        ctx.lineWidth = en.isBoss ? 3 : 1.5;
-        ctx.stroke();
+      // 10. Animar Ondas de Choque 3D
+      for (let i = fxRings3D.length - 1; i >= 0; i--) {
+        const r = fxRings3D[i];
+        r.life -= dt;
+        r.scale += (r.maxScale - r.scale) * 10 * dt;
+        r.mesh.scale.set(r.scale, r.scale, 1);
+        r.mesh.material.opacity = Math.max(0, r.life * 2);
+        if (r.life <= 0) {
+          scene.remove(r.mesh);
+          fxRings3D.splice(i, 1);
+        }
+      }
 
-        ctx.font = en.isBoss ? '22px sans-serif' : '15px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(en.isBoss ? '👹' : '👾', en.x, en.y + bob + 6);
-
-        const barW = en.isBoss ? 76 : 46;
-        const hpPct = Math.max(0, Math.min(1, en.hp / en.maxHp));
-        ctx.fillStyle = 'rgba(0,0,0,0.75)';
-        ctx.fillRect(en.x - barW / 2, en.y - r - 12, barW, 6);
-        ctx.fillStyle = '#f43f5e';
-        ctx.fillRect(en.x - barW / 2, en.y - r - 12, barW * hpPct, 6);
-      });
-
-      projectiles.forEach(p => {
-        const cx = p.x + (p.tx - p.x) * p.progress;
-        const cy = p.y + (p.ty - p.y) * p.progress;
-        ctx.beginPath();
-        ctx.arc(cx, cy, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = p.color;
-        ctx.fill();
-      });
-
-      floatingTexts.forEach(ft => {
-        ctx.font = `bold ${ft.size || 12}px sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.fillStyle = ft.color;
-        ctx.fillText(ft.text, ft.x, ft.y);
-      });
-
-      ctx.restore();
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate3D);
     }
 
     // ============================================================================
-    // 6. UI ACTIONS & CONTROLLERS
+    // 10. EXPERIENCIA ROGUELITE, HABILIDADES Y CONSTRUCCIÓN DE BASE 3D
     // ============================================================================
-    function formatNum(n) {
-      if (n >= 1000000) return (n / 1000000).toFixed(2) + 'M';
-      if (n >= 10000) return (n / 1000).toFixed(1) + 'K';
-      return Math.round(n).toLocaleString();
+    function addRunXp(amount) {
+      GAME.runXp += amount;
+      if (GAME.runXp >= GAME.runXpNext) {
+        GAME.runXp -= GAME.runXpNext;
+        GAME.runLevel++;
+        GAME.runXpNext = Math.round(GAME.runXpNext * 1.25);
+        sfxLevelUp();
+        showSkillChoiceBanner();
+      }
     }
 
-    function updateTopBar() {
-      document.getElementById('res-gold').textContent = formatNum(STATE.gold);
-      document.getElementById('res-gems').textContent = formatNum(STATE.gems);
-      document.getElementById('res-tickets').textContent = STATE.tickets;
-      document.getElementById('res-clan').textContent = formatNum(STATE.clanCoins);
-      document.getElementById('vip-badge').textContent = `VIP ${STATE.vipLevel}`;
-      document.getElementById('top-power').textContent = formatNum(getSquadPower());
+    function showSkillChoiceBanner() {
+      const banner = document.getElementById('skill-choice-banner');
+      const row = document.getElementById('skill-cards-row');
+      const keys = Object.keys(GAME.weapons);
+      const shuffled = keys.sort(() => Math.random() - 0.5).slice(0, 3);
 
-      const sb = getGlobalSkinBonuses();
-      document.getElementById('top-skin-bonus').textContent =
-        `+${Math.round(sb.atk * 100)}% ATK / +${Math.round(sb.hp * 100)}% HP`;
-    }
-
-    function updateStageHeader() {
-      document.getElementById('stage-badge').textContent = `PISO ${STATE.stageFloor} - ${STATE.stageSub}`;
-      document.getElementById('wave-status').textContent =
-        STATE.wave === STATE.maxWave
-          ? `🔥 ¡JEFE DE PISO EN COMBATE!`
-          : `Oleada ${STATE.wave}/${STATE.maxWave} • Enemigos del Vacío`;
-    }
-
-    function renderSquadCards() {
-      const container = document.getElementById('battle-squad-cards');
-      container.innerHTML = battleUnits.map(u => {
-        const h = u.heroRef;
-        const rarityBorder = h.rarity === 'UR' ? 'border-rose-500' : h.rarity === 'SSR' ? 'border-amber-400' : 'border-purple-400';
+      row.innerHTML = shuffled.map(k => {
+        const w = GAME.weapons[k];
         return `
-          <div onclick="castHeroUltimate('${h.id}')" class="sub-surface btn-tactile border-2 ${rarityBorder} rounded-xl p-2 flex flex-col gap-1">
-            <div class="flex items-center justify-between text-xs">
-              <span class="font-bold truncate">${h.icon} ${h.name}</span>
-              <span class="text-amber-400 font-bold">Nv.${h.level}</span>
-            </div>
-            <div class="w-full h-1.5 bg-black/40 rounded-full overflow-hidden">
-              <div id="card-hp-${h.id}" class="h-full bg-emerald-400" style="width: 100%"></div>
-            </div>
-            <div class="w-full h-1.5 bg-black/40 rounded-full overflow-hidden">
-              <div id="card-en-${h.id}" class="h-full bg-amber-400" style="width: ${u.energy}%"></div>
-            </div>
-          </div>
+          <button onclick="selectWeaponUpgrade('${k}')" class="btn-pop bg-slate-900/95 border border-amber-400/50 rounded-xl p-2 flex flex-col items-center text-center gap-1">
+            <span class="font-extrabold text-xs text-amber-300">${w.name}</span>
+            <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold text-xs">Nv.${w.level} → ${w.level + 1}</span>
+          </button>
+        `;
+      }).join('');
+
+      banner.classList.remove('hidden');
+      banner.classList.add('flex');
+    }
+
+    function selectWeaponUpgrade(key) {
+      GAME.weapons[key].level++;
+      if (key === 'blades') rebuildOrbitalBlades3D();
+      sfxBuild();
+      document.getElementById('skill-choice-banner').classList.add('hidden');
+      document.getElementById('skill-choice-banner').classList.remove('flex');
+      showToast(`🌟 ¡ Mejoraste [${GAME.weapons[key].name}] a Nivel ${GAME.weapons[key].level}!`);
+    }
+
+    function vacuumAllLoot() {
+      lootDrops3D.forEach(d => { d.magnetized = true; });
+      sfxBuild();
+      showToast('🧲 ¡Imán 3D activado! Atrayendo todas las monedas y cristales.');
+    }
+
+    function castUltimate3D() {
+      sfxLevelUp();
+      const atk = getTotalPlayerAtk();
+      spawnFxRing3D(player3D.pos.x, player3D.pos.z, 14, 0xfacc15);
+      enemies3D.forEach(en => {
+        const dmg = Math.round(atk * 4.5);
+        en.hp -= dmg;
+        en.hitFlash = 0.25;
+        spawnFloatingDamage3D(en.x, 2.2, en.z, `💥ULTI ${dmg}`, '#fde047');
+      });
+      showToast('⚡ ¡Habilidad Definitiva 3D [Juicio del Alba] desatada!');
+    }
+
+    function getBuildingCost(b) {
+      return Math.round(b.baseCost * Math.pow(1.32, b.level - 1));
+    }
+
+    function renderQuickBasePads() {
+      const container = document.getElementById('quick-base-pads');
+      container.innerHTML = GAME.buildings.map(b => {
+        const cost = getBuildingCost(b);
+        const canAfford = GAME.gold >= cost;
+        return `
+          <button onclick="upgradeBuildingById('${b.id}', false)" class="btn-pop glass-panel rounded-xl p-1.5 flex flex-col items-center text-center border ${
+            canAfford ? 'border-amber-400 bg-amber-500/20' : 'border-white/10 opacity-80'
+          }">
+            <span class="text-sm">${b.icon} <strong class="text-xs">Nv.${b.level}</strong></span>
+            <span class="text-xs font-bold truncate w-full">${b.name.split(' ')[1]}</span>
+            <span class="text-xs font-extrabold ${canAfford ? 'text-amber-300' : 'text-slate-400'}">🪙${cost}</span>
+          </button>
         `;
       }).join('');
     }
 
-    function updateSquadCardBars() {
-      battleUnits.forEach(u => {
-        const hpEl = document.getElementById(`card-hp-${u.id}`);
-        const enEl = document.getElementById(`card-en-${u.id}`);
-        if (hpEl) hpEl.style.width = `${Math.max(0, Math.min(100, (u.hp / u.maxHp) * 100))}%`;
-        if (enEl) enEl.style.width = `${Math.max(0, Math.min(100, u.energy))}%`;
-      });
+    function upgradeBuildingById(id, fromWalkPad) {
+      const b = GAME.buildings.find(x => x.id === id);
+      const cost = getBuildingCost(b);
+      if (GAME.gold < cost) {
+        if (!fromWalkPad) showToast(`🪙 Necesitas ${cost} monedas de oro. ¡Elimina enemigos o recoge monedas 3D!`);
+        return;
+      }
+      GAME.gold -= cost;
+      b.level++;
+      sfxBuild();
+
+      // Escalar visualmente el edificio 3D
+      if (id === 'citadel') {
+        citadelBaseTower.scale.y = 1 + (b.level - 1) * 0.18;
+      } else if (id === 'turrets') {
+        syncTurrets3D();
+      } else if (id === 'barracks') {
+        syncBarracksSoldiers3D();
+      } else if (id === 'dome') {
+        domeMesh.material.opacity = Math.min(0.38, 0.14 + b.level * 0.03);
+      }
+
+      spawnFxRing3D(b.x, b.z, 3.8, b.color);
+      spawnFloatingDamage3D(b.x, 2.5, b.z, `⬆️ ${b.name} NV.${b.level}!`, '#34d399');
+      updateHUD();
+      renderQuickBasePads();
+      if (GAME.activeDrawer === 'base') renderDrawerContent('base');
     }
 
-    function cycleSpeed() {
-      STATE.speedMult = STATE.speedMult === 1 ? 2 : STATE.speedMult === 2 ? 4 : 1;
-      document.getElementById('btn-speed').textContent = `⏩ Velocidad x${STATE.speedMult}`;
-      saveGame();
+    // ============================================================================
+    // 11. CAJÓN MÓVIL INFERIOR (BASE, ARMAS, GACHA, HÉROES/SKINS, TIENDA/CLAN)
+    // ============================================================================
+    function openDrawer(tab) {
+      GAME.activeDrawer = tab;
+      const drawer = document.getElementById('bottom-drawer');
+      drawer.classList.remove('translate-y-full');
+      renderDrawerContent(tab);
     }
 
-    function toggleAutoUlt() {
-      STATE.autoUlt = !STATE.autoUlt;
-      const btn = document.getElementById('btn-auto-ult');
-      btn.textContent = STATE.autoUlt ? '⚡ Auto-Ulti: ON' : '⚡ Auto-Ulti: OFF';
-      saveGame();
+    function closeDrawer() {
+      GAME.activeDrawer = null;
+      document.getElementById('bottom-drawer').classList.add('translate-y-full');
     }
 
-    function renderHeroesTab() {
-      const grid = document.getElementById('heroes-grid');
-      grid.innerHTML = HEROES_DB.map(h => {
-        const st = getHeroStats(h);
-        const badgeColor = h.rarity === 'UR'
-          ? 'bg-rose-600 text-white'
-          : h.rarity === 'SSR'
-            ? 'bg-amber-500 text-black'
-            : 'bg-purple-600 text-white';
-        const selectedClass = STATE.selectedHeroId === h.id ? 'ring-2 ring-amber-400' : '';
+    function renderDrawerContent(tab) {
+      const titleEl = document.getElementById('drawer-title');
+      const contentEl = document.getElementById('drawer-content');
 
-        return `
-          <div onclick="selectHero('${h.id}')" class="sub-surface btn-tactile ${selectedClass} rounded-xl p-3 flex items-center justify-between gap-2 ${h.unlocked ? '' : 'opacity-65'}">
-            <div class="flex items-center gap-2.5">
-              <div class="w-11 h-11 rounded-xl flex items-center justify-center text-xl font-bold border border-white/20" style="background:${h.color}33">
-                ${h.icon}
+      if (tab === 'base') {
+        titleEl.textContent = '🏰 Construcción y Mejoras de Base 3D';
+        contentEl.innerHTML = GAME.buildings.map(b => {
+          const cost = getBuildingCost(b);
+          return `
+            <div class="p-3 rounded-2xl bg-slate-900/90 border border-white/10 flex items-center justify-between gap-3">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-lg">${b.icon}</span>
+                  <strong class="text-sm text-white">${b.name} (Nivel ${b.level})</strong>
+                </div>
+                <p class="text-xs text-slate-300 mt-0.5">${b.desc}</p>
               </div>
+              <button onclick="upgradeBuildingById('${b.id}', false)" class="btn-pop px-3.5 py-2 rounded-xl bg-amber-500 text-black font-extrabold text-xs shrink-0">
+                Mejorar (🪙 ${cost})
+              </button>
+            </div>
+          `;
+        }).join('');
+      } else if (tab === 'weapons') {
+        titleEl.textContent = '🌀 Arsenal 3D (Estilo Survivor.io)';
+        contentEl.innerHTML = Object.keys(GAME.weapons).map(k => {
+          const w = GAME.weapons[k];
+          const cost = w.level * 120;
+          return `
+            <div class="p-3 rounded-2xl bg-slate-900/90 border border-white/10 flex items-center justify-between gap-3">
+              <div>
+                <strong class="text-sm text-amber-300">${w.name} • Nv.${w.level}</strong>
+                <p class="text-xs text-slate-300 mt-0.5">${w.desc}</p>
+              </div>
+              <button onclick="upgradeWeaponWithGold('${k}')" class="btn-pop px-3 py-2 rounded-xl bg-cyan-400 text-black font-extrabold text-xs shrink-0">
+                Subir (🪙 ${cost})
+              </button>
+            </div>
+          `;
+        }).join('');
+      } else if (tab === 'gacha') {
+        titleEl.textContent = `🎲 Portal Gacha 3D (Pity: ${GAME.pityCounter}/70)`;
+        contentEl.innerHTML = `
+          <div class="p-3.5 rounded-2xl bg-gradient-to-r from-indigo-950 via-purple-900 to-amber-900 border border-amber-400/40 text-white">
+            <h3 class="font-black text-sm mb-1">🌟 Invocación Astral Rate-Up (Seraphina & Malakor UR)</h3>
+            <p class="text-xs text-purple-100 mb-3">Soft Pity desde tirada 50. Los duplicados suben las Estrellas (1★ a 5★) y multiplican tu daño 3D.</p>
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="pullGacha3D(1)" class="btn-pop py-2.5 rounded-xl bg-white/15 border border-white/25 font-bold text-xs">
+                🎲 Invocar x1 (1 🎟️)
+              </button>
+              <button onclick="pullGacha3D(10)" class="btn-pop py-2.5 rounded-xl bg-amber-400 text-black font-black text-xs shadow-lg">
+                🌟 Invocar x10 (10 🎟️ o 2700 💎)
+              </button>
+            </div>
+          </div>
+          <div id="gacha-drawer-results" class="grid grid-cols-5 gap-1.5 pt-1"></div>
+        `;
+      } else if (tab === 'heroes') {
+        titleEl.textContent = '🌟 Héroes 3D, Ascensión y Skins en Vivo';
+        const heroesHtml = GAME.heroes.map(h => {
+          const isSel = GAME.selectedHeroId === h.id;
+          return `
+            <div class="p-2.5 rounded-2xl bg-slate-900/90 border ${isSel ? 'border-amber-400' : 'border-white/10'} flex items-center justify-between gap-2">
               <div>
                 <div class="flex items-center gap-1.5">
-                  <span class="px-1.5 py-0.5 rounded text-xs font-extrabold ${badgeColor}">${h.rarity}</span>
-                  <span class="font-bold text-sm">${h.name}</span>
-                  ${h.inSquad ? '<span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-xs font-bold">EQUIPO</span>' : ''}
+                  <span class="px-1.5 py-0.5 rounded bg-rose-600 text-white font-black text-xs">${h.rarity}</span>
+                  <strong class="text-sm">${h.icon} ${h.name} Nv.${h.level}</strong>
+                  <span class="text-amber-400 font-bold">${'★'.repeat(h.stars)}</span>
                 </div>
-                <p class="text-xs text-[var(--text-muted)] mt-0.5">
-                  Nv.${h.level} • <span class="text-amber-400">${'★'.repeat(h.stars)}</span> • Poder: <strong>${formatNum(st.power)}</strong>
-                </p>
+                <span class="text-xs text-slate-400">Copias Duplicadas: ${h.dupes}</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button onclick="selectHero3D('${h.id}')" class="btn-pop px-2.5 py-1.5 rounded-xl ${isSel ? 'bg-emerald-600 text-white' : 'bg-white/10 text-white'} font-bold text-xs">
+                  ${isSel ? '✓ En 3D' : 'Usar 3D'}
+                </button>
+                <button onclick="upgradeHero3D('${h.id}')" class="btn-pop px-2.5 py-1.5 rounded-xl bg-amber-500 text-black font-extrabold text-xs">
+                  ⬆️ Nv/★
+                </button>
               </div>
             </div>
-            <div class="text-right text-xs">
-              <span class="block text-[var(--text-muted)]">Copias</span>
-              <span class="font-bold text-amber-400">${h.dupes} / ${h.stars}</span>
+          `;
+        }).join('');
+
+        const skinsHtml = GAME.skins.map(sk => `
+          <div class="p-2.5 rounded-2xl bg-slate-900/90 border border-cyan-500/30 flex items-center justify-between gap-2">
+            <div>
+              <strong class="text-xs text-cyan-300">👗 Skin 3D: ${sk.name}</strong>
+              <p class="text-xs text-slate-400">${sk.desc}</p>
             </div>
+            <button onclick="equipSkin3D('${sk.id}')" class="btn-pop px-3 py-1.5 rounded-xl bg-cyan-400 text-black font-extrabold text-xs shrink-0">
+              ${sk.unlocked ? 'Equipar 3D' : '🔓 Probar Gratis'}
+            </button>
           </div>
+        `).join('');
+
+        contentEl.innerHTML = `<div class="space-y-2">${heroesHtml}<h4 class="font-bold text-amber-300 pt-2">👗 Skins 3D con Bono Global</h4>${skinsHtml}</div>`;
+      } else if (tab === 'shop') {
+        titleEl.textContent = '💎 Mascotas 3D, Clan Mercenario y Ofertas $0.99';
+        const petsHtml = GAME.pets.map(p => `
+          <div class="p-2.5 rounded-2xl bg-slate-900/90 border ${p.equipped ? 'border-amber-400' : 'border-white/10'} flex items-center justify-between">
+            <span>${p.icon} <strong>${p.name}</strong> (+${Math.round(p.bonus * 100)}% ATK)</span>
+            <button onclick="equipPet3D('${p.id}')" class="btn-pop px-3 py-1 rounded-xl ${p.equipped ? 'bg-emerald-600 text-white' : 'bg-amber-500 text-black'} font-bold text-xs">
+              ${p.equipped ? '✓ Activa' : 'Equipar'}
+            </button>
+          </div>
+        `).join('');
+
+        contentEl.innerHTML = `
+          <div class="p-3 rounded-2xl bg-gradient-to-r from-amber-500/25 to-rose-500/25 border border-amber-400 flex items-center justify-between gap-2">
+            <div>
+              <span class="px-2 py-0.5 rounded bg-rose-600 text-white font-black text-xs">🔥 PACK 1.ª COMPRA $0.99 (1200% VALOR)</span>
+              <p class="text-xs text-white font-bold mt-1">Desbloquea Skin Cyber-Valquiria 3D + Mascota Fénix UR + 2,500 💎</p>
+            </div>
+            <button onclick="claimStarterBundle3D()" class="btn-pop px-3 py-2 rounded-xl bg-amber-400 text-black font-black text-xs shrink-0">
+              Simular Gratis
+            </button>
+          </div>
+          <div class="p-3 rounded-2xl bg-slate-900/90 border border-emerald-500/40 flex items-center justify-between gap-2">
+            <div>
+              <strong class="text-xs text-emerald-300">🛡️ Clan: Alquilar Mercenario UR (LordDrakon)</strong>
+              <p class="text-xs text-slate-400">Añade un soldado UR 5★ en 3D que te sigue y dispara contigo (+35% Poder).</p>
+            </div>
+            <button onclick="hireClanMercenary3D()" class="btn-pop px-3 py-1.5 rounded-xl bg-emerald-500 text-black font-extrabold text-xs shrink-0">
+              ${GAME.mercenaryActive ? '✓ En Escuadrón' : 'Contratar Gratis'}
+            </button>
+          </div>
+          <h4 class="font-bold text-amber-300 pt-1">🐾 Santuario de Mascotas 3D</h4>
+          <div class="space-y-1.5">${petsHtml}</div>
         `;
-      }).join('');
-      renderHeroDetail();
-    }
-
-    function selectHero(id) {
-      STATE.selectedHeroId = id;
-      renderHeroesTab();
-    }
-
-    function renderHeroDetail() {
-      const h = HEROES_DB.find(x => x.id === STATE.selectedHeroId) || HEROES_DB[0];
-      const st = getHeroStats(h);
-      const lvCost = Math.round(120 * Math.pow(1.14, h.level - 1));
-      const heroSkins = SKINS_DB.filter(s => s.heroId === h.id);
-
-      const skinsHtml = heroSkins.length > 0 ? heroSkins.map(sk => `
-        <div class="p-2.5 rounded-xl sub-surface flex flex-col gap-1.5">
-          <div class="flex items-center justify-between">
-            <span class="font-bold text-xs text-cyan-400">👗 ${sk.name}</span>
-            <span class="text-xs px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-semibold">${sk.tier}</span>
-          </div>
-          <p class="text-xs text-[var(--text-muted)]">${sk.desc}</p>
-          <button onclick="toggleHeroSkin('${h.id}', '${sk.id}')" class="btn-tactile py-1.5 px-3 rounded-lg font-bold text-xs ${
-            sk.unlocked
-              ? (h.equippedSkin === sk.id ? 'bg-emerald-600 text-white' : 'bg-amber-500 text-black')
-              : 'bg-indigo-600 text-white'
-          }">
-            ${!sk.unlocked ? '🔓 Desbloquear Skin Gratis (Test)' : (h.equippedSkin === sk.id ? '✓ Skin Equipada en Combate' : 'Equipar Skin')}
-          </button>
-        </div>
-      `).join('') : `<p class="text-xs text-[var(--text-muted)]">Este héroe recibirá Skin en el Evento de Lanzamiento Semana 2.</p>`;
-
-      document.getElementById('hero-detail-panel').innerHTML = `
-        <div class="flex items-center justify-between">
-          <div>
-            <span class="text-xs font-bold text-amber-400">${h.rarity} • Facción ${h.faction} (${h.role})</span>
-            <h3 class="text-lg font-extrabold">${h.icon} ${h.name}, ${h.title}</h3>
-          </div>
-          <span class="text-amber-400 font-bold text-sm">${'★'.repeat(h.stars)}</span>
-        </div>
-
-        <div class="grid grid-cols-3 gap-2 sub-surface rounded-xl p-2.5 text-xs text-center">
-          <div>
-            <span class="text-[var(--text-muted)] block">ATK</span>
-            <strong class="text-amber-400">${formatNum(st.atk)}</strong>
-          </div>
-          <div>
-            <span class="text-[var(--text-muted)] block">HP</span>
-            <strong class="text-emerald-400">${formatNum(st.hp)}</strong>
-          </div>
-          <div>
-            <span class="text-[var(--text-muted)] block">PODER</span>
-            <strong class="text-sky-400">${formatNum(st.power)}</strong>
-          </div>
-        </div>
-
-        <div class="sub-surface rounded-xl p-2.5 text-xs">
-          <span class="font-bold text-amber-400 block mb-0.5">⚡ Definitiva: ${h.ultName}</span>
-          <p class="text-[var(--text-muted)]">${h.ultDesc}</p>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2">
-          <button onclick="levelUpHero('${h.id}')" class="btn-tactile py-2 px-3 rounded-xl bg-amber-500 text-black font-extrabold text-xs">
-            ⬆️ Subir Nivel (${formatNum(lvCost)} 🪙)
-          </button>
-          <button onclick="ascendHero('${h.id}')" class="btn-tactile py-2 px-3 rounded-xl bg-purple-600 text-white font-bold text-xs">
-            🌟 Ascender (${h.dupes}/${h.stars} Copias)
-          </button>
-        </div>
-
-        <button onclick="toggleSquadMember('${h.id}')" class="btn-tactile py-2 px-3 rounded-xl sub-surface font-bold text-xs">
-          ${h.inSquad ? '➖ Quitar del Escuadrón Activo' : '➕ Colocar en el Escuadrón Activo'}
-        </button>
-
-        <div class="border-t border-[var(--border-col)] pt-2.5">
-          <h4 class="font-bold text-xs uppercase text-cyan-400 mb-2">👗 Vestidor de Skins & Bono Global</h4>
-          ${skinsHtml}
-        </div>
-      `;
-    }
-
-    function levelUpHero(id) {
-      const h = HEROES_DB.find(x => x.id === id);
-      if (!h.unlocked) {
-        h.unlocked = true;
-        showToast(`🔓 ¡Has desbloqueado a ${h.name}!`);
       }
-      const cost = Math.round(120 * Math.pow(1.14, h.level - 1));
-      if (STATE.gold < cost) {
-        showToast('🪙 No tienes suficiente Oro. ¡Reclama el Cofre AFK!');
+    }
+
+    function upgradeWeaponWithGold(key) {
+      const w = GAME.weapons[key];
+      const cost = w.level * 120;
+      if (GAME.gold < cost) {
+        showToast(`🪙 Necesitas ${cost} monedas de oro.`);
         return;
       }
-      STATE.gold -= cost;
-      h.level++;
-      sfxHit();
-      syncSquadToBattle();
-      updateTopBar();
-      renderHeroesTab();
-      saveGame();
+      GAME.gold -= cost;
+      w.level++;
+      if (key === 'blades') rebuildOrbitalBlades3D();
+      sfxBuild();
+      updateHUD();
+      renderDrawerContent('weapons');
+      showToast(`🌀 ¡[${w.name}] subió a Nivel ${w.level}!`);
     }
 
-    function levelUpAllSquad() {
-      HEROES_DB.filter(h => h.inSquad && h.unlocked).forEach(h => {
-        const cost = Math.round(120 * Math.pow(1.14, h.level - 1));
-        if (STATE.gold >= cost) {
-          STATE.gold -= cost;
-          h.level++;
-        }
-      });
-      sfxUlt();
-      syncSquadToBattle();
-      updateTopBar();
-      renderHeroesTab();
-      saveGame();
-      showToast('⬆️ ¡Nivel del escuadrón mejorado!');
-    }
-
-    function ascendHero(id) {
-      const h = HEROES_DB.find(x => x.id === id);
-      if (h.stars >= 5) {
-        showToast('🌟 ¡Este héroe ya alcanzó el Despertar 5★ Máximo!');
-        return;
-      }
-      if (h.dupes < h.stars) {
-        showToast(`🎲 Necesitas ${h.stars} copia(s) duplicada(s) en el Portal Gacha para subir a ${h.stars + 1}★.`);
-        return;
-      }
-      h.dupes -= h.stars;
-      h.stars++;
-      sfxGachaSSR();
-      syncSquadToBattle();
-      updateTopBar();
-      renderHeroesTab();
-      saveGame();
-      showToast(`🌟 ¡${h.name} ascendió a ${h.stars}★!`);
-    }
-
-    function toggleSquadMember(id) {
-      const h = HEROES_DB.find(x => x.id === id);
-      if (!h.unlocked) h.unlocked = true;
-      const currentSquad = HEROES_DB.filter(x => x.inSquad && x.unlocked);
-      if (h.inSquad) {
-        if (currentSquad.length <= 1) {
-          showToast('⚠️ Debes mantener al menos 1 héroe en batalla.');
-          return;
-        }
-        h.inSquad = false;
+    function pullGacha3D(count) {
+      if (GAME.tickets >= count) {
+        GAME.tickets -= count;
+      } else if (GAME.gems >= count * 270) {
+        GAME.gems -= count * 270;
       } else {
-        if (currentSquad.length >= 5) {
-          showToast('⚠️ Tu escuadrón ya tiene 5 héroes. Retira uno primero.');
-          return;
-        }
-        h.inSquad = true;
-      }
-      syncSquadToBattle();
-      updateTopBar();
-      renderHeroesTab();
-      saveGame();
-    }
-
-    function toggleHeroSkin(heroId, skinId) {
-      const h = HEROES_DB.find(x => x.id === heroId);
-      const sk = SKINS_DB.find(s => s.id === skinId);
-      if (!sk.unlocked) {
-        sk.unlocked = true;
-        h.equippedSkin = skinId;
-        sfxGachaSSR();
-        showToast(`👗 ¡Skin [${sk.name}] desbloqueada! Bono global activado.`);
-      } else {
-        h.equippedSkin = h.equippedSkin === skinId ? 'default' : skinId;
-      }
-      syncSquadToBattle();
-      updateTopBar();
-      renderHeroesTab();
-      saveGame();
-    }
-
-    function getEffectiveSSRRate() {
-      if (STATE.pityCounter >= 69) return 1.0;
-      if (STATE.pityCounter >= 50) return 0.05 + (STATE.pityCounter - 49) * 0.025;
-      return 0.05;
-    }
-
-    function doGachaPull(count) {
-      const gemCost = count === 10 ? 2700 : 300;
-      if (STATE.tickets >= count) {
-        STATE.tickets -= count;
-      } else if (STATE.gems >= gemCost) {
-        STATE.gems -= gemCost;
-      } else {
-        showToast('💎 Sin suficientes Tickets o Gemas. ¡Usa el botón Bono VIP20K!');
+        showToast('🎁 ¡Toca el botón rojo VIP20K arriba para recibir +25 Tickets gratis!');
         return;
       }
 
-      const results = [];
-      let gotHighTier = false;
-
+      sfxLevelUp();
+      const pulled = [];
       for (let i = 0; i < count; i++) {
-        STATE.pityCounter++;
-        STATE.totalPulls++;
-        const ssrRate = getEffectiveSSRRate();
-        const roll = Math.random();
-
-        let pulledRarity = 'R';
-        if (roll < ssrRate) {
-          pulledRarity = Math.random() < 0.22 ? 'UR' : 'SSR';
-          STATE.pityCounter = 0;
-          gotHighTier = true;
-        } else if (roll < ssrRate + 0.45) {
-          pulledRarity = 'SR';
+        GAME.pityCounter++;
+        const h = GAME.heroes[Math.floor(Math.random() * GAME.heroes.length)];
+        if (!h.unlocked) h.unlocked = true;
+        else {
+          h.dupes++;
+          if (h.dupes >= h.stars && h.stars < 5) {
+            h.dupes -= h.stars;
+            h.stars++;
+          }
         }
-
-        const pool = HEROES_DB.filter(h => h.rarity === pulledRarity);
-        const chosen = pool.length > 0
-          ? pool[Math.floor(Math.random() * pool.length)]
-          : HEROES_DB[Math.floor(Math.random() * HEROES_DB.length)];
-
-        let statusText = '';
-        if (!chosen.unlocked) {
-          chosen.unlocked = true;
-          statusText = '¡NUEVO!';
-        } else {
-          chosen.dupes++;
-          statusText = '+1 Copia ★';
-        }
-
-        results.push({ hero: chosen, rarity: chosen.rarity, statusText });
+        pulled.push(h);
       }
-
-      if (gotHighTier) sfxGachaSSR(); else sfxUlt();
-
-      const grid = document.getElementById('gacha-results-grid');
-      grid.innerHTML = results.map(r => {
-        const bg = r.rarity === 'UR'
-          ? 'border-rose-500 bg-rose-500/15'
-          : r.rarity === 'SSR'
-            ? 'border-amber-400 bg-amber-500/15'
-            : 'border-purple-500/40 card-surface';
-        return `
-          <div class="border-2 ${bg} rounded-xl p-2.5 flex flex-col items-center text-center gap-1">
-            <span class="text-2xl">${r.hero.icon}</span>
-            <span class="px-1.5 py-0.5 rounded text-xs font-extrabold ${
-              r.rarity === 'UR' ? 'bg-rose-600 text-white' : r.rarity === 'SSR' ? 'bg-amber-400 text-black' : 'bg-purple-600 text-white'
-            }">${r.rarity}</span>
-            <span class="font-bold text-xs truncate w-full">${r.hero.name}</span>
-            <span class="text-xs text-emerald-400 font-semibold">${r.statusText}</span>
+      updateHUD();
+      const box = document.getElementById('gacha-drawer-results');
+      if (box) {
+        box.innerHTML = pulled.map(h => `
+          <div class="p-2 rounded-xl bg-slate-900 border border-amber-400/50 flex flex-col items-center text-center">
+            <span class="text-lg">${h.icon}</span>
+            <span class="font-bold text-xs truncate w-full">${h.name}</span>
+            <span class="text-amber-400 text-xs">${'★'.repeat(h.stars)}</span>
           </div>
-        `;
-      }).join('');
-
-      document.getElementById('gacha-pity-count').textContent = STATE.pityCounter;
-      document.getElementById('gacha-pity-bar').style.width = `${Math.min(100, (STATE.pityCounter / 70) * 100)}%`;
-      document.getElementById('gacha-pity-prob').textContent = `Prob. SSR+ actual: ${(getEffectiveSSRRate() * 100).toFixed(1)}%`;
-      document.getElementById('gacha-total-pulls').textContent = `Tiradas totales: ${STATE.totalPulls}`;
-
-      updateTopBar();
-      syncSquadToBattle();
-      saveGame();
-    }
-
-    function validateGiftInput() {
-      const input = document.getElementById('gift-code-input');
-      const fb = document.getElementById('gift-code-feedback');
-      const val = input.value.trim().toUpperCase();
-      fb.classList.remove('hidden');
-      if (val.length < 4) {
-        input.className = 'flex-1 sub-surface rounded-xl px-3 py-2 text-xs font-mono uppercase focus:outline-none border border-rose-500';
-        fb.textContent = '⚠️ El código debe tener al menos 4 caracteres.';
-        fb.className = 'text-xs text-rose-400';
-        return false;
+        `).join('');
       }
-      input.className = 'flex-1 sub-surface rounded-xl px-3 py-2 text-xs font-mono uppercase focus:outline-none border border-emerald-500';
-      fb.textContent = '✓ Formato de código válido.';
-      fb.className = 'text-xs text-emerald-400';
-      return true;
+      showToast(`🎲 ¡Invocación x${count} completada! Héroes ascendidos.`);
     }
 
-    function redeemCustomCode() {
-      if (!validateGiftInput()) return;
-      const val = document.getElementById('gift-code-input').value.trim().toUpperCase();
-      STATE.tickets += 15;
-      STATE.gems += 2000;
-      sfxGachaSSR();
-      updateTopBar();
-      saveGame();
-      document.getElementById('gift-code-input').value = '';
-      showToast(`🎁 ¡Código [${val}] canjeado con éxito! +15 Tickets y +2,000 Gemas.`);
+    function selectHero3D(id) {
+      const h = GAME.heroes.find(x => x.id === id);
+      h.unlocked = true;
+      GAME.selectedHeroId = id;
+      applyHeroVisuals3D();
+      sfxBuild();
+      renderDrawerContent('heroes');
+      updateHUD();
+      showToast(`🌟 ¡Héroe 3D cambiado a ${h.name}!`);
     }
 
-    function renderPetsTab() {
-      const grid = document.getElementById('pets-grid');
-      grid.innerHTML = PETS_DB.map(p => {
-        const isEq = STATE.equippedPetId === p.id;
-        return `
-          <div class="sub-surface border-2 ${isEq ? 'border-amber-400' : 'border-transparent'} rounded-2xl p-4 flex flex-col justify-between gap-3">
-            <div>
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-3xl">${p.icon}</span>
-                <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-bold text-xs">${p.rarity} • Nv.${p.level}</span>
-              </div>
-              <h3 class="font-bold text-base">${p.name}</h3>
-              <p class="text-xs text-emerald-400 font-semibold mt-1">
-                Aura Pasiva: +${Math.round(p.atkBuff * 100)}% ATK / +${Math.round(p.hpBuff * 100)}% HP
-              </p>
-              <p class="text-xs text-[var(--text-muted)] mt-1">${p.desc}</p>
-            </div>
-            <button onclick="equipPet('${p.id}')" class="btn-tactile w-full py-2 rounded-xl font-bold text-xs ${
-              isEq ? 'bg-emerald-600 text-white' : 'bg-amber-500 text-black'
-            }">
-              ${!p.unlocked ? '🔓 Desbloquear y Equipar (Test)' : (isEq ? '✓ Mascota Activa en Combate' : 'Equipar Mascota')}
-            </button>
-          </div>
-        `;
-      }).join('');
+    function upgradeHero3D(id) {
+      const h = GAME.heroes.find(x => x.id === id);
+      h.level += 2;
+      if (h.dupes > 0 && h.stars < 5) { h.dupes--; h.stars++; }
+      sfxBuild();
+      renderDrawerContent('heroes');
+      updateHUD();
+      showToast(`⬆️ ¡${h.name} subió a Nv.${h.level} (${h.stars}★)!`);
     }
 
-    function equipPet(id) {
-      const p = PETS_DB.find(x => x.id === id);
-      p.unlocked = true;
-      STATE.equippedPetId = id;
-      document.getElementById('hud-pet-name').textContent = p.name;
-      sfxUlt();
-      updateTopBar();
-      renderPetsTab();
-      saveGame();
-      showToast(`🐾 ¡Mascota [${p.name}] equipada!`);
-    }
-
-    function renderClanTab() {
-      const list = document.getElementById('clan-tech-list');
-      list.innerHTML = CLAN_TECH_DB.map(t => `
-        <div class="p-3 rounded-xl sub-surface flex items-center justify-between gap-2">
-          <div>
-            <h4 class="font-bold text-xs">${t.name}</h4>
-            <p class="text-xs text-emerald-400">Nivel ${t.level}/${t.max} • Bono: +${Math.round(t.level * t.bonusPerLv * 100)}% Stats</p>
-          </div>
-          <button onclick="upgradeClanTech('${t.id}')" class="btn-tactile px-3 py-1.5 rounded-lg bg-amber-500 text-black font-extrabold text-xs">
-            Mejorar (${t.cost} 🛡️)
-          </button>
-        </div>
-      `).join('');
-    }
-
-    function upgradeClanTech(id) {
-      const t = CLAN_TECH_DB.find(x => x.id === id);
-      if (STATE.clanCoins < t.cost) {
-        showToast('🛡️ Necesitas más Monedas de Clan. ¡Ataca al Jefe de Clan!');
-        return;
+    function equipSkin3D(skinId) {
+      const sk = GAME.skins.find(s => s.id === skinId);
+      sk.unlocked = true;
+      const h = GAME.heroes.find(x => x.id === sk.heroId);
+      if (h) {
+        h.unlocked = true;
+        h.skin = skinId;
+        GAME.selectedHeroId = h.id;
       }
-      STATE.clanCoins -= t.cost;
-      t.level++;
-      sfxHit();
-      updateTopBar();
-      renderClanTab();
-      saveGame();
-      showToast(`🔬 ¡Tecnología [${t.name}] mejorada a Nivel ${t.level}!`);
+      applyHeroVisuals3D();
+      sfxLevelUp();
+      renderDrawerContent('heroes');
+      updateHUD();
+      showToast(`👗 ¡Skin 3D [${sk.name}] equipada en vivo!`);
     }
 
-    function attackClanBoss() {
-      const dmg = getSquadPower() * 14 + Math.round(Math.random() * 15000);
-      STATE.clanBossRecord += dmg;
-      STATE.clanCoins += 600;
-      STATE.gems += 250;
-      sfxGachaSSR();
-      document.getElementById('clan-boss-dmg').textContent = formatNum(STATE.clanBossRecord);
-      document.getElementById('clan-boss-bar').style.width = `${Math.min(100, 35 + (STATE.clanBossRecord / 1200000) * 65)}%`;
-      updateTopBar();
-      saveGame();
-      showToast(`🐉 ¡Causaste ${formatNum(dmg)} de daño al Jefe de Clan! +600 🛡️ y +250 💎`);
+    function equipPet3D(petId) {
+      GAME.pets.forEach(p => { p.equipped = (p.id === petId); if (p.id === petId) p.unlocked = true; });
+      applyHeroVisuals3D();
+      sfxBuild();
+      renderDrawerContent('shop');
+      updateHUD();
+      showToast('🐾 ¡Mascota 3D equipada!');
     }
 
-    function hireMercenary() {
-      STATE.mercenaryActive = true;
-      const btn = document.getElementById('btn-mercenary');
-      btn.textContent = '✓ Mercenario VIP Activo (+35% Poder)';
-      btn.className = 'btn-tactile px-3.5 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs';
-      sfxGachaSSR();
-      updateTopBar();
-      syncSquadToBattle();
-      saveGame();
-      showToast('👑 ¡Mercenario UR de LordDrakon unido! +35% Poder de Escuadrón.');
+    function claimStarterBundle3D() {
+      GAME.gems += 2500;
+      GAME.gold += 600;
+      equipSkin3D('SK01');
+      equipPet3D('P03');
+      showToast('🔥 ¡Pack $0.99 activado! Seraphina Cyber-Valquiria 3D + Fénix UR listos.');
     }
 
-    function shareClanInvite() {
-      STATE.gems += 500;
-      updateTopBar();
-      saveGame();
-      showToast('🔗 ¡Enlace de Clan compartido! +500 💎.');
+    function hireClanMercenary3D() {
+      GAME.mercenaryActive = true;
+      syncBarracksSoldiers3D();
+      sfxLevelUp();
+      renderDrawerContent('shop');
+      updateHUD();
+      showToast('🛡️ ¡Mercenario UR 3D desplegado junto a tu héroe!');
     }
 
-    function renderShopTab() {
-      const grid = document.getElementById('shop-offers-grid');
-      grid.innerHTML = SHOP_OFFERS_DB.map(of => {
-        const bought = STATE.purchasedOffers[of.id];
-        return `
-          <div class="sub-surface rounded-2xl p-4 flex flex-col justify-between gap-3">
-            <div>
-              <div class="flex items-center justify-between mb-1.5">
-                <span class="px-2 py-0.5 rounded bg-rose-600 text-white font-bold text-xs">${of.badge}</span>
-                <span class="font-mono font-extrabold text-amber-400 text-sm">${of.price}</span>
-              </div>
-              <h3 class="font-bold text-sm">${of.title}</h3>
-              <p class="text-xs text-[var(--text-muted)] mt-1">${of.desc}</p>
-              <p class="text-xs font-bold text-emerald-400 mt-2">🎁 ${of.rewardText}</p>
-            </div>
-            <button onclick="buyOffer('${of.id}', false)" class="btn-tactile w-full py-2 rounded-xl font-extrabold text-xs ${
-              bought ? 'bg-emerald-700 text-white' : 'bg-gradient-to-r from-amber-500 to-yellow-400 text-black'
-            }">
-              ${bought ? '✓ Oferta Reclamada (Simular otra vez)' : `Simular Compra (${of.price} Gratis)`}
-            </button>
-          </div>
-        `;
-      }).join('');
+    function claimVipBonus() {
+      GAME.tickets += 25;
+      GAME.gems += 3000;
+      GAME.gold += 500;
+      sfxLevelUp();
+      updateHUD();
+      renderQuickBasePads();
+      showToast('🎁 ¡Código VIP20K activado! +25 Tickets, +3,000 Gemas y +500 Monedas 3D.');
     }
 
-    function buyOffer(offerId, fromModal) {
-      STATE.purchasedOffers[offerId] = true;
-      sfxGachaSSR();
-      if (offerId === 'starter_pack') {
-        const sera = HEROES_DB.find(h => h.id === 'H01');
-        sera.dupes += 2;
-        sera.stars = Math.min(5, sera.stars + 1);
-        const sk = SKINS_DB.find(s => s.id === 'SK01');
-        sk.unlocked = true;
-        sera.equippedSkin = 'SK01';
-        STATE.gems += 1500;
-        showToast('🔥 ¡Pack 1.ª Compra activado! Seraphina Cyber-Valquiria equipada.');
-      } else if (offerId === 'vip_pass') {
-        STATE.vipLevel = Math.max(3, STATE.vipLevel + 2);
-        STATE.gems += 3000;
-        PETS_DB.find(p => p.id === 'P03').unlocked = true;
-        STATE.equippedPetId = 'P03';
-        document.getElementById('hud-pet-name').textContent = 'Aetherion, Fénix UR';
-        showToast('👑 ¡Pase VIP Astral activado! Mascota Fénix UR equipada.');
-      } else if (offerId === 'growth_fund') {
-        STATE.gems += 12000;
-        STATE.tickets += 30;
-        showToast('📈 ¡Fondo de Crecimiento reclamado! +12,000 💎 y +30 🎟️.');
-      } else if (offerId === 'skin_bundle') {
-        const mal = HEROES_DB.find(h => h.id === 'H02');
-        mal.unlocked = true;
-        mal.level = 12;
-        mal.stars = 3;
-        const sk2 = SKINS_DB.find(s => s.id === 'SK02');
-        sk2.unlocked = true;
-        mal.equippedSkin = 'SK02';
-        showToast('🌌 ¡Malakor UR + Skin Emperador Cósmico desbloqueados!');
-      } else if (offerId === 'flash_popup') {
-        STATE.tickets += 25;
-        STATE.gems += 2500;
-        STATE.gold += 50000;
-        if (fromModal) closeFlashModal();
-        showToast('⚡ ¡Oferta Relámpago 800% reclamada! +25 Tickets y +2,500 Gemas.');
-      }
-
-      updateTopBar();
-      syncSquadToBattle();
-      renderShopTab();
-      saveGame();
-    }
-
-    function closeFlashModal() {
-      document.getElementById('popup-offer-modal').classList.add('hidden');
-      document.getElementById('popup-offer-modal').classList.remove('flex');
-    }
-
-    function claimPromoCode() {
-      STATE.tickets += 25;
-      STATE.gems += 3000;
-      sfxGachaSSR();
-      updateTopBar();
-      saveGame();
-      showToast('🎁 ¡Código VIP20K canjeado! +25 Tickets de Invocación y +3,000 Gemas.');
-    }
-
-    function claimAfkChest(isFast) {
-      if (isFast) {
-        if (STATE.gems < 50) {
-          showToast('💎 Necesitas 50 Gemas para el Botín Rápido.');
-          return;
-        }
-        STATE.gems -= 50;
-        const fastGold = (450 + STATE.stageFloor * 180) * 12;
-        STATE.gold += fastGold;
-        sfxGachaSSR();
-        showToast(`⚡ ¡Botín Rápido de 2 Horas reclamado! +${formatNum(fastGold)} Oro.`);
+    function toggleFrameMode() {
+      GAME.framedMode = !GAME.framedMode;
+      const frame = document.getElementById('phone-container');
+      const btn = document.getElementById('btn-frame-mode');
+      if (GAME.framedMode) {
+        frame.classList.add('framed-mode');
+        frame.classList.remove('fullscreen-mode');
+        btn.textContent = '🖥️ Full';
       } else {
-        const storedGold = Math.max(500, Math.round(STATE.afkSeconds * 2.5 * STATE.stageFloor));
-        STATE.gold += storedGold;
-        STATE.gems += 45;
-        STATE.afkSeconds = 0;
-        sfxUlt();
-        showToast(`🧰 ¡Cofre AFK reclamado! +${formatNum(storedGold)} Oro y +45 Gemas.`);
+        frame.classList.remove('framed-mode');
+        frame.classList.add('fullscreen-mode');
+        btn.textContent = '📱 9:16';
       }
-      updateTopBar();
-      saveGame();
+      setTimeout(resize3D, 60);
     }
 
-    function claimQuestReward() {
-      STATE.questIndex++;
-      STATE.gems += 1000;
-      STATE.tickets += 5;
-      sfxGachaSSR();
-      document.getElementById('quest-counter').textContent = `Misión #${STATE.questIndex}`;
-      const quests = [
-        'Equipa una Skin Mítica en la pestaña Héroes o desafía al Jefe de Piso',
-        'Ataca al Jefe de Clan para ganar Monedas de Clan',
-        'Asciende un héroe de estrellas usando duplicados del Portal Gacha',
-        'Alcanza el Piso 2-1 con tu escuadrón'
-      ];
-      document.getElementById('quest-desc').textContent = quests[STATE.questIndex % quests.length];
-      updateTopBar();
-      saveGame();
-      showToast('🎯 ¡Misión completada! +1,000 Gemas y +5 Tickets.');
-    }
-
-    function updateBusinessSim() {
-      const dl = parseFloat(document.getElementById('sim-dl').value);
-      const conv = parseFloat(document.getElementById('sim-conv').value);
-      const arppu = parseFloat(document.getElementById('sim-arppu').value);
-
-      document.getElementById('sim-dl-val').textContent = dl.toLocaleString();
-      document.getElementById('sim-conv-val').textContent = conv.toFixed(1) + '%';
-      document.getElementById('sim-arppu-val').textContent = '$' + arppu.toFixed(2);
-
-      const viral = Math.round(dl * 0.15);
-      const totalUsers = dl + viral;
-      const payers = Math.round(totalUsers * (conv / 100));
-      const rev = Math.round(payers * arppu);
-
-      document.getElementById('sim-out-payers').textContent = `${payers.toLocaleString()} usuarios`;
-      document.getElementById('sim-out-viral').textContent = `+${viral.toLocaleString()} orgánicas`;
-      document.getElementById('sim-out-rev').textContent = `$${rev.toLocaleString()} USD`;
-    }
-
-    function switchTab(tabId) {
-      ['battle', 'heroes', 'gacha', 'pets', 'clan', 'shop'].forEach(t => {
-        const sec = document.getElementById(`tab-${t}`);
-        const btn = document.getElementById(`tab-btn-${t}`);
-        const mobBtn = document.getElementById(`mob-btn-${t}`);
-        if (t === tabId) {
-          sec.classList.remove('hidden');
-          sec.classList.add('flex');
-          if (btn) btn.className = 'btn-tactile px-3 py-2.5 rounded-xl font-bold text-sm border flex items-center justify-center gap-1.5 bg-amber-500 text-black border-amber-400 shadow';
-          if (mobBtn) mobBtn.className = 'flex flex-col items-center justify-center py-1 text-amber-400 font-bold text-xs';
-        } else {
-          sec.classList.add('hidden');
-          sec.classList.remove('flex');
-          if (btn) btn.className = 'btn-tactile px-3 py-2.5 rounded-xl font-bold text-sm border flex items-center justify-center gap-1.5 card-surface';
-          if (mobBtn) mobBtn.className = 'flex flex-col items-center justify-center py-1 text-[var(--text-muted)] font-semibold text-xs';
-        }
-      });
-
-      if (tabId === 'heroes') renderHeroesTab();
-      if (tabId === 'pets') renderPetsTab();
-      if (tabId === 'clan') renderClanTab();
-      if (tabId === 'shop') renderShopTab();
-    }
-
-    function addCombatLog(msg) {
-      const box = document.getElementById('combat-log');
-      const line = document.createElement('div');
-      line.textContent = `• ${msg}`;
-      box.prepend(line);
-      while (box.children.length > 18) box.removeChild(box.lastChild);
-    }
-
-    let toastTimeout = null;
+    let toastTimer = null;
     function showToast(msg) {
-      const t = document.getElementById('toast-box');
-      t.textContent = msg;
-      t.classList.remove('hidden');
-      clearTimeout(toastTimeout);
-      toastTimeout = setTimeout(() => t.classList.add('hidden'), 2800);
+      const el = document.getElementById('toast-msg');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => el.classList.add('hidden'), 2600);
     }
 
-    setInterval(() => {
-      STATE.afkSeconds += STATE.speedMult;
-      const hrs = String(Math.floor(STATE.afkSeconds / 3600)).padStart(2, '0');
-      const mins = String(Math.floor((STATE.afkSeconds % 3600) / 60)).padStart(2, '0');
-      const secs = String(Math.floor(STATE.afkSeconds % 60)).padStart(2, '0');
-      document.getElementById('afk-timer').textContent = `${hrs}:${mins}:${secs}`;
-      const storedGold = Math.max(100, Math.round(STATE.afkSeconds * 2.5 * STATE.stageFloor));
-      document.getElementById('afk-stored-gold').textContent = `${formatNum(storedGold)} Oro • 45 💎`;
-      document.getElementById('live-players-count').textContent = (1420 + Math.floor(Math.random() * 25)).toLocaleString();
-    }, 1000);
-
-    // BOOTSTRAP & LOADING SCREEN
+    // ============================================================================
+    // 12. INICIO DE LA APLICACIÓN 3D
+    // ============================================================================
     window.addEventListener('DOMContentLoaded', () => {
-      loadGame();
-      syncSquadToBattle();
-      spawnEnemyWave(false);
-      updateTopBar();
-      updateBusinessSim();
-      addCombatLog('⚡ Motor Aether Engine iniciado. ¡Combate Idle en curso!');
+      resize3D();
+      rebuildOrbitalBlades3D();
+      syncTurrets3D();
+      syncBarracksSoldiers3D();
+      applyHeroVisuals3D();
+      renderQuickBasePads();
+      updateHUD();
 
-      const bar = document.getElementById('loading-bar');
-      const txt = document.getElementById('loading-text');
-      setTimeout(() => { bar.style.width = '65%'; txt.textContent = 'Cargando Héroes UR, Skins y Santuario...'; }, 180);
-      setTimeout(() => { bar.style.width = '100%'; txt.textContent = '¡Listo para jugar!'; }, 380);
+      // Oleada inicial de enemigos y monedas 3D en el suelo
+      for (let i = 0; i < 10; i++) spawnEnemy3D(false);
+      for (let c = 0; c < 8; c++) {
+        spawnLootDrop3D((Math.random() - 0.5) * 10, (Math.random() - 0.5) * 10, 25, 20);
+      }
+
+      const bar = document.getElementById('load-bar');
+      const st = document.getElementById('load-status');
+      setTimeout(() => { bar.style.width = '75%'; st.textContent = 'Activando Base 3D, Torretas y Espadas Orbitales...'; }, 180);
+      setTimeout(() => { bar.style.width = '100%'; st.textContent = '¡Beta 2.0 Lista!'; }, 360);
       setTimeout(() => {
-        const ls = document.getElementById('loading-screen');
-        ls.style.opacity = '0';
-        setTimeout(() => ls.style.display = 'none', 400);
-      }, 550);
+        const ov = document.getElementById('loading-overlay');
+        ov.style.opacity = '0';
+        setTimeout(() => ov.style.display = 'none', 400);
+      }, 500);
 
-      requestAnimationFrame(updateBattle);
+      requestAnimationFrame(animate3D);
     });
   </script>
 </body>
