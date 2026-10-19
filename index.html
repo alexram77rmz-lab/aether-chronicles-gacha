@@ -3,1550 +3,2593 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#1e293b" />
-  <title>Duck Survival 3D — Réplica 1:1 (Build by Day, Defend by Night)</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23facc15'/%3E%3Ccircle cx='32' cy='30' r='18' fill='%23fde047' stroke='%23000' stroke-width='3'/%3E%3Cellipse cx='32' cy='36' rx='10' ry='5' fill='%23f97316' stroke='%23000' stroke-width='2.5'/%3E%3Ccircle cx='25' cy='25' r='3' fill='%23000'/%3E%3Ccircle cx='39' cy='25' r='3' fill='%23000'/%3E%3C/svg%3E" />
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>PIXEL SURVIVOR 3D — Mascotas SSS, Armas de Evento & Base Building</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Fredoka:wght@600;700&family=Chakra+Petch:wght@700;800&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
-    html, body {
-      margin: 0; padding: 0; width: 100%; height: 100%;
-      background: #0b101b; color: #ffffff;
-      font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+    :root {
+      --pixel-font: 'Press Start 2P', monospace;
+      --ui-font: 'Chakra Petch', 'Fredoka', sans-serif;
+      --gold: #ffd93d;
+      --cash: #38ef7d;
+      --sss-pink: #ff2a85;
+      --sss-cyan: #00f2fe;
+      --event-purple: #b537f2;
+      --dark-bg: #12101b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      image-rendering: pixelated;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, #1e1638 0%, #090711 100%);
+      font-family: var(--ui-font);
       overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
     }
-    .phone-viewport-wrapper {
-      width: 100vw; height: 100dvh;
-      display: flex; align-items: center; justify-content: center;
-      background: radial-gradient(circle at center, #1e293b 0%, #060911 80%);
-    }
-    .phone-frame {
+
+    #phone-frame {
       position: relative;
-      width: 100%; height: 100%;
-      max-width: 460px; max-height: 930px;
-      background: #1a2436;
+      width: 100%;
+      max-width: 470px;
+      height: 100%;
+      max-height: 930px;
+      background: #1a1829;
       overflow: hidden;
-      display: flex; flex-direction: column;
-      box-shadow: 0 25px 80px rgba(0,0,0,0.9), 0 0 0 3px #0f172a;
+      box-shadow: 0 0 0 4px #3b2d66, 0 0 50px rgba(0,0,0,0.95);
+      display: flex;
+      flex-direction: column;
     }
-    @media (min-width: 520px) {
-      .phone-frame.framed-mode {
-        height: 95dvh;
-        border-radius: 38px;
-        border: 7px solid #0f172a;
-      }
-      .phone-frame.fullscreen-mode {
-        max-width: 100vw; max-height: 100dvh; height: 100dvh;
-        border-radius: 0; border: none;
+
+    @media (min-width: 500px) {
+      #phone-frame {
+        height: 96vh;
+        border-radius: 26px;
+        border: 4px solid #fbbf24;
       }
     }
-    /* Estilo Cartoon Glossy de Duck Survival / Habby */
-    .cartoon-box {
-      background: linear-gradient(180deg, #2b3954 0%, #1d283d 100%);
-      border: 2.5px solid #0b111e;
-      box-shadow: inset 0 2px 0 rgba(255,255,255,0.18), 0 4px 0 #0b111e;
+
+    body.fullscreen-mode #phone-frame {
+      max-width: 100vw !important;
+      max-height: 100vh !important;
+      height: 100vh !important;
+      border-radius: 0 !important;
+      border: none !important;
     }
-    .cartoon-btn-yellow {
-      background: linear-gradient(180deg, #fde047 0%, #eab308 100%);
-      border: 2.5px solid #0b111e;
-      box-shadow: inset 0 2px 0 rgba(255,255,255,0.6), 0 4px 0 #0b111e;
-      color: #0b111e;
-      font-weight: 900;
-      text-shadow: 0 1px 0 rgba(255,255,255,0.4);
-      transition: transform 0.08s ease;
+
+    #canvas-container {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+    }
+
+    /* RETRO PIXEL BORDERS */
+    .pixel-box {
+      background: rgba(18, 16, 32, 0.92);
+      border: 3px solid #fff;
+      box-shadow: inset 0 -4px 0 rgba(0,0,0,0.6), 0 4px 0 #000;
+      border-radius: 8px;
+    }
+
+    /* FLOATING 3D WORLD LABELS */
+    #world-ui-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    #player-floating-hud {
+      position: absolute;
+      transform: translate(-50%, -100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      transition: left 0.02s linear, top 0.02s linear;
+    }
+    .p-badge-row {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .p-cash-pill {
+      background: #064e3b;
+      border: 2px solid #34d399;
+      border-radius: 6px;
+      padding: 1px 6px;
+      font-family: var(--pixel-font);
+      font-size: 0.52rem;
+      color: #a7f3d0;
+      box-shadow: 0 2px 0 #000;
+      white-space: nowrap;
+    }
+    .p-sss-pill {
+      background: linear-gradient(90deg, #be185d, #7e22ce);
+      border: 2px solid #f472b6;
+      border-radius: 6px;
+      padding: 1px 5px;
+      font-family: var(--pixel-font);
+      font-size: 0.48rem;
+      color: #fff;
+      box-shadow: 0 2px 0 #000;
+      white-space: nowrap;
+    }
+    .p-hp-wrap {
+      width: 66px;
+      height: 10px;
+      background: #111827;
+      border: 2px solid #000;
+      padding: 1px;
+      box-shadow: 0 2px 0 rgba(0,0,0,0.8);
+    }
+    .p-hp-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #22c55e, #86efac);
+      transition: width 0.15s;
+    }
+
+    /* GROUND PAD LABELS */
+    .pad-world-label {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      background: rgba(15, 23, 42, 0.92);
+      border: 2px solid #fbbf24;
+      border-radius: 6px;
+      padding: 2px 6px;
+      text-align: center;
+      box-shadow: 0 3px 0 #000;
+      white-space: nowrap;
+    }
+    .pad-world-label.portal-label {
+      border-color: #d946ef;
+      background: rgba(59, 7, 100, 0.92);
+      animation: pulsePortal 1s infinite alternate;
+    }
+    @keyframes pulsePortal {
+      from { transform: translate(-50%, -50%) scale(0.95); }
+      to { transform: translate(-50%, -50%) scale(1.06); }
+    }
+    .pad-world-label .pw-name {
+      font-size: 0.6rem;
+      font-weight: 800;
+      color: #fde68a;
+      display: block;
+      text-shadow: 1px 1px 0 #000;
+    }
+    .pad-world-label .pw-cost {
+      font-family: var(--pixel-font);
+      font-size: 0.52rem;
+      color: #4ade80;
+    }
+
+    /* FLOATING DAMAGE / CASH POPUPS */
+    .dmg-popup {
+      position: absolute;
+      font-family: var(--pixel-font);
+      font-size: 0.68rem;
+      color: #fff;
+      text-shadow: 2px 2px 0 #000, -1px -1px 0 #000;
+      pointer-events: none;
+      animation: pixelFloat 0.75s steps(8) forwards;
+    }
+    .dmg-popup.crit {
+      font-size: 0.85rem;
+      color: #fde047;
+    }
+    .dmg-popup.cash {
+      font-size: 0.72rem;
+      color: #4ade80;
+    }
+    .dmg-popup.event {
+      font-size: 0.75rem;
+      color: #f0abfc;
+    }
+    @keyframes pixelFloat {
+      0% { opacity: 1; transform: translate(-50%, 0) scale(0.8); }
+      25% { opacity: 1; transform: translate(-50%, -14px) scale(1.15); }
+      100% { opacity: 0; transform: translate(-50%, -38px) scale(0.9); }
+    }
+
+    /* TOP HUD */
+    #top-hud {
+      position: relative;
+      z-index: 10;
+      padding: 8px 10px 4px;
+      background: linear-gradient(180deg, rgba(10,8,20,0.95) 0%, rgba(10,8,20,0.4) 85%, transparent 100%);
+      pointer-events: none;
+    }
+    #top-hud > * { pointer-events: auto; }
+
+    .resource-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 6px;
+    }
+
+    .res-pill {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: #1e1b2e;
+      border: 2px solid #4c1d95;
+      border-radius: 6px;
+      padding: 3px 7px;
+      font-family: var(--pixel-font);
+      font-size: 0.55rem;
+      color: #fff;
+      box-shadow: 0 3px 0 #000;
+    }
+    .res-pill.cash { border-color: #10b981; background: #064e3b; color: #a7f3d0; }
+    .res-pill.tickets { border-color: #d946ef; background: #4a044e; color: #f5d0fe; }
+    .res-pill.gems { border-color: #38bdf8; background: #0c4a6e; color: #bae6fd; }
+
+    .hud-btn {
+      background: #fbbf24;
+      border: 2px solid #000;
+      border-radius: 6px;
+      padding: 4px 7px;
+      font-family: var(--pixel-font);
+      font-size: 0.5rem;
+      color: #000;
+      cursor: pointer;
+      box-shadow: inset 0 -2px 0 #d97706, 0 2px 0 #000;
+    }
+    .hud-btn:active { transform: translateY(2px); }
+
+    /* WAVE PROGRESS & RENDER MODE BAR */
+    .wave-bar-wrap {
+      background: rgba(17, 24, 39, 0.9);
+      border: 2px solid #374151;
+      border-radius: 8px;
+      padding: 5px 8px;
+      margin-bottom: 5px;
+      box-shadow: 0 3px 0 #000;
+    }
+    .wave-top-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.68rem;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+    .phase-tag {
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-family: var(--pixel-font);
+      font-size: 0.48rem;
+      background: #ef4444;
+      color: #fff;
+    }
+    .phase-tag.day { background: #10b981; color: #052e16; }
+
+    .wave-nodes {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      padding: 2px 0;
+    }
+    .wave-nodes-track {
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      height: 5px;
+      background: #1f2937;
+      border: 1px solid #000;
+      z-index: 1;
+    }
+    .wave-nodes-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #22c55e, #eab308, #ef4444);
+      transition: width 0.3s;
+    }
+    .w-node {
+      position: relative;
+      z-index: 2;
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      background: #374151;
+      border: 2px solid #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: var(--pixel-font);
+      font-size: 0.5rem;
+      color: #9ca3af;
+    }
+    .w-node.cleared { background: #22c55e; color: #052e16; }
+    .w-node.active {
+      background: #fbbf24;
+      color: #000;
+      transform: scale(1.15);
+      box-shadow: 0 0 8px #fbbf24;
+    }
+    .w-node.boss {
+      width: 26px;
+      height: 26px;
+      background: #991b1b;
+      color: #fecaca;
+      border-color: #f87171;
+    }
+
+    /* XP + PIXEL FEVER (OVERDRIVE) DUAL BARS */
+    .dual-bars {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .bar-box {
+      position: relative;
+      height: 16px;
+      background: #0f172a;
+      border: 2px solid #000;
+      border-radius: 5px;
+      overflow: hidden;
+      box-shadow: 0 2px 0 #000;
+    }
+    .xp-fill {
+      height: 100%;
+      width: 15%;
+      background: linear-gradient(90deg, #0284c7, #38bdf8);
+      transition: width 0.2s;
+    }
+    .fever-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #db2777, #f59e0b, #fde047);
+      transition: width 0.15s;
+    }
+    .bar-txt {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: var(--pixel-font);
+      font-size: 0.45rem;
+      color: #fff;
+      text-shadow: 1px 1px 0 #000;
+    }
+    .bar-box.fever-ready {
+      border-color: #fde047;
+      animation: feverBlink 0.4s infinite alternate;
       cursor: pointer;
     }
-    .cartoon-btn-yellow:active { transform: translateY(3px); box-shadow: 0 1px 0 #0b111e; }
+    @keyframes feverBlink {
+      from { box-shadow: 0 0 4px #fde047; }
+      to { box-shadow: 0 0 14px #ec4899; }
+    }
 
-    .cartoon-btn-green {
-      background: linear-gradient(180deg, #4ade80 0%, #16a34a 100%);
-      border: 2.5px solid #0b111e;
-      box-shadow: inset 0 2px 0 rgba(255,255,255,0.45), 0 4px 0 #0b111e;
+    /* ACTIVE LOADOUT STRIP (SHOWS EQUIPPED EVENT WEAPON + SSS PET + SKILLS) */
+    .active-loadout-strip {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 5px;
+      gap: 5px;
+    }
+    .loadout-chip {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 2px solid #fbbf24;
+      border-radius: 6px;
+      padding: 2px 6px;
+      font-size: 0.65rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 2px 0 #000;
+    }
+    .loadout-chip.sss { border-color: #f472b6; background: rgba(80, 7, 36, 0.9); }
+    .loadout-chip.weapon { border-color: #a855f7; background: rgba(59, 7, 100, 0.9); }
+    .loadout-chip canvas {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* BOSS HP BANNER */
+    #boss-banner {
+      display: none;
+      margin-top: 5px;
+      background: rgba(69, 10, 10, 0.95);
+      border: 2px solid #f87171;
+      border-radius: 6px;
+      padding: 4px 8px;
+      box-shadow: 0 3px 0 #000;
+    }
+    .boss-head {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--pixel-font);
+      font-size: 0.5rem;
+      color: #fca5a5;
+      margin-bottom: 3px;
+    }
+    .boss-hp-bg {
+      height: 10px;
+      background: #1f2937;
+      border: 2px solid #000;
+    }
+    .boss-hp-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #dc2626, #facc15);
+      transition: width 0.12s;
+    }
+
+    /* DAY PHASE BANNER & START NIGHT BUTTON */
+    #day-phase-cta {
+      position: absolute;
+      top: 158px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 12;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      width: 92%;
+      pointer-events: auto;
+    }
+    .day-instruction {
+      background: rgba(6, 78, 59, 0.95);
+      border: 2px solid #34d399;
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: 0.74rem;
+      font-weight: 800;
+      color: #d1fae5;
+      text-align: center;
+      box-shadow: 0 4px 0 #000;
+    }
+    .next-wave-btn {
+      background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%);
+      border: 3px solid #000;
+      border-radius: 8px;
+      padding: 8px 18px;
+      font-family: var(--pixel-font);
+      font-size: 0.65rem;
+      color: #000;
+      cursor: pointer;
+      box-shadow: inset 0 2px 0 #fef08a, 0 4px 0 #000;
+      animation: bounceBtn 0.9s infinite alternate;
+    }
+    @keyframes bounceBtn {
+      from { transform: translateY(0); }
+      to { transform: translateY(-3px); }
+    }
+
+    /* VIRTUAL JOYSTICK */
+    #joystick-zone {
+      position: absolute;
+      inset: 140px 0 74px 0;
+      z-index: 6;
+    }
+    #joystick-base {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 96px;
+      height: 96px;
+      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.55);
+      border: 3px solid rgba(255, 255, 255, 0.45);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      pointer-events: none;
+      box-shadow: 0 4px 0 rgba(0,0,0,0.6);
+    }
+    #joystick-stick {
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #fde047, #ca8a04);
+      border: 3px solid #000;
+      box-shadow: 0 3px 0 #000;
+    }
+
+    /* OVERDRIVE & SSS ULTIMATE ACTION BUTTONS */
+    #combat-action-btns {
+      position: absolute;
+      right: 12px;
+      bottom: 92px;
+      z-index: 11;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .ult-btn {
+      width: 58px;
+      height: 58px;
+      border-radius: 10px;
+      border: 3px solid #000;
+      background: linear-gradient(180deg, #ec4899, #831843);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.4), 0 4px 0 #000;
+      font-family: var(--pixel-font);
+      font-size: 0.42rem;
+      gap: 2px;
+      text-align: center;
+    }
+    .ult-btn.overdrive {
+      background: linear-gradient(180deg, #facc15, #b45309);
+      color: #000;
+    }
+    .ult-btn:active { transform: translateY(2px); }
+
+    /* MODAL DRAWERS (SSS PETS, EVENT WEAPONS, HEROES, GACHA) */
+    .drawer-panel {
+      position: absolute;
+      inset: 118px 8px 76px 8px;
+      z-index: 20;
+      background: rgba(17, 14, 31, 0.97);
+      border: 3px solid #fbbf24;
+      border-radius: 12px;
+      padding: 12px;
+      display: none;
+      flex-direction: column;
+      box-shadow: 0 10px 0 #000, 0 0 35px rgba(0,0,0,0.9);
+      overflow-y: auto;
+    }
+    .drawer-panel.open { display: flex; }
+
+    .drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #3b2d66;
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+    }
+    .drawer-title {
+      font-family: var(--pixel-font);
+      font-size: 0.72rem;
+      color: #fde047;
+      text-shadow: 2px 2px 0 #000;
+    }
+    .close-btn {
+      background: #ef4444;
+      border: 2px solid #000;
+      color: #fff;
+      font-family: var(--pixel-font);
+      font-size: 0.55rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    /* CARDS GRID FOR SSS PETS & EVENT WEAPONS */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .pixel-card {
+      background: #231d3c;
+      border: 3px solid #4c1d95;
+      border-radius: 10px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 4px 0 #000;
+    }
+    .pixel-card.sss-tier {
+      border-color: #f472b6;
+      background: linear-gradient(180deg, #3b0764 0%, #1e1b4b 100%);
+    }
+    .pixel-card.event-tier {
+      border-color: #38bdf8;
+      background: linear-gradient(180deg, #0f172a 0%, #311042 100%);
+    }
+    .pixel-card.equipped {
+      border-color: #4ade80;
+      box-shadow: 0 0 12px rgba(74, 222, 128, 0.5), 0 4px 0 #000;
+    }
+    .tier-badge {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      background: linear-gradient(90deg, #ff2a85, #ff9900);
+      border: 2px solid #000;
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-family: var(--pixel-font);
+      font-size: 0.45rem;
+      color: #fff;
+    }
+    .stars-badge {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      font-size: 0.6rem;
+      color: #facc15;
+      text-shadow: 1px 1px 0 #000;
+    }
+    .sprite-preview {
+      width: 58px;
+      height: 58px;
+      margin: 14px 0 6px;
+      background: rgba(0,0,0,0.35);
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .sprite-preview canvas {
+      width: 48px;
+      height: 48px;
+      image-rendering: pixelated;
+    }
+    .card-name {
+      font-family: var(--pixel-font);
+      font-size: 0.52rem;
+      color: #fef08a;
+      margin-bottom: 4px;
+      line-height: 1.3;
+    }
+    .card-desc {
+      font-size: 0.68rem;
+      color: #cbd5e1;
+      margin-bottom: 8px;
+      line-height: 1.25;
+      min-height: 32px;
+    }
+    .card-btn {
+      width: 100%;
+      background: linear-gradient(180deg, #4ade80, #16a34a);
+      border: 2px solid #000;
+      border-radius: 6px;
+      padding: 5px;
+      font-family: var(--pixel-font);
+      font-size: 0.48rem;
       color: #052e16;
-      font-weight: 900;
-      transition: transform 0.08s ease;
       cursor: pointer;
+      box-shadow: 0 3px 0 #000;
+      margin-top: auto;
     }
-    .cartoon-btn-green:active { transform: translateY(3px); box-shadow: 0 1px 0 #0b111e; }
+    .card-btn.secondary {
+      background: linear-gradient(180deg, #fbbf24, #d97706);
+      color: #000;
+      margin-top: 4px;
+    }
 
-    .cartoon-btn-blue {
-      background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
-      border: 2.5px solid #0b111e;
-      box-shadow: inset 0 2px 0 rgba(255,255,255,0.45), 0 4px 0 #0b111e;
-      color: #ffffff;
-      font-weight: 900;
-      text-shadow: 0 1.5px 0 #0b111e;
-      transition: transform 0.08s ease;
+    /* ROGUELITE SKILL DRAFT MODAL */
+    #skill-modal {
+      position: absolute;
+      inset: 0;
+      z-index: 35;
+      background: rgba(9, 7, 17, 0.88);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+    #skill-modal.open { display: flex; }
+    .skill-modal-title {
+      font-family: var(--pixel-font);
+      font-size: 0.85rem;
+      color: #fde047;
+      text-shadow: 3px 3px 0 #000;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+    .skill-cards-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      max-width: 390px;
+    }
+    .skill-choice-card {
+      background: linear-gradient(90deg, #1e1b4b, #311042);
+      border: 3px solid #fbbf24;
+      border-radius: 10px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
       cursor: pointer;
+      box-shadow: 0 4px 0 #000;
     }
-    .cartoon-btn-blue:active { transform: translateY(3px); box-shadow: 0 1px 0 #0b111e; }
+    .skill-choice-card:hover {
+      border-color: #4ade80;
+      transform: scale(1.02);
+    }
+    .sk-icon {
+      font-size: 1.9rem;
+      width: 48px;
+      height: 48px;
+      background: rgba(0,0,0,0.4);
+      border: 2px solid #fff;
+      border-radius: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
-    .text-outline {
-      text-shadow: -1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000, 0 2px 0 #000;
+    /* BOTTOM 5-TAB BAR */
+    #bottom-tabs {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 70px;
+      background: #130f24;
+      border-top: 3px solid #fbbf24;
+      z-index: 25;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 4px;
+      padding: 5px 6px;
     }
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-thumb { background: #475569; border-radius: 999px; }
+    .nav-btn {
+      background: #231d3c;
+      border: 2px solid #4c1d95;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      color: #cbd5e1;
+      font-family: var(--pixel-font);
+      font-size: 0.43rem;
+      gap: 4px;
+      box-shadow: 0 3px 0 #000;
+      position: relative;
+    }
+    .nav-btn .ico { font-size: 1.2rem; }
+    .nav-btn.active {
+      background: linear-gradient(180deg, #fbbf24, #d97706);
+      border-color: #000;
+      color: #000;
+      transform: translateY(-4px);
+    }
+    .nav-badge {
+      position: absolute;
+      top: -4px;
+      right: -2px;
+      background: #ff2a85;
+      border: 2px solid #000;
+      color: #fff;
+      font-size: 0.4rem;
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+
+    #toast-msg {
+      position: absolute;
+      top: 126px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 45;
+      background: #111827;
+      border: 2px solid #fde047;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-family: var(--pixel-font);
+      font-size: 0.52rem;
+      color: #fde047;
+      box-shadow: 0 4px 0 #000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      text-align: center;
+    }
+    #toast-msg.show { opacity: 1; }
   </style>
 </head>
 <body>
+  <div id="phone-frame">
+    <!-- 3D PIXEL-VOXEL / HD-2D CANVAS -->
+    <div id="canvas-container"></div>
 
-  <!-- PANTALLA DE CARGA ESTILO DUCK SURVIVAL -->
-  <div id="loading-overlay" class="fixed inset-0 z-50 bg-[#131c2e] flex flex-col items-center justify-center p-6 transition-opacity duration-500">
-    <div class="w-20 h-20 rounded-3xl cartoon-btn-yellow flex items-center justify-center text-4xl mb-3 animate-bounce">
-      🦆
+    <!-- WORLD FLOATING HUD LAYER -->
+    <div id="world-ui-layer">
+      <div id="player-floating-hud">
+        <div class="p-badge-row">
+          <div class="p-cash-pill" id="world-cash-txt">💵 $60</div>
+          <div class="p-sss-pill" id="world-pet-txt">🐉 SSS</div>
+        </div>
+        <div class="p-hp-wrap">
+          <div class="p-hp-fill" id="world-hp-fill"></div>
+        </div>
+      </div>
+      <div id="pad-labels-container"></div>
     </div>
-    <span class="px-3 py-1 rounded-full bg-amber-400 text-black font-black text-xs border-2 border-black mb-1">
-      RÉPLICA 1:1 • JOY NICE GAMES STYLE
-    </span>
-    <h1 class="text-2xl font-black tracking-wide text-amber-300 text-outline">DUCK SURVIVAL 3D</h1>
-    <p class="text-xs text-slate-300 mt-1 mb-5 text-center max-w-xs font-bold">
-      Construye de Día ☀️ • Defiende de Noche 🌙 • Mochila de Billetes 3D • 5 Oleadas + Jefe Zombie
-    </p>
-    <div class="w-64 h-4 bg-slate-900 rounded-full overflow-hidden border-2 border-black p-0.5">
-      <div id="load-bar" class="h-full rounded-full bg-gradient-to-r from-lime-400 to-amber-400 transition-all duration-300" style="width: 30%"></div>
+
+    <!-- TOP HUD -->
+    <div id="top-hud">
+      <div class="resource-row">
+        <div class="res-pill cash">💵 <span id="hud-cash">60</span></div>
+        <div class="res-pill tickets">🎟️ <span id="hud-tickets">120</span></div>
+        <div class="res-pill gems">💎 <span id="hud-gems">3,500</span></div>
+        <button class="hud-btn" id="render-mode-btn" onclick="togglePixelRenderMode()">🎨 3D VOXEL</button>
+        <button class="hud-btn" onclick="toggleFullscreen()">⛶</button>
+      </div>
+
+      <!-- 5-WAVE PROGRESS + COMBO -->
+      <div class="wave-bar-wrap">
+        <div class="wave-top-line">
+          <span id="stage-label">🏕️ ARENA PIXEL — OLEADA 1 / 5</span>
+          <span class="phase-tag" id="phase-tag">🌙 NOCHE (COMBATE)</span>
+        </div>
+        <div class="wave-nodes">
+          <div class="wave-nodes-track">
+            <div class="wave-nodes-fill" id="wave-track-fill"></div>
+          </div>
+          <div class="w-node active" id="wnode-1">1</div>
+          <div class="w-node" id="wnode-2">2</div>
+          <div class="w-node" id="wnode-3">3</div>
+          <div class="w-node" id="wnode-4">4</div>
+          <div class="w-node boss" id="wnode-5">💀5</div>
+        </div>
+      </div>
+
+      <!-- DUAL BARS: XP LEVEL & PIXEL FEVER OVERDRIVE -->
+      <div class="dual-bars">
+        <div class="bar-box">
+          <div class="xp-fill" id="xp-bar-fill"></div>
+          <div class="bar-txt" id="xp-bar-txt">NV.1 EXP (0/100)</div>
+        </div>
+        <div class="bar-box" id="fever-box" onclick="activateOverdrive()">
+          <div class="fever-fill" id="fever-bar-fill"></div>
+          <div class="bar-txt" id="fever-bar-txt">🔥 FIEBRE PIXEL 0%</div>
+        </div>
+      </div>
+
+      <!-- ACTIVE EQUIPPED STRIP (CLICK TO CHANGE WEAPON OR SSS PET INSTANTLY) -->
+      <div class="active-loadout-strip">
+        <div class="loadout-chip weapon" onclick="switchTab('event-weapons')">
+          <canvas id="hud-weapon-icon" width="16" height="16"></canvas>
+          <span id="hud-weapon-name">🎸 Riff Apocalíptico</span>
+        </div>
+        <div class="loadout-chip sss" onclick="switchTab('sss-pets')">
+          <canvas id="hud-pet-icon" width="16" height="16"></canvas>
+          <span id="hud-pet-name">🐉 Ignis-Rex SSS</span>
+        </div>
+      </div>
+
+      <!-- BOSS HP BAR -->
+      <div id="boss-banner">
+        <div class="boss-head">
+          <span id="boss-name-txt">👹 REY DEMONIO PIXEL (JEFE OLEADA 5)</span>
+          <span id="boss-hp-txt">x5 BARRAS</span>
+        </div>
+        <div class="boss-hp-bg">
+          <div class="boss-hp-fill" id="boss-hp-fill"></div>
+        </div>
+      </div>
     </div>
-    <p id="load-status" class="text-xs text-amber-300 font-black mt-2">Renderizando modelos 3D Toon, Pato Duke y Zombies...</p>
-  </div>
 
-  <div class="phone-viewport-wrapper">
-    <div id="phone-container" class="phone-frame framed-mode">
-
-      <!-- ====================================================
-           CAPA 1: ESCENA 3D THREE.JS (CAMPAMENTO DUCK SURVIVAL)
-           ==================================================== -->
-      <div id="canvas-3d-host" class="absolute inset-0 z-0"></div>
-
-      <!-- ====================================================
-           CAPA 2: ETIQUETAS 2D EN EL MUNDO 3D (BARRA HP SOBRE EL PATO, CÍRCULOS DE PRECIO EN EL SUELO Y DAÑO)
-           ==================================================== -->
-      <div id="world-ui-layer" class="absolute inset-0 z-10 pointer-events-none overflow-hidden">
-        <!-- Barra de Vida Flotante sobre el Pato 3D (Exacto a Duck Survival) -->
-        <div id="duck-floating-hud" class="absolute -translate-x-1/2 -translate-y-full flex flex-col items-center pointer-events-none" style="left:50%; top:50%;">
-          <span id="duck-backpack-tag" class="px-1.5 py-0.5 rounded bg-emerald-500 border border-black text-black font-black text-xs mb-0.5 shadow">
-            💵 $350
-          </span>
-          <div class="w-14 h-2.5 bg-black/80 rounded-full border border-black p-0.5 overflow-hidden">
-            <div id="duck-hp-fill" class="h-full bg-lime-400 rounded-full" style="width:100%"></div>
-          </div>
-        </div>
-        <!-- Contenedor para los precios sobre los círculos blancos del suelo -->
-        <div id="ground-pads-labels"></div>
-        <!-- Contenedor para textos de daño flotantes -->
-        <div id="floating-dmg-box"></div>
+    <!-- DAY PHASE BUILD BASE CTA -->
+    <div id="day-phase-cta">
+      <div class="day-instruction">
+        ☀️ DÍA DE CONSTRUCCIÓN: Camina sobre los círculos para invertir tus billetes 💵 o entra al Portal 🌀
       </div>
+      <button class="next-wave-btn" id="start-night-btn" onclick="startNextWave()">
+        🌙 INICIAR OLEADA 2
+      </button>
+    </div>
 
-      <!-- ====================================================
-           CAPA 3: HUD SUPERIOR CARTOON (MONEDAS, BARRA DE 5 OLEADAS, DÍA/NOCHE, XP)
-           ==================================================== -->
-      <header class="relative z-20 p-2 flex flex-col gap-1.5 pointer-events-auto">
+    <!-- TOAST -->
+    <div id="toast-msg">¡Mascota SSS Equipada!</div>
 
-        <!-- FILA SUPERIOR DE MONEDAS (ESTILO DUCK SURVIVAL: ENERGÍA, BILLETES VERDES, GEMAS, 777 DRAWS) -->
-        <div class="flex items-center justify-between gap-1">
-          <div class="flex items-center gap-1">
-            <!-- Billetes Verdes (Green Banknotes) -->
-            <div class="cartoon-box rounded-full px-2.5 py-0.5 flex items-center gap-1 text-xs">
-              <span>💵</span>
-              <span id="hud-cash" class="font-black text-lime-400 text-outline">$350</span>
-            </div>
-            <!-- Planos / Tickets de Equipo -->
-            <div class="cartoon-box rounded-full px-2.5 py-0.5 flex items-center gap-1 text-xs">
-              <span>🎟️</span>
-              <span id="hud-tickets" class="font-black text-amber-300 text-outline">30</span>
-            </div>
-            <!-- Gemas -->
-            <div class="cartoon-box rounded-full px-2.5 py-0.5 flex items-center gap-1 text-xs">
-              <span>💎</span>
-              <span id="hud-gems" class="font-black text-cyan-300 text-outline">5,400</span>
-            </div>
-          </div>
-
-          <div class="flex items-center gap-1">
-            <button onclick="claim777Draws()" class="cartoon-btn-yellow px-2 py-0.5 rounded-full text-xs">
-              🎁 777 Draws
-            </button>
-            <button onclick="toggleAutoPilot()" id="btn-autopilot" class="cartoon-btn-green px-2 py-0.5 rounded-full text-xs">
-              🤖 Auto
-            </button>
-            <button onclick="toggleFrameMode()" id="btn-frame-mode" class="cartoon-box px-2 py-0.5 rounded-full text-xs font-black hidden sm:inline-block">
-              🖥️
-            </button>
-            <button onclick="toggleSound()" id="btn-sound" class="cartoon-box px-2 py-0.5 rounded-full text-xs font-black">
-              🔊
-            </button>
-          </div>
-        </div>
-
-        <!-- BARRA DE PROGRESO DE LAS 5 OLEADAS + INDICADOR DÍA/NOCHE (EXACTO A DUCK SURVIVAL) -->
-        <div class="cartoon-box rounded-2xl p-2 px-3 flex flex-col gap-1">
-          <div class="flex items-center justify-between text-xs font-black">
-            <div class="flex items-center gap-1.5">
-              <span id="day-night-pill" class="px-2 py-0.5 rounded-lg bg-amber-400 text-black border border-black font-black text-xs">
-                ☀️ DÍA 1 (CONSTRUIR)
-              </span>
-              <span id="wave-counter-txt" class="text-white text-outline">OLEADA 1 / 5</span>
-            </div>
-            <span id="zombies-left-txt" class="text-lime-300 text-outline">🧱 Valla: 100%</span>
-          </div>
-
-          <!-- Línea de progreso con los 5 nodos y calavera roja en la Oleada 5 -->
-          <div class="relative w-full h-4 flex items-center justify-between px-1 mt-0.5">
-            <div class="absolute left-2 right-2 h-2 bg-slate-950 rounded-full border border-black overflow-hidden">
-              <div id="wave-progress-line" class="h-full bg-gradient-to-r from-lime-400 to-amber-400 transition-all duration-300" style="width: 10%"></div>
-            </div>
-            <div id="node-w1" class="relative z-10 w-4 h-4 rounded-full bg-lime-400 border-2 border-black text-black font-black flex items-center justify-center text-xs">1</div>
-            <div id="node-w2" class="relative z-10 w-4 h-4 rounded-full bg-slate-700 border-2 border-black text-white font-black flex items-center justify-center text-xs">2</div>
-            <div id="node-w3" class="relative z-10 w-4 h-4 rounded-full bg-slate-700 border-2 border-black text-white font-black flex items-center justify-center text-xs">3</div>
-            <div id="node-w4" class="relative z-10 w-4 h-4 rounded-full bg-slate-700 border-2 border-black text-white font-black flex items-center justify-center text-xs">4</div>
-            <div id="node-w5" class="relative z-10 px-1.5 h-5 rounded-md bg-rose-600 border-2 border-black text-white font-black flex items-center justify-center text-xs shadow">💀JEFE</div>
-          </div>
-
-          <!-- Barra de XP Roguelite para sacar Cartas de Habilidad -->
-          <div class="w-full h-3.5 bg-slate-950 rounded-full border border-black overflow-hidden relative flex items-center px-2 mt-0.5">
-            <div id="xp-bar-fill" class="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-sky-400 to-indigo-500 transition-all duration-200" style="width: 20%"></div>
-            <span id="xp-lv-txt" class="relative z-10 text-xs font-black text-white text-outline">⚡ NV. HABILIDAD 1 (Recoge gemas azules)</span>
-          </div>
-        </div>
-
-        <!-- BARRA DE VIDA DEL JEFE ZOMBIE GIGANTE (OLEADA 5) -->
-        <div id="boss-bar-box" class="hidden cartoon-box bg-rose-950 border-rose-500 rounded-2xl p-2 flex-col gap-1">
-          <div class="flex justify-between text-xs font-black">
-            <span class="text-amber-300 text-outline">👹 JEFE ZOMBIE MUTANTE (OLEADA 5/5)</span>
-            <span id="boss-hp-bars" class="px-1.5 rounded bg-amber-400 text-black">x5</span>
-          </div>
-          <div class="w-full h-3 bg-black rounded-full border border-black overflow-hidden">
-            <div id="boss-hp-fill" class="h-full bg-gradient-to-r from-rose-500 to-amber-400" style="width: 100%"></div>
-          </div>
-        </div>
-      </header>
-
-      <!-- ====================================================
-           BOTÓN CENTRAL DE FASE DE DÍA ("🌙 ¡EMPEZAR NOCHE / OLEADA!")
-           ==================================================== -->
-      <div id="day-action-bar" class="relative z-20 mx-3 mt-1 flex items-center justify-between gap-2 cartoon-box rounded-2xl p-2 pointer-events-auto">
-        <div class="text-xs">
-          <span class="font-black text-amber-300 text-outline block">☀️ FASE DE DÍA: MEJORA TU BASE CON 💵</span>
-          <span class="text-slate-200 font-bold">Camina a los círculos del suelo o toca abajo para construir.</span>
-        </div>
-        <button onclick="startNightWave()" id="btn-start-night" class="cartoon-btn-yellow px-3.5 py-2 rounded-xl text-xs shrink-0">
-          🌙 OLEADA 1/5
-        </button>
+    <!-- JOYSTICK -->
+    <div id="joystick-zone">
+      <div id="joystick-base">
+        <div id="joystick-stick"></div>
       </div>
+    </div>
 
-      <!-- ====================================================
-           MODAL ROGUELITE DE 3 CARTAS (EXACTO A DUCK SURVIVAL)
-           ==================================================== -->
-      <div id="skill-draft-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 pointer-events-auto">
-        <div class="cartoon-box rounded-3xl max-w-sm w-full p-4 flex flex-col items-center gap-3">
-          <span class="px-3 py-1 rounded-full bg-amber-400 text-black font-black text-xs border-2 border-black">
-            ⚡ ¡SUBISTE DE NIVEL!
-          </span>
-          <h3 class="text-lg font-black text-white text-outline">Elige una Habilidad para tu Pato</h3>
-          <div id="skill-cards-container" class="grid grid-cols-3 gap-2 w-full"></div>
-        </div>
+    <!-- COMBAT ACTION BUTTONS (SSS PET SKILL + OVERDRIVE) -->
+    <div id="combat-action-btns">
+      <button class="ult-btn" onclick="triggerSSSPetUltimate()">
+        <span style="font-size:1.1rem">🐉</span>
+        <span>ULTI SSS</span>
+      </button>
+      <button class="ult-btn overdrive" onclick="activateOverdrive()">
+        <span style="font-size:1.1rem">⚡</span>
+        <span>HIPER</span>
+      </button>
+    </div>
+
+    <!-- DRAWER 1: ARMAS DE EVENTO (EVENT WEAPONS) -->
+    <div class="drawer-panel" id="panel-event-weapons">
+      <div class="drawer-header">
+        <span class="drawer-title">⚡ ARMAS DE EVENTO EXCLUSIVAS</span>
+        <button class="close-btn" onclick="switchTab('battle')">CERRAR ✕</button>
       </div>
+      <p style="font-size:0.74rem; color:#d8b4fe; margin-bottom:10px;">
+        Cada Arma de Evento cambia el modelo Pixel Art en las manos de tu héroe y transforma tus disparos en pantalla. Usa <b>🎟️ Fichas de Evento</b> para mejorarlas.
+      </p>
+      <div class="cards-grid" id="event-weapons-grid"></div>
+    </div>
 
-      <!-- ====================================================
-           ZONA INFERIOR DE CONTROLES EN BATALLA (6 PADS + JOYSTICK + 3 SKILLS)
-           ==================================================== -->
-      <div class="relative z-10 flex-1 pointer-events-none flex flex-col justify-end p-2">
-
-        <!-- ACCESO RÁPIDO A LOS 6 CÍRCULOS DE CONSTRUCCIÓN DE BASE -->
-        <div class="pointer-events-auto mb-1.5">
-          <div class="flex items-center justify-between mb-1 px-1">
-            <span class="text-xs font-black text-amber-300 text-outline">
-              🏗️ CÍRCULOS DE BASE (Párate encima en 3D o toca aquí)
-            </span>
-            <button onclick="skipToBossWave5()" class="text-xs font-black text-rose-400 text-outline hover:underline cursor-pointer">
-              💀 Ir a Oleada 5 (Jefe) →
-            </button>
-          </div>
-          <div id="quick-pads-grid" class="grid grid-cols-6 gap-1"></div>
-        </div>
-
-        <!-- JOYSTICK VIRTUAL + 3 BOTONES DE HABILIDAD ACTIVA -->
-        <div class="flex items-end justify-between px-1 pb-0.5">
-          <div id="joystick-zone" class="pointer-events-auto w-24 h-24 rounded-full bg-black/50 border-2 border-white/40 relative flex items-center justify-center touch-none shadow-xl">
-            <div id="joystick-knob" class="w-11 h-11 rounded-full cartoon-btn-yellow flex items-center justify-center text-base">
-              🦆
-            </div>
-          </div>
-
-          <div class="pointer-events-auto flex items-center gap-1.5">
-            <button onclick="triggerActiveSkill(0)" class="cartoon-btn-yellow w-16 h-16 rounded-2xl flex flex-col items-center justify-center">
-              <span class="text-lg">🐥</span>
-              <span class="text-xs font-black leading-none">Pollo Rayo</span>
-              <span id="cd-txt-0" class="text-xs font-bold text-rose-700 mt-0.5">LISTO</span>
-            </button>
-            <button onclick="triggerActiveSkill(1)" class="cartoon-btn-blue w-16 h-16 rounded-2xl flex flex-col items-center justify-center">
-              <span class="text-lg">☄️</span>
-              <span class="text-xs font-black leading-none">Meteoro</span>
-              <span id="cd-txt-1" class="text-xs font-bold text-amber-200 mt-0.5">LISTO</span>
-            </button>
-            <button onclick="triggerActiveSkill(2)" class="cartoon-btn-green w-16 h-16 rounded-2xl flex flex-col items-center justify-center">
-              <span class="text-lg">❄️</span>
-              <span class="text-xs font-black leading-none">Hielo+Muro</span>
-              <span id="cd-txt-2" class="text-xs font-bold text-white mt-0.5">LISTO</span>
-            </button>
-          </div>
-        </div>
-
+    <!-- DRAWER 2: MASCOTAS SSS (SSS PETS) -->
+    <div class="drawer-panel" id="panel-sss-pets">
+      <div class="drawer-header">
+        <span class="drawer-title">🐾 MASCOTAS RANGO SSS</span>
+        <button class="close-btn" onclick="switchTab('battle')">CERRAR ✕</button>
       </div>
+      <p style="font-size:0.74rem; color:#fbcfe8; margin-bottom:10px;">
+        Las Mascotas SSS orbitan a tu héroe en 3D Pixel Art, atacan automáticamente y desatan una habilidad definitiva devastadora.
+      </p>
+      <div class="cards-grid" id="sss-pets-grid"></div>
+    </div>
 
-      <!-- ====================================================
-           PANTALLAS COMPLETAS DE MENÚ DE DUCK SURVIVAL (EQUIPO, HÉROES, GACHA, TIENDA)
-           ==================================================== -->
-      <div id="menu-modal-sheet" class="drawer-sheet translate-y-full absolute inset-x-0 top-14 bottom-14 z-30 cartoon-box rounded-t-3xl p-3.5 flex flex-col gap-2.5 pointer-events-auto">
-        <div class="flex items-center justify-between border-b-2 border-black/40 pb-2">
-          <h2 id="menu-sheet-title" class="font-black text-base text-amber-300 text-outline">🎒 Equipamiento del Pato y Gemas</h2>
-          <button onclick="closeMenuTab()" class="cartoon-btn-yellow px-3 py-1 rounded-xl text-xs">
-            ✕ Volver al Juego
+    <!-- DRAWER 3: HÉROES PIXEL ADAPTABLES -->
+    <div class="drawer-panel" id="panel-heroes">
+      <div class="drawer-header">
+        <span class="drawer-title">🦆 HÉROES PIXEL ART ADAPTABLES</span>
+        <button class="close-btn" onclick="switchTab('battle')">CERRAR ✕</button>
+      </div>
+      <p style="font-size:0.74rem; color:#bae6fd; margin-bottom:10px;">
+        Cambia la clase Pixel Art de tu personaje principal. El rig Voxel/Sprite se adapta dinámicamente al arma y mascota que lleves.
+      </p>
+      <div class="cards-grid" id="heroes-grid"></div>
+    </div>
+
+    <!-- DRAWER 4: RULETA DE EVENTO & INCUBADORA SSS -->
+    <div class="drawer-panel" id="panel-gacha">
+      <div class="drawer-header">
+        <span class="drawer-title">🎰 CÁPSULA DE EVENTO & HUEVOS SSS</span>
+        <button class="close-btn" onclick="switchTab('battle')">CERRAR ✕</button>
+      </div>
+      <div class="pixel-box" style="padding:12px; text-align:center; margin-bottom:10px; background:linear-gradient(180deg,#3b0764,#1e1b4b);">
+        <div style="font-family:var(--pixel-font); font-size:0.62rem; color:#f472b6; margin-bottom:6px;">
+          🌈 BANNER LIMITADO: FESTIVAL CIBER-PIXEL
+        </div>
+        <p style="font-size:0.75rem; color:#e2e8f0; margin-bottom:10px;">
+          Garantiza Fragmentos de <b>Mascota SSS</b> o <b>Armas de Evento</b> en cada tirada x10.
+        </p>
+        <div style="display:flex; gap:8px; justify-content:center;">
+          <button class="card-btn" style="max-width:165px;" onclick="rollEventGacha(1)">
+            🎟️ TIRAR x1 (20 Fichas)
+          </button>
+          <button class="card-btn secondary" style="max-width:175px; margin-top:0;" onclick="rollEventGacha(10)">
+            💎 TIRAR x10 (300 Gemas)
           </button>
         </div>
-        <div id="menu-sheet-body" class="flex-1 overflow-y-auto pr-1 space-y-2.5 text-xs"></div>
       </div>
+      <div id="gacha-results-box" style="display:grid; grid-template-columns:repeat(5, 1fr); gap:6px;"></div>
+    </div>
 
-      <!-- ====================================================
-           BARRA INFERIOR DE 5 PESTAÑAS (RÉPLICA DE DUCK SURVIVAL)
-           ==================================================== -->
-      <nav class="relative z-40 bg-[#121a2a] border-t-4 border-[#090d16] grid grid-cols-5 py-1 px-1 pointer-events-auto">
-        <button onclick="openMenuTab('gear')" id="tab-gear" class="flex flex-col items-center justify-center py-1 rounded-xl text-slate-300 font-black text-xs cursor-pointer">
-          <span class="text-lg">🎒</span>
-          <span>Equipo</span>
-        </button>
-        <button onclick="openMenuTab('heroes')" id="tab-heroes" class="flex flex-col items-center justify-center py-1 rounded-xl text-slate-300 font-black text-xs cursor-pointer">
-          <span class="text-lg">🦆</span>
-          <span>Patos 2+2</span>
-        </button>
-        <button onclick="closeMenuTab()" id="tab-battle" class="cartoon-btn-yellow flex flex-col items-center justify-center py-1 rounded-xl text-xs">
-          <span class="text-lg">⚔️</span>
-          <span>Batalla</span>
-        </button>
-        <button onclick="openMenuTab('gacha')" id="tab-gacha" class="flex flex-col items-center justify-center py-1 rounded-xl text-slate-300 font-black text-xs cursor-pointer">
-          <span class="text-lg">🎲</span>
-          <span>Reclutar</span>
-        </button>
-        <button onclick="openMenuTab('shop')" id="tab-shop" class="flex flex-col items-center justify-center py-1 rounded-xl text-slate-300 font-black text-xs cursor-pointer">
-          <span class="text-lg">🛒</span>
-          <span>Tienda</span>
-        </button>
-      </nav>
+    <!-- ROGUELITE SKILL DRAFT MODAL -->
+    <div id="skill-modal">
+      <div class="skill-modal-title">¡SUBISTE DE NIVEL PIXEL!</div>
+      <p style="font-size:0.75rem; color:#cbd5e1; margin-bottom:12px;">Elige una mejora o mutación de arma:</p>
+      <div class="skill-cards-wrap" id="skill-choices-box"></div>
+    </div>
 
+    <!-- BOTTOM 5-TAB NAVIGATION -->
+    <div id="bottom-tabs">
+      <button class="nav-btn" id="tab-event-weapons" onclick="switchTab('event-weapons')">
+        <span class="nav-badge">EVENTO</span>
+        <span class="ico">🎸</span>
+        <span>ARMAS EV.</span>
+      </button>
+      <button class="nav-btn" id="tab-sss-pets" onclick="switchTab('sss-pets')">
+        <span class="nav-badge">SSS</span>
+        <span class="ico">🐉</span>
+        <span>MASCOTAS</span>
+      </button>
+      <button class="nav-btn active" id="tab-battle" onclick="switchTab('battle')">
+        <span class="ico">⚔️</span>
+        <span>BATALLA</span>
+      </button>
+      <button class="nav-btn" id="tab-heroes" onclick="switchTab('heroes')">
+        <span class="ico">👾</span>
+        <span>HÉROES</span>
+      </button>
+      <button class="nav-btn" id="tab-gacha" onclick="switchTab('gacha')">
+        <span class="nav-badge">777</span>
+        <span class="ico">🎰</span>
+        <span>RULETA</span>
+      </button>
     </div>
   </div>
-
-  <!-- TOAST CARTOON -->
-  <div id="toast-msg" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 cartoon-btn-yellow px-4 py-2 rounded-2xl text-xs hidden"></div>
 
   <script>
     // ============================================================================
-    // 1. ESTADO EXACTAMENTE CLONADO DE DUCK SURVIVAL
+    // 1. PROCEDURAL PIXEL-ART ENGINE (16x16 CRISP SPRITES + 3D VOXEL MATRICES)
     // ============================================================================
-    const STATE = {
-      cash: 350,        // Billetes verdes en la mochila del Pato
-      tickets: 30,      // Tickets Gacha / Planos
-      gems: 5400,       // Diamantes
-      soundOn: true,
-      autoPilot: true,
-      framedMode: true,
-      openTab: null,
-
-      stage: 1,
-      wave: 1,          // 1..5 (Oleada 5 = Jefe Zombie Gigante)
-      isNight: false,   // Empieza de Día para que veas cómo se construye con la mochila de billetes
-      zombiesToSpawn: 0,
-      spawnTimer: 0,
-
-      skillLv: 1,
-      skillXp: 0,
-      skillXpNext: 80,
-
-      fenceHp: 1600,
-      fenceMaxHp: 1600,
-      dualGunsActive: false,
-
-      // Los 6 Círculos de Construcción en el suelo del Campamento
-      pads: [
-        { id: 'turretL', name: 'Torreta Gattling Izq', short: 'Gattling I', icon: '🔫', level: 1, baseCost: 50, x: -5.2, z: 2.2, color: 0xfacc15 },
-        { id: 'fence',   name: 'Valla Eléctrica',      short: 'Valla',      icon: '🧱', level: 1, baseCost: 60, x:  0.0, z: 2.2, color: 0x38bdf8 },
-        { id: 'turretR', name: 'Torreta Gattling Der', short: 'Gattling D', icon: '🔫', level: 1, baseCost: 50, x:  5.2, z: 2.2, color: 0xfacc15 },
-        { id: 'mine',    name: 'Mina de Billetes',     short: 'Mina $',     icon: '💵', level: 1, baseCost: 45, x: -5.8, z: 7.5, color: 0x4ade80 },
-        { id: 'emp',     name: 'Torre Pulso EMP',      short: 'Torre EMP',  icon: '📡', level: 1, baseCost: 70, x:  0.0, z: 5.8, color: 0xa855f7 },
-        { id: 'chick',   name: 'Nido Pollos Soldado',  short: 'Pollos 3D',  icon: '🐥', level: 1, baseCost: 65, x:  5.8, z: 7.5, color: 0xf97316 }
-      ],
-
-      // Cartas Roguelite de Duck Survival
-      skills: {
-        angryChick: { name: '🐥 Pollo Furioso',      tier: 'S-Tier', lv: 1, icon: '🐥', desc: 'Invoca pollitos eléctricos que disparan rayos.' },
-        flame:      { name: '🔥 Impacto Ígneo',      tier: 'S-Tier', lv: 1, icon: '🔥', desc: 'Balas explosivas de fuego para limpiar hordas.' },
-        meteor:     { name: '☄️ Lluvia Meteoritos',  tier: 'S-Tier', lv: 1, icon: '☄️', desc: 'Caen meteoritos ardientes sobre los zombies.' },
-        icicles:    { name: '❄️ Estalactitas Hielo', tier: 'A-Tier', lv: 1, icon: '❄️', desc: 'Congela de azul y frena un 50% a los zombies.' },
-        dualGuns:   { name: '🔫 Armas Dobles',       tier: 'A-Tier', lv: 1, icon: '🔫', desc: 'Duplica las ráfagas del rifle de tu Pato.' },
-        laser:      { name: '⚡ Láser Concentrado',  tier: 'S-Tier', lv: 1, icon: '⚡', desc: 'Rayo continuo de plasma que perfora todo.' }
-      },
-
-      // Los 6 Slots de Equipamiento del Pato + Gemas Engarzadas
-      gear: [
-        { slot: 'Arma',     name: 'Gattling Pato Dorado', icon: '🔫', lv: 3, rarity: 'MÍTICO',     color: 'bg-rose-600',   gem: '🔴 Gema Fuego +35%' },
-        { slot: 'Casco',    name: 'Casco Militar Pato',   icon: '🪖', lv: 2, rarity: 'LEGENDARIO', color: 'bg-amber-500',  gem: '🟡 Gema Crítico +22%' },
-        { slot: 'Chaleco',  name: 'Chaleco Antibalas',    icon: '🦺', lv: 2, rarity: 'LEGENDARIO', color: 'bg-amber-500',  gem: '🟡 Gema Valla +25%' },
-        { slot: 'Guantes',  name: 'Alas Tácticas',        icon: '🧤', lv: 2, rarity: 'ÉPICO',      color: 'bg-purple-600', gem: '🟣 Gema Cadencia +15%' },
-        { slot: 'Botas',    name: 'Patas Turbo',          icon: '🥾', lv: 1, rarity: 'ÉPICO',      color: 'bg-purple-600', gem: '🟣 Gema Velocidad +15%' },
-        { slot: 'Cinturón', name: 'Mochila Munición',     icon: '🎒', lv: 2, rarity: 'LEGENDARIO', color: 'bg-amber-500',  gem: '🟡 Gema Billetes +30%' }
-      ],
-
-      // Roster de Héroes Patos (2 Activos en el Mapa + 2 de Soporte Elemental)
-      ducks: [
-        { id: 'D1', name: 'Duke (Pato Líder)',      rarity: 'MÍTICO',     element: '🔥 Fuego', role: 'ACTIVO EN MAPA #1', lv: 12, stars: 3, bodyCol: 0xfacc15, hatCol: 0x15803d },
-        { id: 'D2', name: 'Cole (Pato Cohete)',     rarity: 'MÍTICO',     element: '🔥 Fuego', role: 'ACTIVO EN MAPA #2', lv: 10, stars: 3, bodyCol: 0xfef08a, hatCol: 0xdc2626 },
-        { id: 'D3', name: 'Mir (Pato Glacial)',     rarity: 'LEGENDARIO', element: '❄️ Hielo', role: 'SOPORTE PASIVO #1', lv: 9,  stars: 2, bodyCol: 0xe0f2fe, hatCol: 0x0284c7 },
-        { id: 'D4', name: 'Émilie (Pata de Lava)',  rarity: 'LEGENDARIO', element: '🔥 Fuego', role: 'SOPORTE PASIVO #2', lv: 9,  stars: 2, bodyCol: 0xfde047, hatCol: 0xea580c }
-      ],
-
-      cooldowns: [0, 0, 0]
+    const PALETTE = {
+      '.': null,
+      'K': '#0f172a', // Black outline
+      'W': '#ffffff', // White
+      'Y': '#facc15', // Duck / Gold Yellow
+      'y': '#ca8a04', // Dark Yellow
+      'O': '#f97316', // Orange beak / fire
+      'G': '#22c55e', // Military / Emerald Green
+      'g': '#15803d', // Dark Green
+      'C': '#00f2fe', // Cyber Cyan
+      'B': '#3b82f6', // Blue
+      'P': '#d946ef', // Neon Purple / Event
+      'p': '#7e22ce', // Deep Purple
+      'R': '#ef4444', // Crimson Red / SSS
+      'M': '#ff2a85', // SSS Magenta
+      'S': '#94a3b8'  // Steel Gray
     };
 
-    // ============================================================================
-    // 2. AUDIO SINTETIZADO ESTILO ARCADE / DUCK SURVIVAL
-    // ============================================================================
-    let audioCtx = null;
-    function playTone(freq, type = 'sine', dur = 0.08, vol = 0.045) {
-      if (!STATE.soundOn) return;
-      try {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const o = audioCtx.createOscillator();
-        const g = audioCtx.createGain();
-        o.type = type;
-        o.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        g.gain.setValueAtTime(vol, audioCtx.currentTime);
-        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
-        o.connect(g); g.connect(audioCtx.destination);
-        o.start(); o.stop(audioCtx.currentTime + dur);
-      } catch (e) {}
+    // 12x12 Pixel Matrices (Super adaptable for 2D UI icons, 2.5D billboards, and 3D Voxel extrusions!)
+    const PIXEL_MATRICES = {
+      // HEROES
+      hero_duck: [
+        "...KKKKKK...",
+        "..KGGGGGGK..",
+        ".KGGCCCCGGK.",
+        ".KYYYYYYYYK.",
+        ".KYKWKKWKYK.",
+        ".KYYOOOOYYK.",
+        "..KYYYYYYK..",
+        ".KGGGGGGGGK.",
+        ".KGYYYYYYGK.",
+        "..KYYYYYYK..",
+        "..KOO..OOK..",
+        "..KKK..KKK.."
+      ],
+      hero_samurai: [
+        "..KKRRRRKK..",
+        ".KRRYYYYRRK.",
+        ".KKKKKKKKKK.",
+        ".KSSWWWWSSK.",
+        ".KSKWKKWKSK.",
+        "..KSSSSSSK..",
+        ".KRRRRRRRRK.",
+        ".KRKSSSSKRK.",
+        "..KRRRRRRK..",
+        "..KSS..SSK..",
+        "..KKK..KKK..",
+        "............"
+      ],
+      hero_cyber: [
+        "...KKKKKK...",
+        "..KPPPPPPK..",
+        ".KPCCCCCCPK.",
+        ".KPCCCCCCPK.",
+        "..KPPPPPPK..",
+        ".KCCCCCCCCK.",
+        ".KCPPPPPPCK.",
+        ".KCCCCCCCCK.",
+        "..KPPPPPPK..",
+        "..KCC..CCK..",
+        "..KKK..KKK..",
+        "............"
+      ],
+      hero_mage: [
+        "....KKKK....",
+        "...KPPPPK...",
+        "..KPPYYPPK..",
+        ".KPPPPPPPPK.",
+        "..KKKKKKKK..",
+        "..KPKYYKPK..",
+        "..KKKKKKKK..",
+        ".KPPPPPPPPK.",
+        ".KPPYYYYPPK.",
+        "..KPPPPPPK..",
+        "..KPP..PPK..",
+        "..KKK..KKK.."
+      ],
+
+      // SSS PETS
+      pet_dragon: [
+        ".KK......KK.",
+        "KYYK.KK.KYYK",
+        ".KRRRRRRRRK.",
+        ".KRCCCCCCRK.",
+        "KRRRRRRRRRRK",
+        "KRKYYYYYYKRK",
+        ".KRRRRRRRRK.",
+        "..KROOOORK..",
+        "...KRRRRK...",
+        "..KRK..KRK..",
+        "..KK....KK..",
+        "............"
+      ],
+      pet_kitsune: [
+        ".KK......KK.",
+        "KOOK....KOOK",
+        "KOOOKKKKOOOK",
+        ".KOOOOOOOOk.",
+        ".KOKWKKWKOK.",
+        "..KOWWWWOK..",
+        ".KOOOOOOOOk.",
+        "KOOYYYYYYOOK",
+        "KOO.KYYK.OOK",
+        ".KK..KK..KK.",
+        "............",
+        "............"
+      ],
+      pet_kraken: [
+        "...KKKKKK...",
+        "..KCCCCCCK..",
+        ".KCCPPPPCCK.",
+        ".KCCCCCCCCK.",
+        ".KCKMKKMKCK.",
+        "..KCCCCCCK..",
+        ".KCKCKCKCKCK",
+        "KCK.KCK.KCK.",
+        "KK..KK..KK..",
+        "............",
+        "............",
+        "............"
+      ],
+      pet_phoenix: [
+        "....KKKK....",
+        ".KK.KYYK.KK.",
+        "KYYKKOOKKYYK",
+        "KYYYOOOOYYYK",
+        ".KORRRRRROK.",
+        ".KOKWKKWKOK.",
+        "..KOOOOOOK..",
+        "...KYYYYK...",
+        "..KYK..KYK..",
+        "....K..K....",
+        "............",
+        "............"
+      ],
+
+      // EVENT WEAPONS
+      wpn_guitar: [
+        ".........KKK",
+        "........KCCK",
+        ".......KCCK.",
+        "......KSSK..",
+        "..KKKKSSK...",
+        ".KMMMMMMK...",
+        "KMMYYYYMMK..",
+        "KMMYKKYMMK..",
+        "KMMMMMMMMK..",
+        ".KMMMMMMK...",
+        "..KKKKKK....",
+        "............"
+      ],
+      wpn_blackhole: [
+        "...KKKKKK...",
+        "..KPPPPPPK..",
+        ".KPPCCCCPPK.",
+        "KPPCKKKKCPPK",
+        "KPPKMMMMKPPK",
+        "KPPKMMMMKPPK",
+        "KPPCKKKKCPPK",
+        ".KPPCCCCPPK.",
+        "..KPPPPPPK..",
+        "...KKKKKK...",
+        "............",
+        "............"
+      ],
+      wpn_katana: [
+        "..........KK",
+        ".........KCK",
+        "........KCCK",
+        ".......KCCK.",
+        "......KCCK..",
+        ".....KCCK...",
+        "...KKCCK....",
+        "..KYYYYK....",
+        "..KRRK......",
+        ".KRRK.......",
+        "KKKK........",
+        "............"
+      ],
+      wpn_cryo: [
+        "..KKKKKKKK..",
+        ".KCCCCCCCCK.",
+        "KCCWWWWWWCCK",
+        "KCCBBBBBBCCK",
+        ".KCCCCCCCCK.",
+        "..KSSSSSSK..",
+        "..KSS..SSK..",
+        "..KKK..KKK..",
+        "............",
+        "............",
+        "............",
+        "............"
+      ],
+
+      // ENEMIES & BOSS
+      enemy_zombie: [
+        "...KKKKKK...",
+        "..KOOOOOOK..",
+        ".KGGGGGGGGK.",
+        ".KGKRRRRKGK.",
+        ".KGGGGGGGGK.",
+        "..KGGGGGGK..",
+        ".KPPPPPPPPK.",
+        "KGGPPPPPPGGK",
+        "..KPPPPPPK..",
+        "..KGG..GGK..",
+        "..KKK..KKK..",
+        "............"
+      ],
+      boss_demon: [
+        ".KK.KKKK.KK.",
+        "KYYKRMMRKYYK",
+        "KRRRRRRRRRRK",
+        "KRKYYYYYYKRK",
+        "KRRRRRRRRRRK",
+        "KRRRRRRRRRRK",
+        ".KMMMMMMMMK.",
+        "KMMYYYYYYMMK",
+        "KMMMMMMMMMMK",
+        ".KRR....RRK.",
+        ".KKK....KKK.",
+        "............"
+      ]
+    };
+
+    function drawMatrixToCanvas(matrixKey, canvas, scale = 4) {
+      const mat = PIXEL_MATRICES[matrixKey] || PIXEL_MATRICES.hero_duck;
+      const rows = mat.length;
+      const cols = mat[0].length;
+      canvas.width = cols * scale;
+      canvas.height = rows * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const ch = mat[r][c];
+          const color = PALETTE[ch];
+          if (color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(c * scale, r * scale, scale, scale);
+          }
+        }
+      }
+      return canvas;
     }
-    function sfxQuackPop() { playTone(680 + Math.random() * 250, 'triangle', 0.06, 0.04); }
-    function sfxCashFeed() { playTone(950 + Math.random() * 300, 'sine', 0.06, 0.045); }
-    function sfxLevelUp() {
-      [523, 659, 783, 1046].forEach((f, i) => setTimeout(() => playTone(f, 'triangle', 0.13, 0.07), i * 60));
+
+    const textureCache = {};
+    function getPixelTexture(matrixKey) {
+      if (textureCache[matrixKey]) return textureCache[matrixKey];
+      const c = document.createElement('canvas');
+      drawMatrixToCanvas(matrixKey, c, 8);
+      const tex = new THREE.CanvasTexture(c);
+      tex.magFilter = THREE.NearestFilter;
+      tex.minFilter = THREE.NearestFilter;
+      tex.needsUpdate = true;
+      textureCache[matrixKey] = tex;
+      return tex;
     }
 
-    function toggleSound() {
-      STATE.soundOn = !STATE.soundOn;
-      document.getElementById('btn-sound').textContent = STATE.soundOn ? '🔊' : '🔇';
-    }
-
-    // ============================================================================
-    // 3. MOTOR 3D TOON CON CONTORNOS NEGROS (EXACTO AL RENDER DE DUCK SURVIVAL)
-    // ============================================================================
-    const hostEl = document.getElementById('canvas-3d-host');
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x38bdf8);
-
-    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 140);
-    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    hostEl.appendChild(renderer.domElement);
-
-    function resize3D() {
-      const w = hostEl.clientWidth || 430;
-      const h = hostEl.clientHeight || 800;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
-    }
-    window.addEventListener('resize', resize3D);
-
-    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x334155, 0.95);
-    scene.add(hemiLight);
-
-    const dirLight = new THREE.DirectionalLight(0xfffbeb, 1.3);
-    dirLight.position.set(15, 32, 18);
-    dirLight.castShadow = true;
-    dirLight.shadow.mapSize.width = 1024;
-    dirLight.shadow.mapSize.height = 1024;
-    const d = 22;
-    dirLight.shadow.camera.left = -d; dirLight.shadow.camera.right = d;
-    dirLight.shadow.camera.top = d;  dirLight.shadow.camera.bottom = -d;
-    scene.add(dirLight);
-
-    // Helper para agregar contorno negro Cartoon (Inverted Hull Outline) a cualquier malla 3D
-    const outlineMat = new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.BackSide });
-    function addToonMesh(geo, colorHex, outlineThickness = 1.07) {
+    // Build an adaptable 3D Voxel Mesh OR 2.5D Pixel Billboard from a Pixel Matrix!
+    function buildAdaptablePixelModel(matrixKey, voxelSize = 0.14, renderMode = 'voxel') {
       const group = new THREE.Group();
-      const mainMesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.4, metalness: 0.1 }));
-      mainMesh.castShadow = true;
-      mainMesh.receiveShadow = true;
-      const outMesh = new THREE.Mesh(geo, outlineMat);
-      outMesh.scale.set(outlineThickness, outlineThickness, outlineThickness);
-      group.add(mainMesh, outMesh);
-      group.userData.mainMesh = mainMesh;
+      const mat = PIXEL_MATRICES[matrixKey] || PIXEL_MATRICES.hero_duck;
+      const rows = mat.length;
+      const cols = mat[0].length;
+
+      if (renderMode === 'sprite') {
+        const tex = getPixelTexture(matrixKey);
+        const geo = new THREE.PlaneGeometry(cols * voxelSize * 1.15, rows * voxelSize * 1.15);
+        const m = new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide });
+        const plane = new THREE.Mesh(geo, m);
+        plane.position.y = (rows * voxelSize) * 0.55;
+        plane.rotation.x = -0.55; // Tilt towards isometric camera
+        group.add(plane);
+        return group;
+      }
+
+      // 3D VOXEL-PIXEL EXTRUSION (Crisp cubes per pixel!)
+      const boxGeo = new THREE.BoxGeometry(voxelSize, voxelSize, voxelSize * 2.2);
+      const matCache = {};
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const ch = mat[r][c];
+          const hex = PALETTE[ch];
+          if (!hex) continue;
+          if (!matCache[hex]) {
+            matCache[hex] = new THREE.MeshLambertMaterial({ color: hex });
+          }
+          const voxel = new THREE.Mesh(boxGeo, matCache[hex]);
+          voxel.position.set(
+            (c - cols / 2) * voxelSize,
+            (rows - r) * voxelSize,
+            0
+          );
+          group.add(voxel);
+        }
+      }
       return group;
     }
 
-    // Textura estilizada del Campamento (Pasto verde vibrante + camino de tierra central)
-    function createCampgroundTexture() {
+    // ============================================================================
+    // 2. DATA CATALOGS: SSS PETS, EVENT WEAPONS & PIXEL HEROES
+    // ============================================================================
+    const SSS_PETS = [
+      {
+        id: 'pet_dragon',
+        name: 'Ignis-Rex SSS',
+        icon: '🐉',
+        stars: 5,
+        level: 1,
+        color: 0xff2a85,
+        projColor: 0xff5500,
+        desc: 'Escupe plasma pixel cada 2.2s y otorga +35% Daño Crítico.',
+        ultName: 'LLUVIA DE METEOROS DRACO',
+        fireRate: 2.2,
+        dmgMult: 2.8
+      },
+      {
+        id: 'pet_kitsune',
+        name: 'Kitsune 9 Colas SSS',
+        icon: '🦊',
+        stars: 5,
+        level: 1,
+        color: 0xf97316,
+        projColor: 0x00f2fe,
+        desc: 'Dispara 3 orbes espirituales teledirigidos y +50% Billetes 💵.',
+        ultName: 'TORMENTA ZORRO ASTRAL',
+        fireRate: 1.8,
+        dmgMult: 2.1
+      },
+      {
+        id: 'pet_kraken',
+        name: 'Mecha-Kraken SSS',
+        icon: '👾',
+        stars: 5,
+        level: 1,
+        color: 0x00f2fe,
+        projColor: 0xa855f7,
+        desc: 'Electrocuta en cadena a los zombies cercanos y cura +5% HP/s.',
+        ultName: 'PULSO ABISAL CIBER',
+        fireRate: 2.0,
+        dmgMult: 2.5
+      },
+      {
+        id: 'pet_phoenix',
+        name: 'Fénix Solar SSS',
+        icon: '🐦‍🔥',
+        stars: 5,
+        level: 1,
+        color: 0xfacc15,
+        projColor: 0xfde047,
+        desc: 'Crea un anillo de fuego pixel alrededor del héroe y revive 1 vez.',
+        ultName: 'SUPERNOVA DE RENACIMIENTO',
+        fireRate: 1.6,
+        dmgMult: 2.4
+      }
+    ];
+
+    const EVENT_WEAPONS = [
+      {
+        id: 'wpn_guitar',
+        name: 'Riff Apocalíptico',
+        eventTag: 'EVENTO NEÓN',
+        icon: '🎸',
+        level: 1,
+        color: 0xff2a85,
+        desc: 'Guitarra eléctrica Pixel: lanza ondas sónicas perforantes y rayos en cadena.',
+        pattern: 'sonic_chord',
+        fireInterval: 0.24,
+        dmgBonus: 1.4
+      },
+      {
+        id: 'wpn_blackhole',
+        name: 'Cañón Agujero Negro',
+        eventTag: 'EVENTO CÓSMICO',
+        icon: '🌌',
+        level: 1,
+        color: 0xa855f7,
+        desc: 'Dispara vórtices gravitacionales que succionan zombies antes de explotar.',
+        pattern: 'black_hole',
+        fireInterval: 0.42,
+        dmgBonus: 2.2
+      },
+      {
+        id: 'wpn_katana',
+        name: 'Katana Ciber-Dragón',
+        eventTag: 'EVENTO LUNAR',
+        icon: '🗡️',
+        level: 1,
+        color: 0x00f2fe,
+        desc: 'Desata cortes de media luna 360° que atraviesan toda la oleada.',
+        pattern: 'katana_slash',
+        fireInterval: 0.28,
+        dmgBonus: 1.75
+      },
+      {
+        id: 'wpn_cryo',
+        name: 'Lanzacohetes Crio-Mecha',
+        eventTag: 'EVENTO INVIERNO',
+        icon: '❄️',
+        level: 1,
+        color: 0x38bdf8,
+        desc: 'Lanza misiles pixel racimo que congelan y fragmentan a los enemigos.',
+        pattern: 'cryo_cluster',
+        fireInterval: 0.34,
+        dmgBonus: 1.9
+      }
+    ];
+
+    const PIXEL_HEROES = [
+      {
+        id: 'hero_duck',
+        name: 'Duke Pixel-Pato',
+        role: 'Comandante Táctico',
+        desc: '+25% Capacidad de Billetes en Mochila y +15% Cadencia.',
+        hpBonus: 1.0,
+        spdBonus: 1.0
+      },
+      {
+        id: 'hero_samurai',
+        name: 'Ronin 16-Bit',
+        role: 'Espadachín Crítico',
+        desc: '+40% Daño Crítico con Armas de Evento y +15% Velocidad.',
+        hpBonus: 0.95,
+        spdBonus: 1.15
+      },
+      {
+        id: 'hero_cyber',
+        name: 'Nexo Voxel-Bot',
+        role: 'Artillero Pesado',
+        desc: 'Las Torretas de la Base disparan un +35% más rápido.',
+        hpBonus: 1.25,
+        spdBonus: 0.95
+      },
+      {
+        id: 'hero_mage',
+        name: 'Archimago Glitch',
+        role: 'Invocador SSS',
+        desc: 'Las Mascotas SSS atacan un +40% más rápido y recargan Fiebre.',
+        hpBonus: 1.0,
+        spdBonus: 1.08
+      }
+    ];
+
+    const ROGUELITE_SKILLS = [
+      { id: 'sk_chicken', name: 'Pollo Furioso Pixel', icon: '🐔', desc: 'Lanza pollos explosivos de 16-bits cada 2.5s.' },
+      { id: 'sk_meteor', name: 'Meteorito Voxel', icon: '☄️', desc: 'Cae un bloque gigante de magma pixel sobre la horda.' },
+      { id: 'sk_laser', name: 'Dron Orbital Láser', icon: '🛸', desc: 'Un satélite pixel gira alrededor tuyo cortando zombies.' },
+      { id: 'sk_double', name: 'Multidisparo Evento +1', icon: '🔥', desc: 'Tu Arma de Evento dispara +1 proyectil adicional.' },
+      { id: 'sk_magnet', name: 'Súper Imán de Billetes', icon: '🧲', desc: 'Aumenta +60% el radio de absorción de billetes y XP.' }
+    ];
+
+    // ============================================================================
+    // 3. GAME STATE
+    // ============================================================================
+    const state = {
+      renderMode: 'voxel', // 'voxel' (3D Voxel-Pixel) or 'sprite' (2.5D HD-Pixel)
+      cash: 60,
+      tickets: 120,
+      gems: 3500,
+      wave: 1,
+      maxWaves: 5,
+      phase: 'NIGHT', // 'NIGHT' or 'DAY'
+      level: 1,
+      xp: 0,
+      xpNext: 100,
+      fever: 35,
+      overdriveTimer: 0,
+      equippedHero: PIXEL_HEROES[0],
+      equippedWeapon: EVENT_WEAPONS[0],
+      equippedPet: SSS_PETS[0],
+      extraProjectiles: 0,
+      magnetRadius: 4.5,
+      skills: { sk_chicken: 1, sk_meteor: 0, sk_laser: 1 },
+      hero: {
+        x: 0, z: 0,
+        hp: 500, maxHp: 500,
+        speed: 7.4,
+        baseDmg: 42,
+        fireCooldown: 0,
+        petCooldown: 0
+      }
+    };
+
+    // ============================================================================
+    // 4. THREE.JS 3D PIXEL-VOXEL WORLD SETUP
+    // ============================================================================
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x131124);
+    scene.fog = new THREE.FogExp2(0x131124, 0.016);
+
+    const camera = new THREE.PerspectiveCamera(44, container.clientWidth / container.clientHeight, 0.1, 120);
+    camera.position.set(0, 21.5, 16.5);
+    camera.lookAt(0, 0, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.78);
+    scene.add(ambientLight);
+    const dirLight = new THREE.DirectionalLight(0xfef08a, 0.75);
+    dirLight.position.set(12, 26, 14);
+    scene.add(dirLight);
+
+    // Checkerboard Pixel-Art Grass Ground
+    function createPixelGround() {
       const c = document.createElement('canvas');
-      c.width = 512; c.height = 512;
+      c.width = 64; c.height = 64;
       const ctx = c.getContext('2d');
-      // Pasto verde vivo estilo Duck Survival
-      ctx.fillStyle = '#4d8c3a';
-      ctx.fillRect(0, 0, 512, 512);
-      // Manchas de pasto claro
-      ctx.fillStyle = '#5da146';
-      for (let i = 0; i < 60; i++) {
-        ctx.beginPath();
-        ctx.arc(Math.random() * 512, Math.random() * 512, 12 + Math.random() * 20, 0, Math.PI * 2);
-        ctx.fill();
+      for (let y = 0; y < 16; y++) {
+        for (let x = 0; x < 16; x++) {
+          ctx.fillStyle = (x + y) % 2 === 0 ? '#1e3a2f' : '#183026';
+          ctx.fillRect(x * 4, y * 4, 4, 4);
+          if ((x * 7 + y * 13) % 11 === 0) {
+            ctx.fillStyle = '#2dd4bf';
+            ctx.fillRect(x * 4 + 1, y * 4 + 1, 2, 2);
+          }
+        }
       }
-      // Camino central de tierra cálida para las hordas y la base
-      ctx.fillStyle = '#c29b61';
-      ctx.fillRect(96, 0, 320, 512);
-      ctx.strokeStyle = '#a37e49';
-      ctx.lineWidth = 8;
-      ctx.strokeRect(96, 0, 320, 512);
-      return new THREE.CanvasTexture(c);
-    }
+      const tex = new THREE.CanvasTexture(c);
+      tex.magFilter = THREE.NearestFilter;
+      tex.minFilter = THREE.NearestFilter;
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(10, 10);
 
-    const ARENA_BOUNDS = { minX: -10.8, maxX: 10.8, minZ: -13.5, maxZ: 10.5 };
-
-    const groundMesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(34, 38),
-      new THREE.MeshStandardMaterial({ map: createCampgroundTexture(), roughness: 0.85 })
-    );
-    groundMesh.rotation.x = -Math.PI / 2;
-    groundMesh.receiveShadow = true;
-    scene.add(groundMesh);
-
-    // Muros de Troncos de Madera y Sacos de Arena del Campamento Cerrado
-    for (let z = -14; z <= 11; z += 2.2) {
-      const logL = addToonMesh(new THREE.CylinderGeometry(0.45, 0.5, 2.8, 8), 0x78350f);
-      logL.position.set(-12.0, 1.4, z);
-      scene.add(logL);
-      const logR = addToonMesh(new THREE.CylinderGeometry(0.45, 0.5, 2.8, 8), 0x78350f);
-      logR.position.set(12.0, 1.4, z);
-      scene.add(logR);
-    }
-
-    // Pinos Cartoon 3D decorativos en los bordes
-    [
-      { x: -10.2, z: 9.5 }, { x: 10.2, z: 9.5 },
-      { x: -10.2, z: -9.5 }, { x: 10.2, z: -9.5 }
-    ].forEach(p => {
-      const trunk = addToonMesh(new THREE.CylinderGeometry(0.35, 0.45, 1.4, 8), 0x78350f);
-      trunk.position.set(p.x, 0.7, p.z);
-      const leaves1 = addToonMesh(new THREE.ConeGeometry(1.6, 2.4, 8), 0x15803d);
-      leaves1.position.set(p.x, 2.2, p.z);
-      const leaves2 = addToonMesh(new THREE.ConeGeometry(1.2, 2.0, 8), 0x22c55e);
-      leaves2.position.set(p.x, 3.3, p.z);
-      scene.add(trunk, leaves1, leaves2);
-    });
-
-    // Valla Eléctrica y Barricada Frontal (en Z = 1.6)
-    const fenceGroup = new THREE.Group();
-    fenceGroup.position.set(0, 0, 1.6);
-    scene.add(fenceGroup);
-
-    for (let x = -9.5; x <= 9.5; x += 3.2) {
-      const bag = addToonMesh(new THREE.BoxGeometry(2.6, 1.1, 0.9), 0xd97706);
-      bag.position.set(x, 0.55, 0);
-      fenceGroup.add(bag);
-    }
-    const electricWire = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.12, 0.12, 22, 8),
-      new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
-    );
-    electricWire.rotation.z = Math.PI / 2;
-    electricWire.position.set(0, 1.25, 0);
-    fenceGroup.add(electricWire);
-
-    // ============================================================================
-    // 4. MODELO 3D DEL PATO SOLDADO ("DUKE") CON MOCHILA DE BILLETES 3D EN LA ESPALDA
-    // ============================================================================
-    function create3DDuckHero(bodyColor = 0xfacc15, helmetColor = 0x15803d, scale = 1.0) {
-      const duck = new THREE.Group();
-      duck.scale.set(scale, scale, scale);
-
-      // Patitas naranjas
-      const lFoot = addToonMesh(new THREE.BoxGeometry(0.38, 0.25, 0.55), 0xf97316);
-      lFoot.position.set(-0.28, 0.15, 0.08);
-      const rFoot = addToonMesh(new THREE.BoxGeometry(0.38, 0.25, 0.55), 0xf97316);
-      rFoot.position.set(0.28, 0.15, 0.08);
-
-      // Cuerpo gordito amarillo de Pato + Chaleco táctico
-      const body = addToonMesh(new THREE.SphereGeometry(0.68, 14, 14), bodyColor);
-      body.scale.set(1, 1.05, 1.15);
-      body.position.set(0, 0.82, 0);
-
-      const vest = addToonMesh(new THREE.CylinderGeometry(0.66, 0.68, 0.65, 12), 0x3f6212);
-      vest.position.set(0, 0.82, 0);
-
-      // Cabeza redonda de Pato + Pico Naranja + Ojos expresivos + Casco Militar
-      const head = addToonMesh(new THREE.SphereGeometry(0.58, 14, 14), bodyColor);
-      head.position.set(0, 1.72, 0.08);
-
-      // Pico de Pato Naranja (Duck Bill)
-      const bill = addToonMesh(new THREE.BoxGeometry(0.56, 0.24, 0.55), 0xf97316);
-      bill.position.set(0, 1.62, 0.62);
-
-      // Ojos negros con brillo blanco
-      const eyeMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
-      const lEye = new THREE.Mesh(new THREE.SphereGeometry(0.11, 8, 8), eyeMat);
-      lEye.position.set(-0.24, 1.82, 0.52);
-      const rEye = new THREE.Mesh(new THREE.SphereGeometry(0.11, 8, 8), eyeMat);
-      rEye.position.set(0.24, 1.82, 0.52);
-
-      // Casco Militar Táctico
-      const helmet = addToonMesh(new THREE.SphereGeometry(0.62, 14, 12, 0, Math.PI * 2, 0, Math.PI * 0.55), helmetColor);
-      helmet.position.set(0, 1.78, 0.06);
-
-      // Arma Metralleta Gattling en el ala derecha
-      const gunGroup = new THREE.Group();
-      const gunBody = addToonMesh(new THREE.BoxGeometry(0.28, 0.32, 1.25), 0x334155);
-      const gunTip = addToonMesh(new THREE.CylinderGeometry(0.16, 0.16, 0.4, 8), 0xfacc15);
-      gunTip.rotation.x = Math.PI / 2;
-      gunTip.position.set(0, 0, 0.7);
-      gunGroup.add(gunBody, gunTip);
-      gunGroup.position.set(0.65, 1.0, 0.45);
-
-      // MOCHILA 3D EN LA ESPALDA DONDE SE APILAN LOS BILLETES VERDES (💵)
-      const backpackGroup = new THREE.Group();
-      backpackGroup.position.set(0, 0.9, -0.68);
-      const packBag = addToonMesh(new THREE.BoxGeometry(0.65, 0.7, 0.38), 0x78350f);
-      backpackGroup.add(packBag);
-
-      // Pila de hasta 12 fajos de billetes verdes 3D sobre la mochila
-      const cashStackMeshes = [];
-      for (let i = 0; i < 12; i++) {
-        const billMesh = addToonMesh(new THREE.BoxGeometry(0.55, 0.14, 0.34), 0x22c55e, 1.05);
-        billMesh.position.set(0, 0.45 + i * 0.15, 0);
-        backpackGroup.add(billMesh);
-        cashStackMeshes.push(billMesh);
-      }
-
-      duck.add(lFoot, rFoot, body, vest, head, bill, lEye, rEye, helmet, gunGroup, backpackGroup);
-      duck.userData = { lFoot, rFoot, cashStackMeshes };
-      return duck;
-    }
-
-    // Pato Principal ("Duke") y 2.º Pato Activo ("Cole") + Pollitos Soldados
-    const mainDuckMesh = create3DDuckHero(0xfacc15, 0x15803d, 1.15);
-    scene.add(mainDuckMesh);
-
-    const secondDuckMesh = create3DDuckHero(0xfef08a, 0xdc2626, 0.95);
-    scene.add(secondDuckMesh);
-
-    const chickSoldiers3D = [];
-    function syncChickSoldiers3D() {
-      const lv = STATE.pads.find(p => p.id === 'chick').level;
-      while (chickSoldiers3D.length < Math.min(4, lv)) {
-        const cMesh = create3DDuckHero(0xfde047, 0x0284c7, 0.62);
-        scene.add(cMesh);
-        chickSoldiers3D.push({ mesh: cMesh, timer: chickSoldiers3D.length * 0.25, angle: chickSoldiers3D.length * 1.57 });
-      }
-    }
-
-    // Círculos Blancos/Verdes de Construcción en el Suelo + Modelos de Estructuras
-    const padMeshes3D = {};
-    const turretMeshes3D = {};
-
-    STATE.pads.forEach(p => {
-      const group = new THREE.Group();
-      group.position.set(p.x, 0.04, p.z);
-
-      // Borde blanco estilo Duck Survival
-      const whiteRing = new THREE.Mesh(
-        new THREE.RingGeometry(1.45, 1.75, 32),
-        new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
+      const ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(48, 48),
+        new THREE.MeshLambertMaterial({ map: tex })
       );
-      whiteRing.rotation.x = -Math.PI / 2;
+      ground.rotation.x = -Math.PI / 2;
+      scene.add(ground);
 
-      const innerFill = new THREE.Mesh(
-        new THREE.CircleGeometry(1.45, 32),
-        new THREE.MeshBasicMaterial({ color: p.color, transparent: true, opacity: 0.35 })
-      );
-      innerFill.rotation.x = -Math.PI / 2;
-
-      group.add(whiteRing, innerFill);
-      scene.add(group);
-      padMeshes3D[p.id] = group;
-
-      // Modelo 3D sobre cada Pad
-      if (p.id === 'turretL' || p.id === 'turretR') {
-        const tGroup = new THREE.Group();
-        tGroup.position.set(p.x, 0.9, p.z - 0.6);
-        const base = addToonMesh(new THREE.CylinderGeometry(0.55, 0.7, 0.8, 10), 0x475569);
-        const head = addToonMesh(new THREE.BoxGeometry(0.95, 0.65, 1.0), 0xfacc15);
-        head.position.y = 0.55;
-        const barrel = addToonMesh(new THREE.CylinderGeometry(0.16, 0.16, 1.3, 8), 0x1e293b);
-        barrel.rotation.x = Math.PI / 2;
-        barrel.position.set(0, 0.55, -0.75);
-        tGroup.add(base, head, barrel);
-        scene.add(tGroup);
-        turretMeshes3D[p.id] = { group: tGroup, timer: 0 };
-      } else if (p.id === 'mine') {
-        const mineModel = addToonMesh(new THREE.BoxGeometry(1.8, 1.4, 1.6), 0x16a34a);
-        mineModel.position.set(p.x, 0.7, p.z - 1.2);
-        scene.add(mineModel);
-      } else if (p.id === 'emp') {
-        const empModel = addToonMesh(new THREE.ConeGeometry(0.9, 2.3, 8), 0x9333ea);
-        empModel.position.set(p.x, 1.15, p.z - 1.0);
-        scene.add(empModel);
+      // Semi-closed Voxel Perimeter Walls & Pixel Trees
+      const wallGeo = new THREE.BoxGeometry(1.4, 2.2, 1.4);
+      const wallMat = new THREE.MeshLambertMaterial({ color: 0x4c1d95 });
+      const topMat = new THREE.MeshLambertMaterial({ color: 0x00f2fe });
+      for (let i = -15; i <= 15; i += 2.5) {
+        [-15, 15].forEach(zPos => {
+          if (Math.abs(i) < 4 && zPos === 15) return; // Gate opening
+          const post = new THREE.Mesh(wallGeo, wallMat);
+          post.position.set(i, 1.1, zPos);
+          scene.add(post);
+          const cap = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.3, 1.5), topMat);
+          cap.position.set(i, 2.3, zPos);
+          scene.add(cap);
+        });
       }
-    });
-
-    // ============================================================================
-    // 5. ZOMBIES CARTOON 3D (PIEL VERDE, CAMISA MORADA, CASCO CONO / JEFE GIGANTE)
-    // ============================================================================
-    const zombies3D = [];
-    const groundBanknotes3D = [];
-    const flyingBanknotes3D = [];
-    const bullets3D = [];
-    const meteors3D = [];
-
-    function createZombieMesh3D(isBoss = false) {
-      const zGroup = new THREE.Group();
-      const s = isBoss ? 2.35 : (0.95 + Math.random() * 0.2);
-      zGroup.scale.set(s, s, s);
-
-      // Cuerpo con camisa rota morada/azul y cabeza verde zombie
-      const body = addToonMesh(new THREE.BoxGeometry(0.78, 0.95, 0.48), isBoss ? 0x991b1b : 0x6b21a8);
-      body.position.y = 0.85;
-
-      const head = addToonMesh(new THREE.BoxGeometry(0.68, 0.68, 0.68), 0x65a30d);
-      head.position.y = 1.68;
-
-      // Brazos extendidos de Zombie hacia adelante
-      const lArm = addToonMesh(new THREE.BoxGeometry(0.25, 0.25, 0.75), 0x65a30d);
-      lArm.position.set(-0.52, 1.15, 0.35);
-      const rArm = addToonMesh(new THREE.BoxGeometry(0.25, 0.25, 0.75), 0x65a30d);
-      rArm.position.set(0.52, 1.15, 0.35);
-
-      // Ojos rojos/amarillos saltones
-      const eyeMat = new THREE.MeshBasicMaterial({ color: isBoss ? 0xfacc15 : 0xef4444 });
-      const lEye = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 8), eyeMat);
-      lEye.position.set(-0.18, 1.72, 0.36);
-      const rEye = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 8), eyeMat);
-      rEye.position.set(0.18, 1.72, 0.36);
-
-      zGroup.add(body, head, lArm, rArm, lEye, rEye);
-
-      // Cono naranja en la cabeza o Casco de Jefe
-      if (isBoss || Math.random() < 0.4) {
-        const cone = addToonMesh(new THREE.ConeGeometry(0.38, 0.75, 8), isBoss ? 0xfacc15 : 0xf97316);
-        cone.position.set(0, 2.35, 0);
-        zGroup.add(cone);
-      }
-
-      zGroup.userData = { head, body };
-      return zGroup;
     }
+    createPixelGround();
 
-    const duckPos = { x: 0, z: 4.5, speed: 9.2, shootTimer: 0, padTimer: 0, mineTimer: 0 };
+    // ============================================================================
+    // 5. PLAYER RIG (ADAPTABLE PIXEL HERO + BACKPACK CASH + EVENT WEAPON + SSS PET)
+    // ============================================================================
+    const playerRoot = new THREE.Group();
+    scene.add(playerRoot);
+
+    let heroVisualMesh = null;
+    let weaponVisualMesh = null;
+    let petVisualMesh = null;
+    const backpackBillsGroup = new THREE.Group();
+    backpackBillsGroup.position.set(0, 0.9, -0.55);
+    playerRoot.add(backpackBillsGroup);
+
+    // Orbital Laser Drone (Skill)
+    const orbitalDrone = new THREE.Mesh(
+      new THREE.BoxGeometry(0.45, 0.45, 0.45),
+      new THREE.MeshBasicMaterial({ color: 0x00f2fe })
+    );
+    scene.add(orbitalDrone);
+
+    function rebuildPlayerAndPetModels() {
+      if (heroVisualMesh) playerRoot.remove(heroVisualMesh);
+      if (weaponVisualMesh) playerRoot.remove(weaponVisualMesh);
+      if (petVisualMesh) scene.remove(petVisualMesh);
+
+      heroVisualMesh = buildAdaptablePixelModel(state.equippedHero.id, 0.15, state.renderMode);
+      playerRoot.add(heroVisualMesh);
+
+      weaponVisualMesh = buildAdaptablePixelModel(state.equippedWeapon.id, 0.11, state.renderMode);
+      weaponVisualMesh.position.set(0.95, 0.85, 0.35);
+      playerRoot.add(weaponVisualMesh);
+
+      petVisualMesh = buildAdaptablePixelModel(state.equippedPet.id, 0.13, state.renderMode);
+      scene.add(petVisualMesh);
+
+      // Update Top HUD pixel canvases
+      drawMatrixToCanvas(state.equippedWeapon.id, document.getElementById('hud-weapon-icon'), 2);
+      drawMatrixToCanvas(state.equippedPet.id, document.getElementById('hud-pet-icon'), 2);
+      document.getElementById('hud-weapon-name').textContent = `${state.equippedWeapon.icon} ${state.equippedWeapon.name}`;
+      document.getElementById('hud-pet-name').textContent = `${state.equippedPet.icon} ${state.equippedPet.name}`;
+      document.getElementById('world-pet-txt').textContent = `${state.equippedPet.icon} SSS`;
+    }
 
     function updateBackpackStackVisual() {
-      const stack = mainDuckMesh.userData.cashStackMeshes;
-      const visibleCount = Math.min(12, Math.floor(STATE.cash / 35));
-      stack.forEach((m, i) => { m.visible = (i < visibleCount); });
-      document.getElementById('duck-backpack-tag').textContent = `💵 $${Math.floor(STATE.cash)}`;
-    }
-
-    // ============================================================================
-    // 6. CICLO DÍA ☀️ (CONSTRUCCIÓN) Y NOCHE 🌙 (5 OLEADAS + JEFE FINAL)
-    // ============================================================================
-    function setDayNightVisuals(isNight, isBossWave = false) {
-      STATE.isNight = isNight;
-      const pill = document.getElementById('day-night-pill');
-      const dayBar = document.getElementById('day-action-bar');
-
-      if (!isNight) {
-        scene.background.setHex(0x38bdf8);
-        dirLight.color.setHex(0xfffbeb);
-        dirLight.intensity = 1.35;
-        hemiLight.intensity = 0.95;
-        pill.className = 'px-2 py-0.5 rounded-lg bg-amber-400 text-black border border-black font-black text-xs';
-        pill.textContent = `☀️ DÍA ${STATE.stage} (CONSTRUIR)`;
-        dayBar.classList.remove('hidden');
-        dayBar.classList.add('flex');
-        document.getElementById('btn-start-night').textContent =
-          STATE.wave === 5 ? '💀 NOCHE 5/5 (JEFE)' : `🌙 OLEADA ${STATE.wave}/5`;
-      } else {
-        scene.background.setHex(isBossWave ? 0x2a0812 : 0x0b132b);
-        dirLight.color.setHex(isBossWave ? 0xfda4af : 0x93c5fd);
-        dirLight.intensity = 1.05;
-        hemiLight.intensity = 0.65;
-        pill.className = 'px-2 py-0.5 rounded-lg bg-indigo-600 text-white border border-black font-black text-xs';
-        pill.textContent = isBossWave ? '💀 NOCHE 5 (JEFE)' : `🌙 NOCHE (OLEADA ${STATE.wave}/5)`;
-        dayBar.classList.add('hidden');
-        dayBar.classList.remove('flex');
+      while (backpackBillsGroup.children.length > 0) {
+        backpackBillsGroup.remove(backpackBillsGroup.children[0]);
       }
-      updateHUD();
+      const billCount = Math.min(18, Math.floor(state.cash / 15));
+      const billGeo = new THREE.BoxGeometry(0.55, 0.1, 0.32);
+      const billMat = new THREE.MeshLambertMaterial({ color: 0x22c55e });
+      for (let i = 0; i < billCount; i++) {
+        const b = new THREE.Mesh(billGeo, billMat);
+        b.position.set(0, i * 0.12, 0);
+        backpackBillsGroup.add(b);
+      }
     }
 
-    function startNightWave() {
-      const isBoss = (STATE.wave === 5);
-      setDayNightVisuals(true, isBoss);
+    // ============================================================================
+    // 6. GROUND BUILD PADS + EVENT RIFT PORTAL IN ARENA
+    // ============================================================================
+    const buildPads = [
+      { id: 'pad_west', name: 'Torreta Tesla Pixel', x: -5.2, z: -1.5, level: 0, cost: 30, paid: 0, color: 0xfbbf24, turretMesh: null, cooldown: 0 },
+      { id: 'pad_east', name: 'Cañón Crio-Voxel', x: 5.2, z: -1.5, level: 0, cost: 30, paid: 0, color: 0x38bdf8, turretMesh: null, cooldown: 0 },
+      { id: 'pad_north', name: 'Valla Láser Neón', x: 0, z: -6.2, level: 0, cost: 40, paid: 0, color: 0x22c55e, turretMesh: null, cooldown: 0 },
+      { id: 'pad_south', name: 'Altar Dron Pollitos', x: -4.2, z: 4.0, level: 0, cost: 45, paid: 0, color: 0xa855f7, turretMesh: null, cooldown: 0 },
+      { id: 'pad_portal', name: '🌀 PORTAL EVENTO', x: 4.5, z: 4.0, level: 1, cost: 25, paid: 0, color: 0xff2a85, isPortal: true, turretMesh: null, cooldown: 0 }
+    ];
 
-      const scale = Math.pow(1.3, STATE.stage - 1);
+    const padLabelsContainer = document.getElementById('pad-labels-container');
+    buildPads.forEach(pad => {
+      // Crisp Voxel Square Pad on Ground
+      const frame = new THREE.Mesh(
+        new THREE.BoxGeometry(2.6, 0.12, 2.6),
+        new THREE.MeshBasicMaterial({ color: pad.color, wireframe: false, transparent: true, opacity: 0.45 })
+      );
+      frame.position.set(pad.x, 0.06, pad.z);
+      scene.add(frame);
+      pad.frameMesh = frame;
+
+      if (pad.isPortal) {
+        const portalRing = new THREE.Mesh(
+          new THREE.TorusGeometry(1.05, 0.14, 6, 12),
+          new THREE.MeshBasicMaterial({ color: 0xff2a85 })
+        );
+        portalRing.rotation.x = Math.PI / 2;
+        portalRing.position.set(pad.x, 0.4, pad.z);
+        scene.add(portalRing);
+        pad.portalRing = portalRing;
+      }
+
+      const lbl = document.createElement('div');
+      lbl.className = 'pad-world-label' + (pad.isPortal ? ' portal-label' : '');
+      lbl.innerHTML = `<span class="pw-name">${pad.name}</span><span class="pw-cost" id="cost-${pad.id}">💵 $${pad.cost}</span>`;
+      padLabelsContainer.appendChild(lbl);
+      pad.domEl = lbl;
+    });
+
+    function buildOrUpgradeTurretMesh(pad) {
+      if (pad.turretMesh) scene.remove(pad.turretMesh);
+      const g = new THREE.Group();
+      const base = new THREE.Mesh(
+        new THREE.BoxGeometry(1.3, 0.6 + pad.level * 0.25, 1.3),
+        new THREE.MeshLambertMaterial({ color: pad.color })
+      );
+      base.position.y = 0.3 + pad.level * 0.12;
+      g.add(base);
+
+      const head = new THREE.Mesh(
+        new THREE.BoxGeometry(0.8, 0.6, 1.2),
+        new THREE.MeshLambertMaterial({ color: 0xffffff })
+      );
+      head.position.y = 0.8 + pad.level * 0.25;
+      g.add(head);
+
+      g.position.set(pad.x, 0, pad.z);
+      scene.add(g);
+      pad.turretMesh = g;
+    }
+
+    // ============================================================================
+    // 7. ENEMIES, PROJECTILES, DROPS & FLYING BANKNOTES
+    // ============================================================================
+    const enemies = [];
+    const projectiles = [];
+    const drops = [];
+    const flyingBills = [];
+    const voxelParticles = [];
+
+    let waveEnemiesToSpawn = 14;
+    let waveEnemiesSpawned = 0;
+    let spawnTimer = 0;
+    let activeBoss = null;
+
+    function spawnEnemy(isBoss = false, isEventElite = false) {
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 12.5 + Math.random() * 2.5;
+      const x = Math.cos(angle) * dist;
+      const z = Math.sin(angle) * dist;
+
+      const scale = isBoss ? 0.30 : (isEventElite ? 0.22 : 0.14);
+      const matrixKey = (isBoss || isEventElite) ? 'boss_demon' : 'enemy_zombie';
+      const mesh = buildAdaptablePixelModel(matrixKey, scale, state.renderMode);
+      mesh.position.set(x, 0, z);
+      scene.add(mesh);
+
+      const hpMult = 1 + (state.wave - 1) * 0.45;
+      const maxHp = isBoss ? Math.round(2200 * hpMult) : (isEventElite ? Math.round(650 * hpMult) : Math.round(95 * hpMult));
+
+      const enemy = {
+        mesh,
+        x, z,
+        hp: maxHp,
+        maxHp,
+        speed: isBoss ? 2.1 : (isEventElite ? 2.7 : 2.5 + Math.random() * 0.7),
+        isBoss,
+        isEventElite,
+        frozenTimer: 0
+      };
+      enemies.push(enemy);
+
       if (isBoss) {
-        STATE.zombiesToSpawn = 6;
-        const bMesh = createZombieMesh3D(true);
-        bMesh.position.set(0, 0, -13.2);
-        scene.add(bMesh);
-        const maxHp = Math.round(2400 * scale);
-        zombies3D.push({ mesh: bMesh, x: 0, z: -13.2, hp: maxHp, maxHp, atk: 55, speed: 2.3, radius: 1.8, isBoss: true, slow: 0 });
-        document.getElementById('boss-bar-box').classList.remove('hidden');
-        document.getElementById('boss-bar-box').classList.add('flex');
-        showToast('💀 ¡OLEADA 5/5: EL JEFE ZOMBIE MUTANTE HA ENTRADO!');
-      } else {
-        document.getElementById('boss-bar-box').classList.add('hidden');
-        document.getElementById('boss-bar-box').classList.remove('flex');
-        STATE.zombiesToSpawn = 6 + STATE.wave * 3;
+        activeBoss = enemy;
+        document.getElementById('boss-banner').style.display = 'block';
+        updateBossHUD();
       }
-      updateHUD();
     }
 
-    function onWaveClearedCashShower() {
-      sfxLevelUp();
-      const mineLv = STATE.pads.find(p => p.id === 'mine').level;
-      const count = 9 + STATE.wave * 2;
-      const val = Math.round((20 + STATE.wave * 10) * (1 + (mineLv - 1) * 0.25));
+    function updateBossHUD() {
+      if (!activeBoss) return;
+      const pct = Math.max(0, (activeBoss.hp / activeBoss.maxHp) * 100);
+      document.getElementById('boss-hp-fill').style.width = pct + '%';
+      const barsLeft = Math.ceil((activeBoss.hp / activeBoss.maxHp) * 5);
+      document.getElementById('boss-hp-txt').textContent = `x${barsLeft} BARRAS (${Math.max(0, Math.round(activeBoss.hp))} HP)`;
+    }
+
+    function spawnPixelParticles(x, z, colorHex, count = 7) {
+      const geo = new THREE.BoxGeometry(0.22, 0.22, 0.22);
+      const mat = new THREE.MeshBasicMaterial({ color: colorHex });
+      for (let i = 0; i < count; i++) {
+        const p = new THREE.Mesh(geo, mat);
+        p.position.set(x, 0.7, z);
+        scene.add(p);
+        voxelParticles.push({
+          mesh: p,
+          vx: (Math.random() - 0.5) * 7,
+          vy: 3.5 + Math.random() * 4,
+          vz: (Math.random() - 0.5) * 7,
+          life: 0.45
+        });
+      }
+    }
+
+    function spawnDrop(x, z, type = 'cash') {
+      const isTicket = type === 'ticket';
+      const isXp = type === 'xp';
+      const geo = isXp
+        ? new THREE.OctahedronGeometry(0.28, 0)
+        : new THREE.BoxGeometry(0.52, 0.14, 0.32);
+      const color = isTicket ? 0xff2a85 : (isXp ? 0x00f2fe : 0x22c55e);
+      const mesh = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ color }));
+      mesh.position.set(x + (Math.random() - 0.5) * 0.9, 0.25, z + (Math.random() - 0.5) * 0.9);
+      scene.add(mesh);
+      drops.push({ mesh, x: mesh.position.x, z: mesh.position.z, type, value: isTicket ? 5 : (isXp ? 28 : 15) });
+    }
+
+    // ============================================================================
+    // 8. EVENT WEAPONS & SSS PET COMBAT PATTERNS
+    // ============================================================================
+    function fireEventWeapon(target) {
+      const wpn = state.equippedWeapon;
+      const isOverdrive = state.overdriveTimer > 0;
+      const baseAngle = Math.atan2(target.x - state.hero.x, target.z - state.hero.z);
+      const count = 1 + state.extraProjectiles + (isOverdrive ? 2 : 0);
 
       for (let i = 0; i < count; i++) {
-        const a = (i / count) * Math.PI * 2;
-        const r = 1.8 + (i % 3) * 1.4;
-        spawnBanknoteOnGround(duckPos.x + Math.cos(a) * r, Math.min(7.5, Math.max(-5, duckPos.z + Math.sin(a) * r)), val);
-      }
+        const spread = (i - (count - 1) / 2) * 0.18;
+        const angle = baseAngle + spread;
+        let geo, color, radius = 0.75, pierce = 1, pullVortex = false, freeze = false;
 
-      if (STATE.wave === 5) {
-        STATE.gems += 300;
-        STATE.tickets += 10;
-        showToast(`🏆 ¡JEFE DERROTADO! +$${count * val}, +10 🎟️ y +300 💎. ¡Avanzas al Día ${STATE.stage + 1}!`);
-        STATE.stage++;
-        STATE.wave = 1;
-        STATE.fenceHp = STATE.fenceMaxHp;
+        if (wpn.pattern === 'sonic_chord') {
+          geo = new THREE.TorusGeometry(0.42, 0.1, 4, 8);
+          color = 0xff2a85;
+          pierce = 4;
+        } else if (wpn.pattern === 'black_hole') {
+          geo = new THREE.SphereGeometry(0.48, 8, 8);
+          color = 0xa855f7;
+          pierce = 6;
+          pullVortex = true;
+          radius = 1.6;
+        } else if (wpn.pattern === 'katana_slash') {
+          geo = new THREE.BoxGeometry(1.35, 0.15, 0.45);
+          color = 0x00f2fe;
+          pierce = 5;
+          radius = 1.1;
+        } else {
+          geo = new THREE.BoxGeometry(0.35, 0.35, 0.65);
+          color = 0x38bdf8;
+          pierce = 2;
+          freeze = true;
+        }
+
+        const mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color }));
+        mesh.position.set(state.hero.x, 0.9, state.hero.z);
+        mesh.rotation.y = angle;
+        scene.add(mesh);
+
+        projectiles.push({
+          mesh,
+          x: state.hero.x,
+          z: state.hero.z,
+          vx: Math.sin(angle) * 18,
+          vz: Math.cos(angle) * 18,
+          dmg: state.hero.baseDmg * wpn.dmgBonus * (1 + (wpn.level - 1) * 0.25) * (isOverdrive ? 1.6 : 1),
+          life: 1.3,
+          pierce,
+          radius,
+          pullVortex,
+          freeze,
+          color
+        });
+      }
+    }
+
+    function fireSSSPetAttack(petX, petZ) {
+      if (enemies.length === 0) return;
+      const pet = state.equippedPet;
+      const target = enemies[0];
+      const angle = Math.atan2(target.x - petX, target.z - petZ);
+
+      const shots = pet.id === 'pet_kitsune' ? 3 : 2;
+      for (let i = 0; i < shots; i++) {
+        const a = angle + (i - (shots - 1) / 2) * 0.25;
+        const mesh = new THREE.Mesh(
+          new THREE.OctahedronGeometry(0.36, 0),
+          new THREE.MeshBasicMaterial({ color: pet.projColor })
+        );
+        mesh.position.set(petX, 1.2, petZ);
+        scene.add(mesh);
+
+        projectiles.push({
+          mesh,
+          x: petX,
+          z: petZ,
+          vx: Math.sin(a) * 15,
+          vz: Math.cos(a) * 15,
+          dmg: state.hero.baseDmg * pet.dmgMult * (1 + (pet.level - 1) * 0.3),
+          life: 1.5,
+          pierce: 3,
+          radius: 0.9,
+          color: pet.projColor
+        });
+      }
+    }
+
+    function triggerSSSPetUltimate() {
+      const pet = state.equippedPet;
+      showToast(`🐉 ¡${pet.ultName} ACTIVADO!`);
+      for (let i = 0; i < 16; i++) {
+        const angle = (i / 16) * Math.PI * 2;
+        const mesh = new THREE.Mesh(
+          new THREE.BoxGeometry(0.55, 0.55, 0.55),
+          new THREE.MeshBasicMaterial({ color: pet.projColor })
+        );
+        mesh.position.set(state.hero.x, 1.1, state.hero.z);
+        scene.add(mesh);
+        projectiles.push({
+          mesh,
+          x: state.hero.x,
+          z: state.hero.z,
+          vx: Math.sin(angle) * 14,
+          vz: Math.cos(angle) * 14,
+          dmg: state.hero.baseDmg * pet.dmgMult * 2.5,
+          life: 1.4,
+          pierce: 8,
+          radius: 1.2,
+          color: pet.projColor
+        });
+      }
+    }
+
+    function activateOverdrive() {
+      if (state.fever < 100 && state.overdriveTimer <= 0) {
+        // Allow instant demo activation or boost
+        state.fever = 100;
+      }
+      state.fever = 0;
+      state.overdriveTimer = 7.0;
+      showToast('⚡ ¡MODO HIPER-PIXEL ACTIVADO (CADENCIA x3)!');
+      document.getElementById('fever-box').classList.remove('fever-ready');
+    }
+
+    // ============================================================================
+    // 9. WAVE MANAGEMENT & DAY/NIGHT BASE BUILDING
+    // ============================================================================
+    function completeWave() {
+      state.phase = 'DAY';
+      scene.background.setHex(0x1e293b);
+      document.getElementById('phase-tag').textContent = '☀️ DÍA (CONSTRUYE)';
+      document.getElementById('phase-tag').classList.add('day');
+      document.getElementById('day-phase-cta').style.display = 'flex';
+
+      const nextW = state.wave < state.maxWaves ? state.wave + 1 : 1;
+      document.getElementById('start-night-btn').textContent =
+        nextW === 5 ? '💀 INICIAR OLEADA 5 (JEFE FINAL)' : `🌙 INICIAR OLEADA ${nextW}`;
+
+      updateWaveTrackUI();
+      showToast(`☀️ ¡Oleada ${state.wave} superada! Camina a los círculos para mejorar tu base.`);
+    }
+
+    function startNextWave() {
+      if (state.phase !== 'DAY') return;
+      state.wave = state.wave < state.maxWaves ? state.wave + 1 : 1;
+      state.phase = 'NIGHT';
+      scene.background.setHex(0x131124);
+      document.getElementById('phase-tag').textContent = '🌙 NOCHE (COMBATE)';
+      document.getElementById('phase-tag').classList.remove('day');
+      document.getElementById('day-phase-cta').style.display = 'none';
+
+      waveEnemiesSpawned = 0;
+      waveEnemiesToSpawn = 12 + state.wave * 5;
+      updateWaveTrackUI();
+
+      if (state.wave === 5) {
+        spawnEnemy(true, false);
+        showToast('👹 ¡ALERTA: REY DEMONIO PIXEL HA APARECIDO!');
       } else {
-        showToast(`☀️ ¡OLEADA SUPERADA! Recoge los Billetes Verdes (💵) y mejora tu Base.`);
-        STATE.wave++;
+        showToast(`🌙 ¡Oleada ${state.wave}/5 en marcha!`);
       }
-      setDayNightVisuals(false, false);
-      renderQuickPads();
     }
 
-    function skipToBossWave5() {
-      zombies3D.forEach(z => scene.remove(z.mesh));
-      zombies3D.length = 0;
-      STATE.wave = 5;
-      startNightWave();
+    function updateWaveTrackUI() {
+      document.getElementById('stage-label').textContent = `🏕️ ARENA PIXEL — OLEADA ${state.wave} / 5`;
+      document.getElementById('wave-track-fill').style.width = ((state.wave - 1) / 4) * 100 + '%';
+      for (let i = 1; i <= 5; i++) {
+        const el = document.getElementById('wnode-' + i);
+        el.classList.remove('active', 'cleared');
+        if (i < state.wave) el.classList.add('cleared');
+        else if (i === state.wave) el.classList.add('active');
+      }
     }
 
-    function spawnBanknoteOnGround(x, z, amount) {
-      const m = addToonMesh(new THREE.BoxGeometry(0.75, 0.2, 0.42), 0x22c55e, 1.06);
-      m.position.set(x + (Math.random() - 0.5), 0.3, z + (Math.random() - 0.5));
-      scene.add(m);
-      groundBanknotes3D.push({ mesh: m, x: m.position.x, z: m.position.z, amount });
+    // ============================================================================
+    // 10. JOYSTICK & KEYBOARD CONTROLS
+    // ============================================================================
+    const input = { dx: 0, dz: 0, keys: {} };
+    const joyZone = document.getElementById('joystick-zone');
+    const joyStick = document.getElementById('joystick-stick');
+    let joyTouchActive = false;
+    let joyOrigin = { x: 0, y: 0 };
+
+    joyZone.addEventListener('pointerdown', e => {
+      joyTouchActive = true;
+      const rect = document.getElementById('joystick-base').getBoundingClientRect();
+      joyOrigin = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+      updateJoystick(e.clientX, e.clientY);
+    });
+    window.addEventListener('pointermove', e => {
+      if (joyTouchActive) updateJoystick(e.clientX, e.clientY);
+    });
+    window.addEventListener('pointerup', () => {
+      joyTouchActive = false;
+      input.dx = 0; input.dz = 0;
+      joyStick.style.transform = `translate(0px, 0px)`;
+    });
+
+    function updateJoystick(cx, cy) {
+      const vx = cx - joyOrigin.x;
+      const vy = cy - joyOrigin.y;
+      const dist = Math.hypot(vx, vy);
+      const maxR = 34;
+      const clamped = Math.min(dist, maxR);
+      const angle = Math.atan2(vy, vx);
+      joyStick.style.transform = `translate(${Math.cos(angle) * clamped}px, ${Math.sin(angle) * clamped}px)`;
+      if (dist > 4) {
+        input.dx = Math.cos(angle);
+        input.dz = Math.sin(angle);
+      }
     }
 
-    // Efecto visual de billete volando en arco desde la mochila del Pato hacia el Pad del suelo
-    function spawnFlyingBillToPad(pad) {
-      const m = addToonMesh(new THREE.BoxGeometry(0.65, 0.16, 0.36), 0x22c55e, 1.05);
-      m.position.set(duckPos.x, 1.6, duckPos.z);
-      scene.add(m);
-      flyingBanknotes3D.push({
-        mesh: m,
-        sx: duckPos.x, sz: duckPos.z,
-        tx: pad.x, tz: pad.z,
-        progress: 0
+    window.addEventListener('keydown', e => input.keys[e.key.toLowerCase()] = true);
+    window.addEventListener('keyup', e => input.keys[e.key.toLowerCase()] = false);
+
+    // ============================================================================
+    // 11. UI TABS, RENDER MODE TOGGLE & CARDS
+    // ============================================================================
+    function togglePixelRenderMode() {
+      state.renderMode = state.renderMode === 'voxel' ? 'sprite' : 'voxel';
+      document.getElementById('render-mode-btn').textContent =
+        state.renderMode === 'voxel' ? '🎨 3D VOXEL' : '🎨 2.5D PIXEL';
+      rebuildPlayerAndPetModels();
+      showToast(state.renderMode === 'voxel'
+        ? '🎨 Modo 3D Voxel-Pixel Activado'
+        : '🎨 Modo 2.5D Sprite Pixel-Art Activado');
+    }
+
+    function toggleFullscreen() {
+      document.body.classList.toggle('fullscreen-mode');
+      setTimeout(onResize, 60);
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      const btn = document.getElementById('tab-' + tabId);
+      if (btn) btn.classList.add('active');
+
+      document.querySelectorAll('.drawer-panel').forEach(p => p.classList.remove('open'));
+      if (tabId !== 'battle') {
+        const panel = document.getElementById('panel-' + tabId);
+        if (panel) panel.classList.add('open');
+        renderDrawerContents();
+      }
+    }
+
+    function renderDrawerContents() {
+      // 1. Event Weapons Grid
+      const wGrid = document.getElementById('event-weapons-grid');
+      wGrid.innerHTML = '';
+      EVENT_WEAPONS.forEach(w => {
+        const isEq = state.equippedWeapon.id === w.id;
+        const card = document.createElement('div');
+        card.className = 'pixel-card event-tier' + (isEq ? ' equipped' : '');
+        card.innerHTML = `
+          <span class="tier-badge">${w.eventTag}</span>
+          <span class="stars-badge">NV.${w.level}</span>
+          <div class="sprite-preview"><canvas id="prev-${w.id}"></canvas></div>
+          <div class="card-name">${w.icon} ${w.name}</div>
+          <div class="card-desc">${w.desc}</div>
+          <button class="card-btn" onclick="equipEventWeapon('${w.id}')">
+            ${isEq ? '✓ EQUIPADA' : 'EQUIPAR ARMA'}
+          </button>
+          <button class="card-btn secondary" onclick="upgradeEventWeapon('${w.id}')">
+            ⬆️ MEJORAR (🎟️ 25)
+          </button>
+        `;
+        wGrid.appendChild(card);
+        drawMatrixToCanvas(w.id, card.querySelector('canvas'), 4);
+      });
+
+      // 2. SSS Pets Grid
+      const pGrid = document.getElementById('sss-pets-grid');
+      pGrid.innerHTML = '';
+      SSS_PETS.forEach(p => {
+        const isEq = state.equippedPet.id === p.id;
+        const card = document.createElement('div');
+        card.className = 'pixel-card sss-tier' + (isEq ? ' equipped' : '');
+        card.innerHTML = `
+          <span class="tier-badge">SSS TIER</span>
+          <span class="stars-badge">${'★'.repeat(p.stars)} NV.${p.level}</span>
+          <div class="sprite-preview"><canvas id="prev-${p.id}"></canvas></div>
+          <div class="card-name">${p.icon} ${p.name}</div>
+          <div class="card-desc">${p.desc}</div>
+          <button class="card-btn" onclick="equipSSSPet('${p.id}')">
+            ${isEq ? '✓ ACOMPAÑANDO' : 'EQUIPAR SSS'}
+          </button>
+          <button class="card-btn secondary" onclick="ascendSSSPet('${p.id}')">
+            ✨ ASCENDER (🎟️ 30)
+          </button>
+        `;
+        pGrid.appendChild(card);
+        drawMatrixToCanvas(p.id, card.querySelector('canvas'), 4);
+      });
+
+      // 3. Adaptable Pixel Heroes Grid
+      const hGrid = document.getElementById('heroes-grid');
+      hGrid.innerHTML = '';
+      PIXEL_HEROES.forEach(h => {
+        const isEq = state.equippedHero.id === h.id;
+        const card = document.createElement('div');
+        card.className = 'pixel-card' + (isEq ? ' equipped' : '');
+        card.innerHTML = `
+          <span class="tier-badge">${h.role}</span>
+          <div class="sprite-preview"><canvas id="prev-${h.id}"></canvas></div>
+          <div class="card-name">${h.name}</div>
+          <div class="card-desc">${h.desc}</div>
+          <button class="card-btn" onclick="equipPixelHero('${h.id}')">
+            ${isEq ? '✓ EN USO' : 'CAMBIAR MODELO'}
+          </button>
+        `;
+        hGrid.appendChild(card);
+        drawMatrixToCanvas(h.id, card.querySelector('canvas'), 4);
       });
     }
 
-    function getPadCost(p) {
-      return Math.round(p.baseCost * Math.pow(1.28, p.level - 1));
-    }
+    window.equipEventWeapon = function(id) {
+      const found = EVENT_WEAPONS.find(w => w.id === id);
+      if (!found) return;
+      state.equippedWeapon = found;
+      rebuildPlayerAndPetModels();
+      renderDrawerContents();
+      showToast(`⚡ Arma de Evento Equipada: ${found.name}`);
+    };
 
-    function upgradePad(id, fromWalk = false) {
-      const p = STATE.pads.find(x => x.id === id);
-      const cost = getPadCost(p);
-      if (STATE.cash < cost) {
-        if (!fromWalk) showToast(`💵 Necesitas $${cost} en tu mochila. ¡Mata zombies o recoge billetes!`);
+    window.upgradeEventWeapon = function(id) {
+      const found = EVENT_WEAPONS.find(w => w.id === id);
+      if (!found) return;
+      if (state.tickets < 25) {
+        showToast('¡Necesitas 25 🎟️ Fichas de Evento! Activa el Portal 🌀');
         return;
       }
-      STATE.cash -= cost;
-      p.level++;
-      sfxCashFeed();
-      spawnFlyingBillToPad(p);
+      state.tickets -= 25;
+      found.level++;
+      updateTopResources();
+      renderDrawerContents();
+      showToast(`🔥 ¡${found.name} subió a Nivel ${found.level}!`);
+    };
 
-      // Rebote jugoso Cartoon en el edificio mejorado
-      if (id === 'fence') {
-        STATE.fenceMaxHp += 600;
-        STATE.fenceHp = STATE.fenceMaxHp;
-      } else if (id === 'chick') {
-        syncChickSoldiers3D();
+    window.equipSSSPet = function(id) {
+      const found = SSS_PETS.find(p => p.id === id);
+      if (!found) return;
+      state.equippedPet = found;
+      rebuildPlayerAndPetModels();
+      renderDrawerContents();
+      showToast(`🐾 Mascota SSS Activa: ${found.name}`);
+    };
+
+    window.ascendSSSPet = function(id) {
+      const found = SSS_PETS.find(p => p.id === id);
+      if (!found) return;
+      if (state.tickets < 30) {
+        showToast('¡Necesitas 30 🎟️ Fichas de Evento!');
+        return;
       }
-      spawnFloatingText(p.x, 2.2, p.z, `⬆️ ${p.short} NV.${p.level}!`, '#fde047');
-      updateBackpackStackVisual();
-      updateHUD();
-      renderQuickPads();
-    }
+      state.tickets -= 30;
+      found.level++;
+      updateTopResources();
+      renderDrawerContents();
+      showToast(`✨ ¡${found.name} ascendida a NV.${found.level}!`);
+    };
 
-    function renderQuickPads() {
-      const grid = document.getElementById('quick-pads-grid');
-      grid.innerHTML = STATE.pads.map(p => {
-        const cost = getPadCost(p);
-        const can = STATE.cash >= cost;
-        return `
-          <button onclick="upgradePad('${p.id}', false)" class="${can ? 'cartoon-btn-green' : 'cartoon-box opacity-80'} rounded-xl p-1 flex flex-col items-center text-center">
-            <span class="text-xs font-black">${p.icon}${p.level}</span>
-            <span class="text-xs font-black truncate w-full">${p.short}</span>
-            <span class="text-xs font-black">💵$${cost}</span>
-          </button>
-        `;
-      }).join('');
-    }
+    window.equipPixelHero = function(id) {
+      const found = PIXEL_HEROES.find(h => h.id === id);
+      if (!found) return;
+      state.equippedHero = found;
+      rebuildPlayerAndPetModels();
+      renderDrawerContents();
+      showToast(`👾 Modelo Pixel Art cambiado a ${found.name}`);
+    };
 
-    // ============================================================================
-    // 7. CARTAS ROGUELITE Y HABILIDADES DE DUCK SURVIVAL
-    // ============================================================================
-    function addSkillXp(val) {
-      STATE.skillXp += val;
-      if (STATE.skillXp >= STATE.skillXpNext) {
-        STATE.skillXp -= STATE.skillXpNext;
-        STATE.skillLv++;
-        STATE.skillXpNext = Math.round(STATE.skillXpNext * 1.3);
-        sfxLevelUp();
-        openSkillDraftModal();
+    window.rollEventGacha = function(count) {
+      if (count === 1 && state.tickets < 20) {
+        showToast('No tienes suficientes 🎟️ Fichas de Evento');
+        return;
       }
-    }
-
-    function openSkillDraftModal() {
-      const modal = document.getElementById('skill-draft-modal');
-      const box = document.getElementById('skill-cards-container');
-      const keys = Object.keys(STATE.skills).sort(() => Math.random() - 0.5).slice(0, 3);
-
-      box.innerHTML = keys.map(k => {
-        const s = STATE.skills[k];
-        return `
-          <button onclick="pickSkillCard('${k}')" class="cartoon-btn-yellow rounded-2xl p-2.5 flex flex-col items-center text-center gap-1">
-            <span class="text-2xl">${s.icon}</span>
-            <span class="font-black text-xs leading-tight">${s.name}</span>
-            <span class="px-1.5 py-0.5 rounded bg-black text-amber-300 font-black text-xs">Nv.${s.lv} → ${s.lv + 1}</span>
-          </button>
-        `;
-      }).join('');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    }
-
-    function pickSkillCard(key) {
-      STATE.skills[key].lv++;
-      if (key === 'angryChick') syncChickSoldiers3D();
-      sfxLevelUp();
-      document.getElementById('skill-draft-modal').classList.add('hidden');
-      document.getElementById('skill-draft-modal').classList.remove('flex');
-      showToast(`⚡ ¡Mejoraste [${STATE.skills[key].name}] a Nivel ${STATE.skills[key].lv}!`);
-    }
-
-    function triggerActiveSkill(idx) {
-      if (STATE.cooldowns[idx] > 0) return;
-      const atk = getDuckAtk();
-
-      if (idx === 0) {
-        // 🐥 Pollo Rayo (Angry Chicken)
-        STATE.cooldowns[0] = 7.0;
-        sfxLevelUp();
-        syncChickSoldiers3D();
-        zombies3D.forEach(z => {
-          const d = Math.round(atk * 3.5);
-          z.hp -= d;
-          spawnFloatingText(z.x, 2.2, z.z, `🐥⚡-${d}`, '#fde047');
-        });
-        showToast('🐥 ¡Escuadrón Pollo Rayo activado!');
-      } else if (idx === 1) {
-        // ☄️ Meteorito 3D
-        STATE.cooldowns[1] = 8.0;
-        for (let i = 0; i < 4; i++) {
-          setTimeout(() => {
-            const tx = (Math.random() - 0.5) * 12;
-            const tz = -2 - Math.random() * 8;
-            const m = addToonMesh(new THREE.DodecahedronGeometry(0.9, 0), 0xf97316);
-            m.position.set(tx - 3, 14, tz - 3);
-            scene.add(m);
-            meteors3D.push({ mesh: m, tx, tz, dmg: Math.round(atk * 4.5), p: 0 });
-          }, i * 130);
-        }
-        showToast('☄️ ¡Lluvia de Meteoritos 3D!');
-      } else if (idx === 2) {
-        // ❄️ Estalactitas de Hielo + Reparar Valla
-        STATE.cooldowns[2] = 9.0;
-        STATE.fenceHp = Math.min(STATE.fenceMaxHp, STATE.fenceHp + Math.round(STATE.fenceMaxHp * 0.5));
-        zombies3D.forEach(z => {
-          z.slow = 4.5;
-          z.hp -= Math.round(atk * 2.2);
-          spawnFloatingText(z.x, 2.0, z.z, '❄️HIELO', '#38bdf8');
-        });
-        updateHUD();
-        showToast('❄️ ¡Zombies congelados y Valla reparada +50%!');
+      if (count === 10 && state.gems < 300) {
+        showToast('No tienes suficientes 💎 Gemas');
+        return;
       }
-    }
+      if (count === 1) state.tickets -= 20;
+      else state.gems -= 300;
+      updateTopResources();
 
-    function getDuckAtk() {
-      const gearLvSum = STATE.gear.reduce((s, g) => s + g.lv * 18, 0);
-      const duckLvSum = STATE.ducks.reduce((s, d) => s + d.lv * 14 * d.stars, 0);
-      return Math.round((gearLvSum + duckLvSum) * 1.3);
-    }
-
-    function updateHUD() {
-      document.getElementById('hud-cash').textContent = `$${Math.floor(STATE.cash).toLocaleString()}`;
-      document.getElementById('hud-tickets').textContent = STATE.tickets;
-      document.getElementById('hud-gems').textContent = Math.floor(STATE.gems).toLocaleString();
-      document.getElementById('wave-counter-txt').textContent = `OLEADA ${STATE.wave} / 5`;
-
-      const fPct = Math.max(0, Math.min(100, Math.round((STATE.fenceHp / STATE.fenceMaxHp) * 100)));
-      document.getElementById('zombies-left-txt').textContent = `🧱 Valla: ${fPct}%`;
-
-      document.getElementById('wave-progress-line').style.width = `${(STATE.wave / 5) * 100}%`;
-      for (let w = 1; w <= 4; w++) {
-        document.getElementById(`node-w${w}`).className =
-          w <= STATE.wave
-            ? 'relative z-10 w-4 h-4 rounded-full bg-lime-400 border-2 border-black text-black font-black flex items-center justify-center text-xs'
-            : 'relative z-10 w-4 h-4 rounded-full bg-slate-700 border-2 border-black text-white font-black flex items-center justify-center text-xs';
+      const box = document.getElementById('gacha-results-box');
+      box.innerHTML = '';
+      const pool = [...SSS_PETS, ...EVENT_WEAPONS];
+      for (let i = 0; i < count; i++) {
+        const pick = pool[Math.floor(Math.random() * pool.length)];
+        pick.level++;
+        const cell = document.createElement('div');
+        cell.className = 'pixel-box';
+        cell.style.padding = '6px';
+        cell.style.textAlign = 'center';
+        cell.innerHTML = `<div style="font-size:1.25rem">${pick.icon}</div><div style="font-size:0.55rem;color:#fde047;">+1 NV</div>`;
+        box.appendChild(cell);
       }
+      showToast(`🎰 ¡Obtuviste ${count} mejoras de Armas de Evento y Mascotas SSS!`);
+    };
 
-      document.getElementById('xp-lv-txt').textContent = `⚡ NV. HABILIDAD ${STATE.skillLv}`;
-      document.getElementById('xp-bar-fill').style.width = `${Math.min(100, (STATE.skillXp / STATE.skillXpNext) * 100)}%`;
-      updateBackpackStackVisual();
-    }
-
-    // ============================================================================
-    // 8. JOYSTICK Y BUCLE DE JUEGO 3D (60 FPS)
-    // ============================================================================
-    const input = { dx: 0, dz: 0, active: false };
-    const keys = {};
-    window.addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; });
-    window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
-
-    const joyZone = document.getElementById('joystick-zone');
-    const joyKnob = document.getElementById('joystick-knob');
-    let joyCenter = { x: 0, y: 0 };
-
-    joyZone.addEventListener('pointerdown', e => {
-      joyZone.setPointerCapture(e.pointerId);
-      const r = joyZone.getBoundingClientRect();
-      joyCenter = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
-      input.active = true;
-    });
-    joyZone.addEventListener('pointermove', e => {
-      if (!input.active) return;
-      const dx = e.clientX - joyCenter.x; const dy = e.clientY - joyCenter.y;
-      const dist = Math.hypot(dx, dy);
-      const cl = Math.min(34, dist);
-      const a = Math.atan2(dy, dx);
-      joyKnob.style.transform = `translate(${Math.cos(a) * cl}px, ${Math.sin(a) * cl}px)`;
-      if (dist > 4) { input.dx = Math.cos(a); input.dz = Math.sin(a); }
-      else { input.dx = 0; input.dz = 0; }
-    });
-    const endJoy = () => { input.active = false; input.dx = 0; input.dz = 0; joyKnob.style.transform = 'translate(0px,0px)'; };
-    joyZone.addEventListener('pointerup', endJoy);
-    joyZone.addEventListener('pointercancel', endJoy);
-
-    function toggleAutoPilot() {
-      STATE.autoPilot = !STATE.autoPilot;
-      document.getElementById('btn-autopilot').textContent = STATE.autoPilot ? '🤖 Auto' : '🕹️ Manual';
-    }
-
-    function spawnFloatingText(wx, wy, wz, text, col = '#fde047') {
-      const box = document.getElementById('floating-dmg-box');
-      if (box.children.length > 18) return;
-      const v = new THREE.Vector3(wx, wy, wz);
-      v.project(camera);
-      const w = hostEl.clientWidth; const h = hostEl.clientHeight;
-      const sx = (v.x * 0.5 + 0.5) * w; const sy = (-v.y * 0.5 + 0.5) * h;
-      if (sx < 0 || sx > w || sy < 0 || sy > h) return;
-
-      const el = document.createElement('div');
-      el.className = 'absolute font-black text-xs text-outline pointer-events-none transition-all duration-500';
-      el.style.left = `${sx}px`; el.style.top = `${sy}px`; el.style.color = col;
-      el.textContent = text;
-      box.appendChild(el);
-      requestAnimationFrame(() => { el.style.transform = 'translateY(-26px) scale(1.1)'; el.style.opacity = '0'; });
-      setTimeout(() => el.remove(), 480);
-    }
-
-    // Proyectar la Barra de Vida flotante sobre la cabeza del Pato 3D y las etiquetas de los Pads
-    function syncFloatingWorldUI() {
-      const w = hostEl.clientWidth; const h = hostEl.clientHeight;
-      const duckVec = new THREE.Vector3(duckPos.x, 2.75, duckPos.z);
-      duckVec.project(camera);
-      const dx = (duckVec.x * 0.5 + 0.5) * w;
-      const dy = (-duckVec.y * 0.5 + 0.5) * h;
-      const hud = document.getElementById('duck-floating-hud');
-      hud.style.left = `${dx}px`;
-      hud.style.top = `${dy}px`;
-
-      const labelsBox = document.getElementById('ground-pads-labels');
-      labelsBox.innerHTML = STATE.pads.map(p => {
-        const pv = new THREE.Vector3(p.x, 0.3, p.z + 1.2);
-        pv.project(camera);
-        const px = (pv.x * 0.5 + 0.5) * w;
-        const py = (-pv.y * 0.5 + 0.5) * h;
-        const cost = getPadCost(p);
-        return `
-          <div class="absolute -translate-x-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded-lg bg-black/80 border border-white/40 text-xs font-black whitespace-nowrap" style="left:${px}px; top:${py}px;">
-            ${p.icon} <span class="text-lime-400">$${cost}</span>
+    function openSkillDraft() {
+      const modal = document.getElementById('skill-modal');
+      const box = document.getElementById('skill-choices-box');
+      box.innerHTML = '';
+      const shuffled = [...ROGUELITE_SKILLS].sort(() => Math.random() - 0.5).slice(0, 3);
+      shuffled.forEach(sk => {
+        const row = document.createElement('div');
+        row.className = 'skill-choice-card';
+        row.innerHTML = `
+          <div class="sk-icon">${sk.icon}</div>
+          <div>
+            <div style="font-family:var(--pixel-font);font-size:0.56rem;color:#fde047;margin-bottom:4px;">${sk.name}</div>
+            <div style="font-size:0.72rem;color:#e2e8f0;">${sk.desc}</div>
           </div>
         `;
-      }).join('');
+        row.onclick = () => {
+          if (sk.id === 'sk_double') state.extraProjectiles++;
+          else if (sk.id === 'sk_magnet') state.magnetRadius += 2.5;
+          else state.skills[sk.id] = (state.skills[sk.id] || 0) + 1;
+          modal.classList.remove('open');
+          showToast(`⚡ Habilidad mejorada: ${sk.name}`);
+        };
+        box.appendChild(row);
+      });
+      modal.classList.add('open');
     }
 
+    function showPopup(x, z, text, cls = '') {
+      const pos = projectToScreen(x, 1.5, z);
+      const el = document.createElement('div');
+      el.className = 'dmg-popup ' + cls;
+      el.style.left = pos.x + 'px';
+      el.style.top = pos.y + 'px';
+      el.textContent = text;
+      document.getElementById('world-ui-layer').appendChild(el);
+      setTimeout(() => el.remove(), 750);
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast-msg');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+    }
+
+    function updateTopResources() {
+      document.getElementById('hud-cash').textContent = state.cash;
+      document.getElementById('hud-tickets').textContent = state.tickets;
+      document.getElementById('hud-gems').textContent = state.gems.toLocaleString();
+      document.getElementById('world-cash-txt').textContent = `💵 $${state.cash}`;
+      updateBackpackStackVisual();
+    }
+
+    function projectToScreen(x, y, z) {
+      const v = new THREE.Vector3(x, y, z);
+      v.project(camera);
+      return {
+        x: (v.x * 0.5 + 0.5) * container.clientWidth,
+        y: (-(v.y * 0.5) + 0.5) * container.clientHeight
+      };
+    }
+
+    // ============================================================================
+    // 12. MAIN 60FPS GAME LOOP
+    // ============================================================================
+    rebuildPlayerAndPetModels();
+    updateTopResources();
+
     let lastTime = performance.now();
-    function animate3D(now) {
+    let padDrainAccum = 0;
+
+    function animate(now) {
+      requestAnimationFrame(animate);
       const dt = Math.min(0.05, (now - lastTime) / 1000);
       lastTime = now;
 
-      for (let i = 0; i < 3; i++) {
-        if (STATE.cooldowns[i] > 0) {
-          STATE.cooldowns[i] = Math.max(0, STATE.cooldowns[i] - dt);
-          document.getElementById(`cd-txt-${i}`).textContent = `${STATE.cooldowns[i].toFixed(1)}s`;
-        } else {
-          document.getElementById(`cd-txt-${i}`).textContent = 'LISTO';
-        }
-      }
+      // 1. Movement
+      let mx = input.dx;
+      let mz = input.dz;
+      if (input.keys['w'] || input.keys['arrowup']) mz = -1;
+      if (input.keys['s'] || input.keys['arrowdown']) mz = 1;
+      if (input.keys['a'] || input.keys['arrowleft']) mx = -1;
+      if (input.keys['d'] || input.keys['arrowright']) mx = 1;
 
-      // 1. Movimiento del Pato Duke
-      let mx = input.dx; let mz = input.dz;
-      if (keys['w'] || keys['arrowup']) mz -= 1;
-      if (keys['s'] || keys['arrowdown']) mz += 1;
-      if (keys['a'] || keys['arrowleft']) mx -= 1;
-      if (keys['d'] || keys['arrowright']) mx += 1;
-
-      if (Math.hypot(mx, mz) < 0.05 && STATE.autoPilot) {
-        if (groundBanknotes3D.length > 0) {
-          const b = groundBanknotes3D[0];
-          const dx = b.x - duckPos.x; const dz = b.z - duckPos.z;
-          const l = Math.hypot(dx, dz) || 1;
-          mx = dx / l; mz = dz / l;
-        } else {
-          const tx = Math.sin(now * 0.0014) * 4.8;
-          const tz = 3.6;
-          const dx = tx - duckPos.x; const dz = tz - duckPos.z;
-          const l = Math.hypot(dx, dz) || 1;
-          if (l > 0.35) { mx = dx / l; mz = dz / l; }
-        }
-      }
-
-      const len = Math.hypot(mx, mz);
-      if (len > 0.02) {
-        duckPos.x += (mx / len) * duckPos.speed * dt;
-        duckPos.z += (mz / len) * duckPos.speed * dt;
-        // Bamboleo cómico de pato al caminar (Waddle animation)
-        mainDuckMesh.rotation.z = Math.sin(now * 0.02) * 0.12;
+      if (mx !== 0 || mz !== 0) {
+        const len = Math.hypot(mx, mz);
+        state.hero.x = Math.max(-13.5, Math.min(13.5, state.hero.x + (mx / len) * state.hero.speed * dt));
+        state.hero.z = Math.max(-13.5, Math.min(13.5, state.hero.z + (mz / len) * state.hero.speed * dt));
+        playerRoot.position.y = Math.abs(Math.sin(now * 0.015)) * 0.22; // Pixel hop!
       } else {
-        mainDuckMesh.rotation.z = 0;
+        playerRoot.position.y = 0;
+      }
+      playerRoot.position.x = state.hero.x;
+      playerRoot.position.z = state.hero.z;
+
+      // Camera smooth follow
+      camera.position.x += (state.hero.x * 0.55 - camera.position.x) * 6 * dt;
+      camera.position.z += (state.hero.z * 0.55 + 16.5 - camera.position.z) * 6 * dt;
+      camera.lookAt(state.hero.x * 0.35, 0, state.hero.z * 0.35);
+
+      // 2. SSS Pet Orbit & Autonomous Attack
+      const petAngle = now * 0.0022;
+      const petX = state.hero.x + Math.cos(petAngle) * 2.1;
+      const petZ = state.hero.z + Math.sin(petAngle) * 2.1;
+      if (petVisualMesh) {
+        petVisualMesh.position.set(petX, 0.5 + Math.sin(now * 0.006) * 0.25, petZ);
       }
 
-      duckPos.x = Math.max(ARENA_BOUNDS.minX, Math.min(ARENA_BOUNDS.maxX, duckPos.x));
-      duckPos.z = Math.max(ARENA_BOUNDS.minZ, Math.min(ARENA_BOUNDS.maxZ, duckPos.z));
-      mainDuckMesh.position.set(duckPos.x, 0, duckPos.z);
-
-      // 2.º Pato Activo ("Cole") y Pollitos Soldados siguiendo a Duke
-      secondDuckMesh.position.x += (duckPos.x - 2.0 - secondDuckMesh.position.x) * 5 * dt;
-      secondDuckMesh.position.z += (duckPos.z + 0.7 - secondDuckMesh.position.z) * 5 * dt;
-
-      if (zombies3D.length > 0) {
-        mainDuckMesh.lookAt(zombies3D[0].x, 0, zombies3D[0].z);
-        secondDuckMesh.lookAt(zombies3D[0].x, 0, zombies3D[0].z);
-      } else if (len > 0.02) {
-        mainDuckMesh.rotation.y = Math.atan2(mx, mz);
+      state.hero.petCooldown -= dt;
+      if (state.hero.petCooldown <= 0 && enemies.length > 0) {
+        fireSSSPetAttack(petX, petZ);
+        state.hero.petCooldown = state.equippedPet.fireRate;
       }
 
-      chickSoldiers3D.forEach(c => {
-        const cx = duckPos.x + Math.cos(c.angle + now * 0.0015) * 2.2;
-        const cz = duckPos.z + Math.sin(c.angle + now * 0.0015) * 2.2;
-        c.mesh.position.set(cx, 0, cz);
-      });
+      // Orbital Drone Skill
+      const droneAngle = -now * 0.0045;
+      orbitalDrone.position.set(
+        state.hero.x + Math.cos(droneAngle) * 3.1,
+        0.9,
+        state.hero.z + Math.sin(droneAngle) * 3.1
+      );
 
-      camera.position.x += (duckPos.x * 0.42 - camera.position.x) * 5 * dt;
-      camera.position.y = 21.5;
-      camera.position.z += (duckPos.z * 0.35 + 17.5 - camera.position.z) * 5 * dt;
-      camera.lookAt(duckPos.x * 0.3, 0.5, duckPos.z * 0.25 - 1.5);
-
-      syncFloatingWorldUI();
-
-      // 2. Producción de la Mina de Billetes + Caminar sobre los Círculos del Suelo
-      const mineLv = STATE.pads.find(p => p.id === 'mine').level;
-      duckPos.mineTimer += dt;
-      if (duckPos.mineTimer >= Math.max(1.6, 3.8 - mineLv * 0.2)) {
-        duckPos.mineTimer = 0;
-        spawnBanknoteOnGround(-5.8, 6.2, 18 * mineLv);
+      // Overdrive Timer
+      if (state.overdriveTimer > 0) {
+        state.overdriveTimer -= dt;
+        document.getElementById('fever-bar-fill').style.width = (state.overdriveTimer / 7) * 100 + '%';
+        document.getElementById('fever-bar-txt').textContent = `⚡ HIPER-PIXEL ${state.overdriveTimer.toFixed(1)}s`;
       }
 
-      duckPos.padTimer = Math.max(0, duckPos.padTimer - dt);
-      STATE.pads.forEach(p => {
-        if (Math.hypot(duckPos.x - p.x, duckPos.z - p.z) < 1.8 && STATE.cash >= getPadCost(p) && duckPos.padTimer <= 0) {
-          duckPos.padTimer = 0.65;
-          upgradePad(p.id, true);
+      // 3. Wave Enemy Spawning
+      if (state.phase === 'NIGHT') {
+        spawnTimer -= dt;
+        if (spawnTimer <= 0 && waveEnemiesSpawned < waveEnemiesToSpawn) {
+          spawnEnemy(false, false);
+          waveEnemiesSpawned++;
+          spawnTimer = Math.max(0.32, 0.9 - state.wave * 0.1);
         }
-      });
-
-      // 3. Spawner de Zombies Nocturnos
-      if (STATE.isNight && STATE.zombiesToSpawn > 0) {
-        STATE.spawnTimer -= dt;
-        if (STATE.spawnTimer <= 0) {
-          STATE.spawnTimer = 0.7;
-          STATE.zombiesToSpawn--;
-          const gx = [-6.5, 0, 6.5][Math.floor(Math.random() * 3)] + (Math.random() - 0.5) * 1.6;
-          const zm = createZombieMesh3D(false);
-          zm.position.set(gx, 0, -13.2);
-          scene.add(zm);
-          const hp = Math.round((120 + STATE.wave * 35) * Math.pow(1.3, STATE.stage - 1));
-          zombies3D.push({ mesh: zm, x: gx, z: -13.2, hp, maxHp: hp, atk: 18, speed: 3.4 + Math.random() * 0.8, radius: 0.85, isBoss: false, slow: 0 });
+        if (waveEnemiesSpawned >= waveEnemiesToSpawn && enemies.length === 0) {
+          completeWave();
         }
       }
 
-      // 4. Disparos del Pato Duke, Cole y Torretas Gattling
-      const atk = getDuckAtk();
-      duckPos.shootTimer += dt;
-      if (duckPos.shootTimer >= 0.25 && zombies3D.length > 0) {
-        duckPos.shootTimer = 0;
-        const t = zombies3D[0];
-        sfxQuackPop();
-        const bMesh1 = new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 8), new THREE.MeshBasicMaterial({ color: 0xfef08a }));
-        bMesh1.position.set(duckPos.x, 1.1, duckPos.z);
-        scene.add(bMesh1);
-        const dx = t.x - duckPos.x; const dz = t.z - duckPos.z;
-        const l = Math.hypot(dx, dz) || 1;
-        bullets3D.push({ mesh: bMesh1, x: duckPos.x, z: duckPos.z, vx: (dx / l) * 28, vz: (dz / l) * 28, dmg: atk, life: 1.0 });
-      }
-
-      ['turretL', 'turretR'].forEach(tid => {
-        const tObj = turretMeshes3D[tid];
-        const lv = STATE.pads.find(p => p.id === tid).level;
-        tObj.timer += dt;
-        if (tObj.timer >= Math.max(0.22, 0.55 - lv * 0.04) && zombies3D.length > 0) {
-          tObj.timer = 0;
-          const target = zombies3D[Math.floor(Math.random() * zombies3D.length)];
-          tObj.group.lookAt(target.x, 0.9, target.z);
-          const bm = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), new THREE.MeshBasicMaterial({ color: 0xf97316 }));
-          bm.position.set(tObj.group.position.x, 1.2, tObj.group.position.z);
-          scene.add(bm);
-          const dx = target.x - tObj.group.position.x; const dz = target.z - tObj.group.position.z;
-          const l = Math.hypot(dx, dz) || 1;
-          bullets3D.push({ mesh: bm, x: bm.position.x, z: bm.position.z, vx: (dx / l) * 28, vz: (dz / l) * 28, dmg: Math.round(atk * (0.5 + lv * 0.15)), life: 1.0 });
-        }
-      });
-
-      // 5. Actualizar Zombies
-      const fenceLv = STATE.pads.find(p => p.id === 'fence').level;
-      for (let i = zombies3D.length - 1; i >= 0; i--) {
-        const z = zombies3D[i];
-        if (z.slow > 0) z.slow -= dt;
-        const spd = z.speed * (z.slow > 0 ? 0.45 : 1.0);
-
-        const stopZ = STATE.fenceHp > 0 ? 1.05 : duckPos.z;
-        const tx = STATE.fenceHp > 0 ? z.x * 0.92 : duckPos.x;
-        const tz = Math.min(stopZ, duckPos.z);
-        const dx = tx - z.x; const dz = tz - z.z;
-        const dist = Math.hypot(dx, dz) || 1;
-
-        if (dist > 0.45) {
-          z.x += (dx / dist) * spd * dt;
-          z.z += (dz / dist) * spd * dt;
-        } else if (STATE.fenceHp > 0) {
-          STATE.fenceHp = Math.max(0, STATE.fenceHp - z.atk * dt);
-          z.hp -= (15 * fenceLv) * dt;
-        }
-
-        z.mesh.position.set(z.x, Math.abs(Math.sin(now * 0.015 + i)) * 0.15, z.z);
-        z.mesh.lookAt(duckPos.x, 0, duckPos.z);
-
-        if (z.isBoss) {
-          const pct = Math.max(0, (z.hp / z.maxHp) * 100);
-          document.getElementById('boss-hp-fill').style.width = `${pct}%`;
-          document.getElementById('boss-hp-bars').textContent = `x${Math.ceil(pct / 20)}`;
-        }
-
-        if (z.hp <= 0) {
-          scene.remove(z.mesh);
-          spawnBanknoteOnGround(z.x, z.z, Math.round((15 + STATE.wave * 6) * (z.isBoss ? 10 : 1)));
-          addSkillXp(z.isBoss ? 90 : 25);
-          zombies3D.splice(i, 1);
-          updateHUD();
-
-          if (zombies3D.length === 0 && STATE.zombiesToSpawn === 0 && STATE.isNight) {
-            onWaveClearedCashShower();
-          }
+      // 4. Event Weapon Auto-Fire
+      state.hero.fireCooldown -= dt;
+      if (state.hero.fireCooldown <= 0 && enemies.length > 0) {
+        let nearest = enemies[0];
+        let bestD = 999;
+        enemies.forEach(en => {
+          const d = Math.hypot(en.x - state.hero.x, en.z - state.hero.z);
+          if (d < bestD) { bestD = d; nearest = en; }
+        });
+        if (bestD < 15) {
+          fireEventWeapon(nearest);
+          const mult = state.overdriveTimer > 0 ? 0.35 : 1.0;
+          state.hero.fireCooldown = state.equippedWeapon.fireInterval * mult;
         }
       }
 
-      // 6. Actualizar Balas, Meteoritos y Billetes volando a la Mochila
-      for (let i = bullets3D.length - 1; i >= 0; i--) {
-        const b = bullets3D[i];
-        b.x += b.vx * dt; b.z += b.vz * dt; b.life -= dt;
-        b.mesh.position.set(b.x, 1.2, b.z);
-        let hit = false;
-        for (let j = 0; j < zombies3D.length; j++) {
-          const z = zombies3D[j];
-          if (Math.hypot(z.x - b.x, z.z - b.z) < z.radius + 0.45) {
-            z.hp -= b.dmg;
-            spawnFloatingText(z.x, 1.9, z.z, `${b.dmg}`, '#fde047');
-            hit = true; break;
-          }
-        }
-        if (hit || b.life <= 0) { scene.remove(b.mesh); bullets3D.splice(i, 1); }
-      }
+      // 5. Ground Build Pads & Event Rift Portal Interaction
+      padDrainAccum += dt;
+      buildPads.forEach(pad => {
+        if (pad.portalRing) pad.portalRing.rotation.z += 2 * dt;
 
-      for (let i = meteors3D.length - 1; i >= 0; i--) {
-        const m = meteors3D[i];
-        m.p += dt * 2.5;
-        m.mesh.position.set((m.tx - 3) + 3 * m.p, 14 * (1 - m.p), (m.tz - 3) + 3 * m.p);
-        if (m.p >= 1) {
-          scene.remove(m.mesh);
-          zombies3D.forEach(z => {
-            if (Math.hypot(z.x - m.tx, z.z - m.tz) < 4.5) {
-              z.hp -= m.dmg;
-              spawnFloatingText(z.x, 2.2, z.z, `☄️-${m.dmg}`, '#fb923c');
-            }
+        const d = Math.hypot(state.hero.x - pad.x, state.hero.z - pad.z);
+        if (d < 1.85 && state.cash >= 5 && padDrainAccum >= 0.11) {
+          padDrainAccum = 0;
+          state.cash -= 5;
+          pad.paid += 5;
+          updateTopResources();
+
+          // Parabolic flying banknote from backpack to pad!
+          const billMesh = new THREE.Mesh(
+            new THREE.BoxGeometry(0.45, 0.1, 0.28),
+            new THREE.MeshBasicMaterial({ color: 0x22c55e })
+          );
+          scene.add(billMesh);
+          flyingBills.push({
+            mesh: billMesh,
+            sx: state.hero.x, sz: state.hero.z,
+            tx: pad.x, tz: pad.z,
+            t: 0
           });
-          meteors3D.splice(i, 1);
-        }
-      }
 
-      for (let i = groundBanknotes3D.length - 1; i >= 0; i--) {
-        const b = groundBanknotes3D[i];
-        b.mesh.rotation.y += 3 * dt;
-        const dist = Math.hypot(duckPos.x - b.x, duckPos.z - b.z);
-        if (dist < 6.0) {
-          const dx = duckPos.x - b.x; const dz = duckPos.z - b.z;
-          const l = Math.hypot(dx, dz) || 1;
-          b.x += (dx / l) * 24 * dt; b.z += (dz / l) * 24 * dt;
-          b.mesh.position.set(b.x, 0.7, b.z);
-          if (dist < 1.1) {
-            sfxCashFeed();
-            STATE.cash += b.amount;
-            scene.remove(b.mesh);
-            groundBanknotes3D.splice(i, 1);
-            updateHUD();
-            renderQuickPads();
+          const rem = Math.max(0, pad.cost - pad.paid);
+          document.getElementById('cost-' + pad.id).textContent = `💵 $${rem}`;
+
+          if (pad.paid >= pad.cost) {
+            pad.paid = 0;
+            if (pad.isPortal) {
+              pad.cost += 15;
+              spawnEnemy(false, true);
+              showToast('🌀 ¡PORTAL DE EVENTO ACTIVADO! Derrota al Élite para ganar 🎟️ Fichas.');
+            } else {
+              pad.level++;
+              pad.cost = Math.round(pad.cost * 1.5);
+              buildOrUpgradeTurretMesh(pad);
+              showToast(`🛠️ ¡${pad.name} mejorada a NV.${pad.level}!`);
+            }
+            document.getElementById('cost-' + pad.id).textContent =
+              pad.isPortal ? `🌀 $${pad.cost}` : `NV.${pad.level} 💵 $${pad.cost}`;
           }
         }
+
+        // Turret shooting
+        if (!pad.isPortal && pad.level > 0 && enemies.length > 0) {
+          pad.cooldown -= dt;
+          if (pad.cooldown <= 0) {
+            const t = enemies[0];
+            const a = Math.atan2(t.x - pad.x, t.z - pad.z);
+            const m = new THREE.Mesh(
+              new THREE.BoxGeometry(0.28, 0.28, 0.28),
+              new THREE.MeshBasicMaterial({ color: pad.color })
+            );
+            m.position.set(pad.x, 1.1, pad.z);
+            scene.add(m);
+            projectiles.push({
+              mesh: m,
+              x: pad.x, z: pad.z,
+              vx: Math.sin(a) * 16, vz: Math.cos(a) * 16,
+              dmg: 26 * pad.level,
+              life: 1.1,
+              pierce: 1,
+              radius: 0.7,
+              color: pad.color
+            });
+            pad.cooldown = Math.max(0.25, 0.75 - pad.level * 0.1);
+          }
+        }
+      });
+
+      // Animate flying bills
+      for (let i = flyingBills.length - 1; i >= 0; i--) {
+        const fb = flyingBills[i];
+        fb.t += dt * 3.5;
+        if (fb.t >= 1) {
+          scene.remove(fb.mesh);
+          flyingBills.splice(i, 1);
+          continue;
+        }
+        fb.mesh.position.set(
+          fb.sx + (fb.tx - fb.sx) * fb.t,
+          0.9 + Math.sin(fb.t * Math.PI) * 2.2,
+          fb.sz + (fb.tz - fb.sz) * fb.t
+        );
       }
 
-      for (let i = flyingBanknotes3D.length - 1; i >= 0; i--) {
-        const fb = flyingBanknotes3D[i];
-        fb.progress += dt * 4.0;
-        const p = Math.min(1, fb.progress);
-        fb.mesh.position.set(
-          fb.sx + (fb.tx - fb.sx) * p,
-          1.5 + Math.sin(p * Math.PI) * 2.2,
-          fb.sz + (fb.tz - fb.sz) * p
-        );
-        if (fb.progress >= 1) {
-          scene.remove(fb.mesh);
-          flyingBanknotes3D.splice(i, 1);
+      // 6. Update Projectiles
+      for (let i = projectiles.length - 1; i >= 0; i--) {
+        const p = projectiles[i];
+        p.x += p.vx * dt;
+        p.z += p.vz * dt;
+        p.life -= dt;
+        p.mesh.position.set(p.x, 0.9, p.z);
+        p.mesh.rotation.y += 8 * dt;
+
+        for (let j = enemies.length - 1; j >= 0; j--) {
+          const en = enemies[j];
+          const d = Math.hypot(en.x - p.x, en.z - p.z);
+          if (d < p.radius + (en.isBoss ? 0.9 : 0.45)) {
+            en.hp -= p.dmg;
+            if (p.pullVortex) {
+              en.x += (p.x - en.x) * 0.35;
+              en.z += (p.z - en.z) * 0.35;
+            }
+            if (p.freeze) en.frozenTimer = 1.5;
+
+            showPopup(en.x, en.z, Math.round(p.dmg), p.dmg > 75 ? 'crit' : '');
+            spawnPixelParticles(en.x, en.z, p.color, 3);
+
+            p.pierce--;
+            if (en.hp <= 0) killEnemy(j);
+            else if (en.isBoss) updateBossHUD();
+
+            if (p.pierce <= 0) break;
+          }
+        }
+
+        if (p.life <= 0 || p.pierce <= 0) {
+          scene.remove(p.mesh);
+          projectiles.splice(i, 1);
         }
       }
+
+      // 7. Update Enemies
+      for (let i = enemies.length - 1; i >= 0; i--) {
+        const en = enemies[i];
+        const a = Math.atan2(state.hero.x - en.x, state.hero.z - en.z);
+        const spdMult = en.frozenTimer > 0 ? 0.35 : 1.0;
+        if (en.frozenTimer > 0) en.frozenTimer -= dt;
+
+        en.x += Math.sin(a) * en.speed * spdMult * dt;
+        en.z += Math.cos(a) * en.speed * spdMult * dt;
+        en.mesh.position.set(en.x, Math.abs(Math.sin(now * 0.01 + i)) * 0.15, en.z);
+
+        // Orbital Drone collision
+        if (Math.hypot(en.x - orbitalDrone.position.x, en.z - orbitalDrone.position.z) < 0.85) {
+          en.hp -= 45 * dt;
+          if (en.hp <= 0) { killEnemy(i); continue; }
+        }
+      }
+
+      // 8. Collect Drops (Cash, XP, Event Tickets)
+      for (let i = drops.length - 1; i >= 0; i--) {
+        const dr = drops[i];
+        dr.mesh.rotation.y += 3 * dt;
+        const d = Math.hypot(state.hero.x - dr.x, state.hero.z - dr.z);
+        if (d < state.magnetRadius) {
+          dr.x += (state.hero.x - dr.x) * 10 * dt;
+          dr.z += (state.hero.z - dr.z) * 10 * dt;
+          dr.mesh.position.set(dr.x, 0.4, dr.z);
+        }
+        if (d < 0.85) {
+          if (dr.type === 'cash') {
+            state.cash += dr.value;
+            showPopup(state.hero.x, state.hero.z, `+$${dr.value}`, 'cash');
+          } else if (dr.type === 'ticket') {
+            state.tickets += dr.value;
+            showPopup(state.hero.x, state.hero.z, `+${dr.value} 🎟️`, 'event');
+          } else {
+            state.xp += dr.value;
+            if (state.xp >= state.xpNext) {
+              state.xp -= state.xpNext;
+              state.level++;
+              state.xpNext = Math.round(state.xpNext * 1.35);
+              openSkillDraft();
+            }
+            document.getElementById('xp-bar-fill').style.width = (state.xp / state.xpNext) * 100 + '%';
+            document.getElementById('xp-bar-txt').textContent = `NV.${state.level} EXP (${state.xp}/${state.xpNext})`;
+          }
+          updateTopResources();
+          scene.remove(dr.mesh);
+          drops.splice(i, 1);
+        }
+      }
+
+      // 9. Update Voxel Particles
+      for (let i = voxelParticles.length - 1; i >= 0; i--) {
+        const vp = voxelParticles[i];
+        vp.life -= dt;
+        vp.vy -= 14 * dt;
+        vp.mesh.position.x += vp.vx * dt;
+        vp.mesh.position.y = Math.max(0.1, vp.mesh.position.y + vp.vy * dt);
+        vp.mesh.position.z += vp.vz * dt;
+        if (vp.life <= 0) {
+          scene.remove(vp.mesh);
+          voxelParticles.splice(i, 1);
+        }
+      }
+
+      // 10. Sync World 3D Floating HUD
+      const pScreen = projectToScreen(state.hero.x, 2.4, state.hero.z);
+      const pHud = document.getElementById('player-floating-hud');
+      pHud.style.left = pScreen.x + 'px';
+      pHud.style.top = pScreen.y + 'px';
+
+      buildPads.forEach(pad => {
+        const s = projectToScreen(pad.x, 0.4, pad.z + 1.3);
+        pad.domEl.style.left = s.x + 'px';
+        pad.domEl.style.top = s.y + 'px';
+      });
 
       renderer.render(scene, camera);
-      requestAnimationFrame(animate3D);
     }
 
-    // ============================================================================
-    // 9. INTERFACES DE MENÚ 1:1 DE DUCK SURVIVAL (EQUIPO, PATOS 2+2, 777 DRAWS, TIENDA)
-    // ============================================================================
-    function openMenuTab(tab) {
-      STATE.openTab = tab;
-      document.getElementById('menu-modal-sheet').classList.remove('translate-y-full');
-      renderMenuTab(tab);
-    }
-    function closeMenuTab() {
-      STATE.openTab = null;
-      document.getElementById('menu-modal-sheet').classList.add('translate-y-full');
-    }
+    function killEnemy(idx) {
+      const en = enemies[idx];
+      spawnPixelParticles(en.x, en.z, en.isEventElite ? 0xff2a85 : 0x22c55e, 10);
+      spawnDrop(en.x, en.z, 'cash');
+      spawnDrop(en.x, en.z, 'xp');
 
-    function renderMenuTab(tab) {
-      const title = document.getElementById('menu-sheet-title');
-      const body = document.getElementById('menu-sheet-body');
-
-      if (tab === 'gear') {
-        title.textContent = '🎒 Equipamiento del Pato (6 Slots) y Gemas';
-        const slotsHtml = STATE.gear.map((g, i) => `
-          <div class="cartoon-box rounded-2xl p-2.5 flex items-center justify-between gap-2">
-            <div class="flex items-center gap-2">
-              <div class="w-11 h-11 rounded-xl ${g.color} border-2 border-black flex items-center justify-center text-xl shadow">
-                ${g.icon}
-              </div>
-              <div>
-                <span class="px-1.5 py-0.5 rounded bg-black text-amber-300 font-black text-xs">${g.rarity} • Nv.${g.lv}</span>
-                <strong class="text-sm block text-white text-outline">${g.name}</strong>
-                <span class="text-xs text-lime-300 font-bold">${g.gem}</span>
-              </div>
-            </div>
-            <button onclick="upgradeGear(${i})" class="cartoon-btn-yellow px-3 py-2 rounded-xl text-xs shrink-0">
-              ⬆️ Subir ($80)
-            </button>
-          </div>
-        `).join('');
-
-        body.innerHTML = `
-          <div class="flex items-center justify-between gap-2">
-            <button onclick="upgradeAllGear()" class="cartoon-btn-green flex-1 py-2.5 rounded-2xl text-xs">
-              ⬆️ Mejorar Todos los Slots
-            </button>
-            <button onclick="mergeAllGems()" class="cartoon-btn-yellow flex-1 py-2.5 rounded-2xl text-xs">
-              🔮 Fusionar Gemas (3→1)
-            </button>
-          </div>
-          <div class="space-y-2 pt-1">${slotsHtml}</div>
-        `;
-      } else if (tab === 'heroes') {
-        title.textContent = '🦆 Escuadrón de Patos (2 Activos + 2 Soporte)';
-        body.innerHTML = STATE.ducks.map((d, i) => `
-          <div class="cartoon-box rounded-2xl p-3 flex items-center justify-between gap-2">
-            <div>
-              <span class="px-2 py-0.5 rounded bg-amber-400 text-black font-black text-xs border border-black">${d.role}</span>
-              <strong class="text-sm block mt-1 text-white text-outline">🦆 ${d.name} • Nv.${d.lv} (${'★'.repeat(d.stars)})</strong>
-              <span class="text-xs text-amber-300 font-bold">Sinergia Elemental: ${d.element} (+30% Daño)</span>
-            </div>
-            <button onclick="levelUpDuck(${i})" class="cartoon-btn-yellow px-3 py-2 rounded-xl text-xs shrink-0">
-              ⬆️ Ascender
-            </button>
-          </div>
-        `).join('');
-      } else if (tab === 'gacha') {
-        title.textContent = '🎲 Reclutamiento Patos Míticos & Cofres S-Tier';
-        body.innerHTML = `
-          <div class="cartoon-box rounded-2xl p-4 bg-gradient-to-r from-indigo-900 to-purple-900 space-y-2.5">
-            <span class="px-2 py-0.5 rounded bg-amber-400 text-black font-black text-xs border border-black">🌟 EVENTO 777 TIRADAS GRATIS</span>
-            <h3 class="text-base font-black text-white text-outline">Cápsula de Héroes Patos & Armas Gattling S-Tier</h3>
-            <div class="grid grid-cols-2 gap-2">
-              <button onclick="pullDuckGacha(1)" class="cartoon-btn-blue py-2.5 rounded-xl text-xs">🎲 Tirada x1 (1 🎟️)</button>
-              <button onclick="pullDuckGacha(10)" class="cartoon-btn-yellow py-2.5 rounded-xl text-xs">🌟 Tirada x10 (10 🎟️)</button>
-            </div>
-          </div>
-          <div id="gacha-results-box" class="grid grid-cols-5 gap-1.5 pt-2"></div>
-        `;
-      } else if (tab === 'shop') {
-        title.textContent = '🛒 Tienda de Suministros & Pack $0.99';
-        body.innerHTML = `
-          <div class="cartoon-box rounded-2xl p-3.5 bg-gradient-to-r from-rose-900 to-amber-900 flex items-center justify-between gap-2">
-            <div>
-              <span class="px-2 py-0.5 rounded bg-amber-400 text-black font-black text-xs border border-black">🔥 PACK 1.ª COMPRA $0.99 (1200% VALOR)</span>
-              <strong class="text-sm block mt-1 text-white text-outline">Pato Mítico Cole 5★ + Gattling Dorada + 💵$2,500</strong>
-            </div>
-            <button onclick="claimStarterPack()" class="cartoon-btn-yellow px-3.5 py-2.5 rounded-xl text-xs shrink-0">
-              Gratis Test
-            </button>
-          </div>
-        `;
-      }
-    }
-
-    function upgradeGear(i) {
-      STATE.gear[i].lv++;
-      sfxLevelUp();
-      renderMenuTab('gear');
-      updateHUD();
-      showToast(`🎒 ¡[${STATE.gear[i].name}] mejorado a Nv.${STATE.gear[i].lv}!`);
-    }
-    function upgradeAllGear() {
-      STATE.gear.forEach(g => g.lv++);
-      sfxLevelUp();
-      renderMenuTab('gear');
-      updateHUD();
-      showToast('⬆️ ¡Todos los 6 Slots de Equipo subieron de nivel!');
-    }
-    function mergeAllGems() {
-      STATE.gear[0].gem = '🔴 Gema MÍTICA Fuego +50%';
-      sfxLevelUp();
-      renderMenuTab('gear');
-      showToast('🔮 ¡Gemas fusionadas 3→1 en Gema Mítica Roja (+50% Daño)!');
-    }
-    function levelUpDuck(i) {
-      STATE.ducks[i].lv += 2;
-      STATE.ducks[i].stars = Math.min(5, STATE.ducks[i].stars + 1);
-      sfxLevelUp();
-      renderMenuTab('heroes');
-      showToast(`🦆 ¡${STATE.ducks[i].name} subió a ${STATE.ducks[i].stars}★!`);
-    }
-    function pullDuckGacha(n) {
-      sfxLevelUp();
-      const box = document.getElementById('gacha-results-box');
-      const items = ['🦆 Duke ★', '🚀 Cole UR', '🔫 Gattling S', '🔴 Gema Mítica', '❄️ Mir SSR'];
-      let html = '';
-      for (let i = 0; i < n; i++) {
-        const it = items[Math.floor(Math.random() * items.length)];
-        html += `<div class="cartoon-box rounded-xl p-2 text-center font-black text-xs text-amber-300">${it}</div>`;
-      }
-      if (box) box.innerHTML = html;
-      STATE.ducks[0].lv += n;
-      showToast(`🎲 ¡${n} Cápsulas abiertas! Poder del escuadrón aumentado.`);
-    }
-    function claimStarterPack() {
-      STATE.cash += 2500;
-      STATE.gems += 3000;
-      sfxLevelUp();
-      updateHUD();
-      renderQuickPads();
-      showToast('🔥 ¡Pack $0.99 activado! +💵$2,500 en tu mochila 3D.');
-    }
-    function claim777Draws() {
-      STATE.cash += 800;
-      STATE.tickets += 25;
-      sfxLevelUp();
-      updateHUD();
-      renderQuickPads();
-      showToast('🎁 ¡Recompensa 777 Draws! +💵$800 en tu mochila y +25 Tickets.');
-    }
-
-    function toggleFrameMode() {
-      STATE.framedMode = !STATE.framedMode;
-      const f = document.getElementById('phone-container');
-      if (STATE.framedMode) { f.classList.add('framed-mode'); f.classList.remove('fullscreen-mode'); }
-      else { f.classList.remove('framed-mode'); f.classList.add('fullscreen-mode'); }
-      setTimeout(resize3D, 60);
-    }
-
-    let toastTimer = null;
-    function showToast(msg) {
-      const el = document.getElementById('toast-msg');
-      el.textContent = msg;
-      el.classList.remove('hidden');
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => el.classList.add('hidden'), 2600);
-    }
-
-    // ============================================================================
-    // 10. INICIO DEL JUEGO 3D
-    // ============================================================================
-    window.addEventListener('DOMContentLoaded', () => {
-      resize3D();
-      syncChickSoldiers3D();
-      renderQuickPads();
-      setDayNightVisuals(false, false);
-
-      // Generar algunos fajos de billetes iniciales en el suelo para ver la mochila llenarse
-      for (let i = 0; i < 6; i++) {
-        spawnBanknoteOnGround((Math.random() - 0.5) * 6, 3 + Math.random() * 3, 40);
+      if (en.isBoss || en.isEventElite) {
+        for (let k = 0; k < 4; k++) spawnDrop(en.x, en.z, 'ticket');
+        for (let k = 0; k < 5; k++) spawnDrop(en.x, en.z, 'cash');
+        if (en.isBoss) {
+          activeBoss = null;
+          document.getElementById('boss-banner').style.display = 'none';
+          showToast('🏆 ¡JEFE DEMONIO PIXEL DERROTADO! +20 🎟️ Fichas de Evento');
+        }
       }
 
-      // EIniciar la primera oleada automáticamente tras 2.5 segundos
-      setTimeout(() => {
-        if (!STATE.isNight) startNightWave();
-      }, 2500);
+      if (state.overdriveTimer <= 0) {
+        state.fever = Math.min(100, state.fever + 8);
+        document.getElementById('fever-bar-fill').style.width = state.fever + '%';
+        document.getElementById('fever-bar-txt').textContent =
+          state.fever >= 100 ? '⚡ ¡TOCA PARA HIPER-PIXEL!' : `🔥 FIEBRE PIXEL ${state.fever}%`;
+        if (state.fever >= 100) document.getElementById('fever-box').classList.add('fever-ready');
+      }
 
-      const bar = document.getElementById('load-bar');
-      const st = document.getElementById('load-status');
-      setTimeout(() => { bar.style.width = '85%'; st.textContent = 'Cargando Mochila de Billetes 3D y Zombies Toon...'; }, 160);
-      setTimeout(() => { bar.style.width = '100%'; st.textContent = '¡Cuac! ¡Listo para jugar!'; }, 320);
-      setTimeout(() => {
-        const ov = document.getElementById('loading-overlay');
-        ov.style.opacity = '0';
-        setTimeout(() => ov.style.display = 'none', 400);
-      }, 450);
+      scene.remove(en.mesh);
+      enemies.splice(idx, 1);
+    }
 
-      requestAnimationFrame(animate3D);
-    });
+    function onResize() {
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+    }
+    window.addEventListener('resize', onResize);
+
+    requestAnimationFrame(animate);
   </script>
 </body>
 </html>
