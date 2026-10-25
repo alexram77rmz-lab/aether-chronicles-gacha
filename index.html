@@ -398,7 +398,7 @@
     /* DAY PHASE CTA OVERLAY */
     #day-cta-box {
       position: absolute;
-      top: 175px;
+      top: 205px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 12;
@@ -818,10 +818,20 @@
       border-radius: 6px;
     }
 
+    .hp-bar-inner { height: 100%; width: 100%; background: linear-gradient(90deg, #16a34a, #4ade80); transition: width 0.15s; }
+    #end-modal { position: absolute; inset: 0; z-index: 45; background: rgba(6,8,18,0.92); display: none; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
+    #end-modal.open { display: flex; }
+    .end-card { width: 100%; max-width: 360px; background: linear-gradient(180deg, #252b4d, #12152a); border: 3px solid #fbbf24; border-radius: 22px; padding: 18px; text-align: center; box-shadow: 0 8px 0 #000; }
+    .end-title { font-size: 1.6rem; font-weight: 800; color: #fde047; text-shadow: 0 3px 0 #000; }
+    .end-sub { font-size: 0.82rem; color: #cbd5e1; margin: 4px 0 12px; }
+    .end-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px; }
+    .end-stat { background: rgba(0,0,0,0.35); border: 2px solid #3b4266; border-radius: 12px; padding: 6px; font-size: 0.76rem; font-weight: 700; }
+    .end-stat b { display: block; font-family: var(--font-num); font-size: 1rem; color: #4ade80; }
+
     /* TOAST NOTIFICATION */
     #toast {
       position: absolute;
-      top: 132px;
+      top: 330px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 50;
@@ -883,6 +893,12 @@
           <div class="w-dot" id="wdot-4">4</div>
           <div class="w-dot boss" id="wdot-5">💀5</div>
         </div>
+      </div>
+
+      <!-- PLAYER HP BAR -->
+      <div class="stat-bar" style="margin-bottom:5px;">
+        <div class="hp-bar-inner" id="hp-fill"></div>
+        <div class="stat-bar-label" id="hp-txt">❤️ 660/660</div>
       </div>
 
       <!-- XP & FEVER OVERDRIVE BARS -->
@@ -949,9 +965,10 @@
 
     <!-- RIGHT ACTION BUTTONS -->
     <div id="right-combat-btns">
-      <button class="skill-orb-btn" onclick="castSSSPetUltimate()">
+      <button class="icon-btn" id="mute-btn" style="align-self:center" onclick="toggleMute()">🔊</button>
+      <button class="skill-orb-btn" id="ult-btn" onclick="castSSSPetUltimate()">
         <span style="font-size:1.35rem">🐉</span>
-        <span>ULTI SSS</span>
+        <span id="ult-label">ULTI SSS</span>
       </button>
       <button class="skill-orb-btn fever" onclick="triggerOverdrive()">
         <span style="font-size:1.35rem">⚡</span>
@@ -1009,7 +1026,7 @@
 
         <div style="display:flex; flex-direction:column; align-items:center;">
           <canvas id="paperdoll-canvas" width="120" height="120" style="background:radial-gradient(circle,#2e3659,#131626); border:2px solid #fbbf24; border-radius:16px;"></canvas>
-          <button class="btn-action upgrade" style="margin-top:6px; font-size:0.7rem;" onclick="upgradeAllGear()">
+          <button class="btn-action upgrade" id="gear-btn" style="margin-top:6px; font-size:0.7rem;" onclick="upgradeAllGear()">
             ⬆️ MEJORAR EQUIPO ($20)
           </button>
         </div>
@@ -1020,7 +1037,7 @@
             <div class="gear-meta"><div class="gn">Collar S</div><div class="gl" id="gl-4">NV.12</div></div>
           </div>
           <div class="gear-slot-card" onclick="upgradeAllGear()">
-            <div class="gear-ico">ベルト</div>
+            <div class="gear-ico">🔗</div>
             <div class="gear-meta"><div class="gn">Cinturón</div><div class="gl" id="gl-5">NV.10</div></div>
           </div>
           <div class="gear-slot-card gold" onclick="upgradeAllGear()">
@@ -1066,6 +1083,16 @@
       <div class="draft-banner">⚡ ¡NIVEL SUPERADO!</div>
       <p style="font-size:0.8rem; color:#cbd5e1;">Selecciona una mejora de combate para esta partida:</p>
       <div class="draft-list" id="draft-list-box"></div>
+    </div>
+
+    <!-- END OF RUN MODAL (VICTORY / DEFEAT) -->
+    <div id="end-modal">
+      <div class="end-card">
+        <div class="end-title" id="end-title">🏆 ¡VICTORIA!</div>
+        <div class="end-sub" id="end-sub"></div>
+        <div class="end-stats" id="end-stats"></div>
+        <button class="btn-next-wave" id="end-btn">REINTENTAR</button>
+      </div>
     </div>
 
     <!-- BOTTOM 5-TAB BAR -->
@@ -1280,6 +1307,8 @@
       weaponData: EVENT_WEAPONS[0],
       petData: SSS_PETS[0],
       extraShots: 0,
+      cycle: 1, kills: 0, runTickets: 0, reviveUsed: false, ultCd: 0, hurtFlash: 0,
+      over: false, bestWave: 1, bestCycle: 0, muted: false,
       orbitalSaws: 2,
       lightningLevel: 1,
       magnetRange: 155,
@@ -1296,7 +1325,8 @@
         fireTimer: 0,
         petTimer: 0,
         lightningTimer: 1.5,
-        walkCycle: 0
+        walkCycle: 0,
+        hitCd: 0
       }
     };
 
@@ -1579,7 +1609,7 @@
 
       g.save();
       g.translate(sx, sy);
-      const sc = en.isBoss ? 2.15 : (en.isElite ? 1.45 : 0.92);
+      const sc = en.isBoss ? 2.15 : (en.isElite ? 1.45 : 0.92 * (en.scaleMul || 1));
       g.scale(sc, sc);
 
       const waddle = Math.sin(time * 9 + en.seed) * 0.08;
@@ -1602,7 +1632,7 @@
       g.stroke();
 
       // Head (Zombie Green or Demon Dark Red)
-      g.fillStyle = en.hitFlash > 0 ? '#ffffff' : (en.isBoss ? '#dc2626' : (en.isElite ? '#c084fc' : '#4ade80'));
+      g.fillStyle = en.hitFlash > 0 ? '#ffffff' : (en.isBoss ? '#dc2626' : (en.isElite ? '#c084fc' : (en.type === 'runner' ? '#fde047' : (en.type === 'tank' ? '#94a3b8' : '#4ade80'))));
       g.beginPath();
       g.arc(0, -10, 12.5, 0, Math.PI * 2);
       g.fill();
@@ -1665,7 +1695,7 @@
     const floatingTexts = [];
     const particles = [];
 
-    let waveToSpawn = 15;
+    let waveToSpawn = 25;
     let waveSpawned = 0;
     let spawnCooldown = 0;
     let activeBoss = null;
@@ -1676,8 +1706,8 @@
       const x = state.player.x + Math.cos(ang) * dist;
       const y = state.player.y + Math.sin(ang) * dist;
 
-      const scaleHp = 1 + (state.wave - 1) * 0.45;
-      const maxHp = isBoss ? Math.round(2500 * scaleHp) : (isElite ? Math.round(680 * scaleHp) : Math.round(95 * scaleHp));
+      const scaleHp = (1 + (state.wave - 1) * 0.6) * (1 + (state.cycle - 1) * 0.8);
+      const maxHp = isBoss ? Math.round(2500 * scaleHp) : (isElite ? Math.round(680 * scaleHp) : Math.round(135 * scaleHp));
 
       const en = {
         x, y,
@@ -1691,6 +1721,14 @@
         freezeTime: 0,
         seed: Math.random() * 10
       };
+      if (!isBoss && !isElite) {
+        const r = Math.random();
+        if (state.wave >= 2 && r < 0.2) {
+          en.type = 'runner'; en.speed *= 1.7; en.maxHp = en.hp = Math.round(en.maxHp * 0.55); en.scaleMul = 0.8;
+        } else if (state.wave >= 3 && r > 0.88) {
+          en.type = 'tank'; en.speed *= 0.65; en.maxHp = en.hp = Math.round(en.maxHp * 3); en.scaleMul = 1.3; en.hasCone = false;
+        }
+      }
       enemies.push(en);
 
       if (isBoss) {
@@ -1750,7 +1788,7 @@
           style: wpn.id,
           color: wpn.primaryColor,
           subColor: wpn.secondaryColor,
-          dmg: 45 * wpn.dmgMult * state.heroData.atkMult * (1 + (wpn.level - 1) * 0.25) * (isOverdrive ? 1.5 : 1),
+          ...rollWeaponDamage(wpn, isOverdrive),
           pierce: wpn.id === 'blackhole' ? 7 : (wpn.id === 'katana' ? 5 : 3),
           radius: wpn.id === 'blackhole' ? 28 : 16,
           pull: wpn.id === 'blackhole',
@@ -1778,7 +1816,7 @@
           style: 'pet_orb',
           color: pet.wingColor,
           subColor: pet.bodyColor,
-          dmg: 52 * pet.dmgMult * (1 + (pet.level - 1) * 0.3),
+          dmg: 34 * pet.dmgMult * (1 + (pet.level - 1) * 0.3),
           pierce: 3,
           radius: 15,
           life: 1.3
@@ -1787,6 +1825,10 @@
     }
 
     window.castSSSPetUltimate = function() {
+      if (isGamePaused()) return;
+      if (state.ultCd > 0) return showToast(`⏳ Ulti SSS en recarga (${Math.ceil(state.ultCd)}s)`);
+      state.ultCd = 12;
+      sfx('ult');
       const pet = state.petData;
       showToast(`🐉 ¡${pet.ultName} DESATADO!`);
       for (let i = 0; i < 18; i++) {
@@ -1809,6 +1851,8 @@
     };
 
     window.triggerOverdrive = function() {
+      if (isGamePaused() || state.overdriveTime > 0) return;
+      if (state.fever < 100) return showToast('🔥 Mata enemigos para llenar la Fiebre Pixel al 100%');
       state.fever = 0;
       state.overdriveTime = 7.0;
       document.getElementById('fever-bar-box').classList.remove('ready');
@@ -1819,6 +1863,7 @@
     // 6. DAY / NIGHT WAVE MANAGEMENT
     // ============================================================================
     function finishWave() {
+      if (state.wave >= state.maxWaves) { endRun(true); return; }
       state.phase = 'DAY';
       const badge = document.getElementById('phase-badge');
       badge.textContent = '☀️ DÍA: CONSTRUYE TU BASE';
@@ -1843,7 +1888,7 @@
       document.getElementById('day-cta-box').style.display = 'none';
 
       waveSpawned = 0;
-      waveToSpawn = 14 + state.wave * 5;
+      waveToSpawn = 18 + state.wave * 7;
       refreshWaveTimeline();
 
       if (state.wave === 5) {
@@ -1855,7 +1900,7 @@
     };
 
     function refreshWaveTimeline() {
-      document.getElementById('wave-title-txt').textContent = `🏕️ CAMPAMENTO BASE — OLEADA ${state.wave} DE 5`;
+      document.getElementById('wave-title-txt').textContent = `🏕️ CICLO ${state.cycle} — OLEADA ${state.wave} DE 5`;
       document.getElementById('wave-line-fill').style.width = ((state.wave - 1) / 4) * 100 + '%';
       for (let i = 1; i <= 5; i++) {
         const dot = document.getElementById('wdot-' + i);
@@ -1869,6 +1914,13 @@
     // 7. UI TABS, PORTRAIT CANVASES & UPGRADES
     // ============================================================================
     function refreshTopHUD() {
+      const mh = playerMaxHp();
+      if (mh !== state.player.maxHp) {
+        state.player.hp = Math.min(mh, state.player.hp * mh / state.player.maxHp);
+        state.player.maxHp = mh;
+        updateHpBar();
+      }
+      saveGame();
       document.getElementById('hud-cash').textContent = state.cash;
       document.getElementById('hud-tickets').textContent = state.tickets;
       document.getElementById('hud-gems').textContent = state.gems.toLocaleString();
@@ -1961,6 +2013,8 @@
       });
 
       // 3. Heroes Grid & Paperdoll
+      document.getElementById('gear-btn').textContent = '⬆️ MEJORAR EQUIPO (💎 ' + gearCost() + ')';
+      for (let gi = 1; gi <= 6; gi++) document.getElementById('gl-' + gi).textContent = 'NV.' + state.gearLevel;
       const pdCanvas = document.getElementById('paperdoll-canvas');
       if (pdCanvas) {
         const pdCtx = pdCanvas.getContext('2d');
@@ -2030,8 +2084,9 @@
     };
 
     window.upgradeAllGear = function() {
-      if (state.cash < 20) return showToast('¡Recoge al menos $20 💵 de los enemigos!');
-      state.cash -= 20;
+      const gc = gearCost();
+      if (state.gems < gc) return showToast(`¡Necesitas ${gc} 💎 Gemas!`);
+      state.gems -= gc;
       state.gearLevel++;
       for (let i = 1; i <= 6; i++) {
         document.getElementById('gl-' + i).textContent = 'NV.' + state.gearLevel;
@@ -2063,6 +2118,7 @@
     };
 
     function openSkillDraftModal() {
+      sfx('level');
       const modal = document.getElementById('skill-draft-modal');
       const box = document.getElementById('draft-list-box');
       box.innerHTML = '';
@@ -2147,14 +2203,235 @@
     // 9. MAIN 60FPS UPDATE & DETAILED 2.5D RENDER LOOP
     // ============================================================================
     refreshTopHUD();
+    var SAVE_KEY = 'duckPixelSurvivor_save_v2';
+    var saveT = null;
+    var audioCtx = null;
+    var sfxLast = {};
+
+    function playerMaxHp() { return Math.round((300 + state.gearLevel * 30) * (state.heroData.id === 'cyber' ? 1.1 : 1)); }
+    function gearDmgMult() { return 1 + (state.gearLevel - 12) * 0.04; }
+    function gearCost() { return 60 + state.gearLevel * 12; }
+
+    function rollWeaponDamage(wpn, isOverdrive) {
+      const hid = state.heroData.id;
+      const chance = 0.12 + (hid === 'ronin' ? 0.12 : 0);
+      const critMult = 1.8 + (state.petData.id === 'dragon' ? 0.35 : 0) + (hid === 'ronin' ? 0.4 : 0);
+      const crit = Math.random() < chance;
+      const base = 26 * wpn.dmgMult * state.heroData.atkMult * gearDmgMult() * (1 + (wpn.level - 1) * 0.25) * (isOverdrive ? 1.5 : 1);
+      return { dmg: base * (crit ? critMult : 1), crit: crit };
+    }
+
+    function contactDamage(en) {
+      let d = en.isBoss ? 70 : (en.isElite ? 45 : (en.type === 'tank' ? 32 : (en.type === 'runner' ? 16 : 14 + state.wave * 4)));
+      return Math.round(d * (1 + (state.cycle - 1) * 0.5));
+    }
+
+    function updateHpBar() {
+      const p = state.player;
+      document.getElementById('hp-fill').style.width = Math.max(0, p.hp / p.maxHp * 100) + '%';
+      document.getElementById('hp-txt').textContent = `❤️ ${Math.ceil(Math.max(0, p.hp))}/${p.maxHp}`;
+    }
+
+    function damagePlayer(n) {
+      const p = state.player;
+      if (p.hitCd > 0 || state.over) return;
+      p.hp -= n;
+      p.hitCd = 0.55;
+      state.hurtFlash = 0.25;
+      addFloatingText(p.x, p.y - 62, '-' + n, '#ef4444', 17);
+      sfx('hurt');
+      if (p.hp <= 0) {
+        if (state.petData.id === 'phoenix' && !state.reviveUsed) {
+          state.reviveUsed = true;
+          p.hp = p.maxHp * 0.6;
+          p.hitCd = 1.5;
+          enemies.forEach(e => { e.hp -= 500; e.hitFlash = 0.2; });
+          addBurstParticles(p.x, p.y, '#facc15', 30);
+          showToast('🐦‍🔥 ¡El Fénix Solar te revivió y quemó a los enemigos cercanos!');
+          sfx('level');
+        } else {
+          p.hp = 0;
+          endRun(false);
+        }
+      }
+      updateHpBar();
+    }
+
+    function isGamePaused() {
+      return state.over
+        || document.querySelector('.modal-drawer.open') !== null
+        || document.getElementById('skill-draft-modal').classList.contains('open');
+    }
+
+    // ---------- PERSISTENCE (localStorage) ----------
+    function doSave() {
+      try {
+        const wl = {}; EVENT_WEAPONS.forEach(w => wl[w.id] = w.level);
+        const pl = {}; SSS_PETS.forEach(p => pl[p.id] = p.level);
+        localStorage.setItem(SAVE_KEY, JSON.stringify({
+          tickets: state.tickets, gems: state.gems, gearLevel: state.gearLevel,
+          bestWave: state.bestWave, bestCycle: state.bestCycle, muted: state.muted,
+          wl: wl, pl: pl,
+          hero: state.heroData.id, weapon: state.weaponData.id, pet: state.petData.id
+        }));
+      } catch (e) { /* storage unavailable */ }
+    }
+    function saveGame() {
+      clearTimeout(saveT);
+      saveT = setTimeout(doSave, 400);
+    }
+    function loadSave() {
+      try {
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (!raw) return;
+        const s = JSON.parse(raw);
+        if (typeof s.tickets === 'number') state.tickets = s.tickets;
+        if (typeof s.gems === 'number') state.gems = s.gems;
+        if (typeof s.gearLevel === 'number') state.gearLevel = s.gearLevel;
+        if (typeof s.bestWave === 'number') state.bestWave = s.bestWave;
+        if (typeof s.bestCycle === 'number') state.bestCycle = s.bestCycle;
+        state.muted = !!s.muted;
+        EVENT_WEAPONS.forEach(w => { if (s.wl && s.wl[w.id]) w.level = s.wl[w.id]; });
+        SSS_PETS.forEach(p => { if (s.pl && s.pl[p.id]) p.level = s.pl[p.id]; });
+        state.heroData = HEROES.find(h => h.id === s.hero) || state.heroData;
+        state.weaponData = EVENT_WEAPONS.find(w => w.id === s.weapon) || state.weaponData;
+        state.petData = SSS_PETS.find(p => p.id === s.pet) || state.petData;
+      } catch (e) { /* corrupt save: ignore */ }
+    }
+
+    // ---------- SOUND (tiny WebAudio synth) ----------
+    window.addEventListener('pointerdown', () => {
+      try {
+        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+      } catch (e) { /* no audio */ }
+    }, { passive: true });
+
+    function sfx(type) {
+      if (state.muted || !audioCtx) return;
+      const nowMs = performance.now();
+      const gap = type === 'hit' ? 70 : (type === 'coin' ? 50 : 20);
+      if (sfxLast[type] && nowMs - sfxLast[type] < gap) return;
+      sfxLast[type] = nowMs;
+      const cfg = {
+        hit: [220, 0.05, 'square', 0.02], coin: [900, 0.07, 'triangle', 0.04],
+        hurt: [110, 0.18, 'sawtooth', 0.06], level: [700, 0.28, 'triangle', 0.06],
+        build: [480, 0.22, 'triangle', 0.05], ult: [160, 0.4, 'sawtooth', 0.07],
+        win: [880, 0.6, 'triangle', 0.07], lose: [90, 0.7, 'sawtooth', 0.07]
+      }[type];
+      if (!cfg) return;
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      const t = audioCtx.currentTime;
+      const up = (type === 'coin' || type === 'level' || type === 'win');
+      o.type = cfg[2];
+      o.frequency.setValueAtTime(cfg[0], t);
+      o.frequency.exponentialRampToValueAtTime(Math.max(40, cfg[0] * (up ? 1.6 : 0.5)), t + cfg[1]);
+      g.gain.setValueAtTime(cfg[3], t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + cfg[1]);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(t); o.stop(t + cfg[1] + 0.02);
+    }
+
+    window.toggleMute = function() {
+      state.muted = !state.muted;
+      document.getElementById('mute-btn').textContent = state.muted ? '🔇' : '🔊';
+      saveGame();
+    };
+
+    // ---------- END OF RUN / RESTART / NEXT CYCLE ----------
+    function endRun(victory) {
+      if (state.over) return;
+      state.over = true;
+      lootDrops.forEach(d => { if (d.type === 'ticket') { state.tickets += d.val; state.runTickets += d.val; } });
+      const gemsReward = state.kills * 2 + state.wave * 40 + (victory ? 400 + state.cycle * 100 : 0);
+      state.gems += gemsReward;
+      state.bestWave = Math.max(state.bestWave, state.wave);
+      if (victory) state.bestCycle = Math.max(state.bestCycle, state.cycle);
+
+      document.getElementById('boss-hud').style.display = 'none';
+      document.getElementById('end-title').textContent = victory ? '🏆 ¡VICTORIA!' : '💀 HAS CAÍDO';
+      document.getElementById('end-sub').textContent = victory
+        ? `Derrotaste al Rey Demonio Abisal (Ciclo ${state.cycle})`
+        : `Llegaste a la Oleada ${state.wave} de 5`;
+      document.getElementById('end-stats').innerHTML = `
+        <div class="end-stat">Enemigos<b>${state.kills}</b></div>
+        <div class="end-stat">Nivel alcanzado<b>${state.level}</b></div>
+        <div class="end-stat">Fichas 🎟️<b>+${state.runTickets}</b></div>
+        <div class="end-stat">Gemas 💎<b>+${gemsReward}</b></div>
+        <div class="end-stat">Mejor oleada<b>${state.bestWave}/5</b></div>
+        <div class="end-stat">Ciclos ganados<b>${state.bestCycle}</b></div>`;
+      const btn = document.getElementById('end-btn');
+      btn.textContent = victory ? `⚔️ SIGUIENTE CICLO ${state.cycle + 1} (+DIFICULTAD)` : '🔄 REINTENTAR';
+      btn.onclick = victory ? nextCycle : restartRun;
+      document.getElementById('end-modal').classList.add('open');
+      sfx(victory ? 'win' : 'lose');
+      refreshTopHUD();
+      doSave();
+    }
+
+    function resetRun() {
+      enemies.length = 0; bullets.length = 0; lootDrops.length = 0;
+      flyingBills.length = 0; floatingTexts.length = 0; particles.length = 0;
+      activeBoss = null; waveSpawned = 0; waveToSpawn = 25; spawnCooldown = 0;
+      state.wave = 1; state.phase = 'NIGHT'; state.cash = 60;
+      state.level = 1; state.xp = 0; state.xpNext = 100; state.fever = 35; state.overdriveTime = 0;
+      state.extraShots = 0; state.orbitalSaws = 2; state.lightningLevel = 1; state.magnetRange = 155;
+      state.kills = 0; state.runTickets = 0; state.reviveUsed = false; state.ultCd = 0; state.hurtFlash = 0;
+      state.over = false;
+      const p = state.player;
+      p.x = 0; p.y = 0; p.maxHp = playerMaxHp(); p.hp = p.maxHp; p.hitCd = 0; p.fireTimer = 0; p.petTimer = 0;
+      basePads.forEach(pd => { pd.level = pd.baseLevel; pd.cost = pd.baseCost; pd.paid = 0; });
+      document.getElementById('boss-hud').style.display = 'none';
+      document.getElementById('day-cta-box').style.display = 'none';
+      const badge = document.getElementById('phase-badge');
+      badge.textContent = '🌙 NOCHE: DEFIENDE';
+      badge.classList.remove('day');
+      document.getElementById('xp-fill').style.width = '0%';
+      document.getElementById('xp-txt').textContent = 'NV.1 EXP (0/100)';
+      document.getElementById('fever-fill').style.width = state.fever + '%';
+      document.getElementById('fever-txt').textContent = `🔥 FIEBRE PIXEL ${state.fever}%`;
+      document.getElementById('fever-bar-box').classList.remove('ready');
+      document.getElementById('end-modal').classList.remove('open');
+      refreshWaveTimeline();
+      refreshTopHUD();
+      updateHpBar();
+    }
+    window.restartRun = function() { resetRun(); showToast('🌙 ¡Nueva partida! Defiende el campamento.'); };
+    window.nextCycle = function() { state.cycle++; resetRun(); showToast(`⚔️ Ciclo ${state.cycle}: enemigos más fuertes, mejores recompensas.`); };
+
+    basePads.forEach(pd => { pd.baseCost = pd.cost; pd.baseLevel = pd.level; });
+    loadSave();
+    document.getElementById('mute-btn').textContent = state.muted ? '🔇' : '🔊';
+    refreshTopHUD();
+    state.player.hp = state.player.maxHp;
+    updateHpBar();
+    refreshWaveTimeline();
+    showToast('🦆 Camina con WASD / joystick. Párate en los círculos para construir.');
+
     let lastTime = performance.now();
     let padPayTimer = 0;
 
     function gameLoop(now) {
       requestAnimationFrame(gameLoop);
+      if (isGamePaused()) { lastTime = now; return; }
       const dt = Math.min(0.05, (now - lastTime) / 1000);
       lastTime = now;
       const timeSec = now / 1000;
+      {
+        const pl = state.player;
+        pl.hitCd = Math.max(0, pl.hitCd - dt);
+        state.hurtFlash = Math.max(0, state.hurtFlash - dt);
+        state.ultCd = Math.max(0, state.ultCd - dt);
+        const regen = (state.phase === 'DAY' ? 0.08 : 0) + (state.petData.id === 'kraken' ? 0.02 : 0);
+        if (regen > 0 && pl.hp < pl.maxHp) {
+          pl.hp = Math.min(pl.maxHp, pl.hp + pl.maxHp * regen * dt);
+          updateHpBar();
+        }
+        const ultTxt = state.ultCd > 0 ? Math.ceil(state.ultCd) + 's' : 'ULTI SSS';
+        const ultEl = document.getElementById('ult-label');
+        if (ultEl.textContent !== ultTxt) ultEl.textContent = ultTxt;
+      }
 
       // 1. Player Movement
       let mx = input.dx;
@@ -2168,7 +2445,11 @@
       if (isOverdrive) {
         state.overdriveTime -= dt;
         document.getElementById('fever-fill').style.width = (state.overdriveTime / 7) * 100 + '%';
-        document.getElementById('fever-txt').textContent = `⚡ HIPER-PIXEL ${state.overdriveTime.toFixed(1)}s`;
+        document.getElementById('fever-txt').textContent = `⚡ HIPER-PIXEL ${Math.max(0, state.overdriveTime).toFixed(1)}s`;
+        if (state.overdriveTime <= 0) {
+          document.getElementById('fever-fill').style.width = '0%';
+          document.getElementById('fever-txt').textContent = '🔥 FIEBRE PIXEL 0%';
+        }
       }
 
       if (mx !== 0 || my !== 0) {
@@ -2300,6 +2581,7 @@
               pad.level++;
               pad.cost = Math.round(pad.cost * 1.5);
               addBurstParticles(pad.x, pad.y, pad.color, 14);
+              sfx('build');
               showToast(`🛠️ ¡${pad.name} mejorada a NV.${pad.level}!`);
             }
           }
@@ -2325,18 +2607,18 @@
               radius: 10,
               life: 1.0
             });
-            pad.cd = Math.max(0.22, 0.72 - pad.level * 0.08);
+            pad.cd = Math.max(0.22, 0.72 - pad.level * 0.08) * (state.heroData.id === 'cyber' ? 0.65 : 1);
           }
         }
       });
 
       // 4. Spawn & Update Enemies
-      if (state.phase === 'NIGHT') {
+      if (state.phase === 'NIGHT' && !state.over) {
         spawnCooldown -= dt;
         if (spawnCooldown <= 0 && waveSpawned < waveToSpawn) {
           spawnEnemy(false, false);
           waveSpawned++;
-          spawnCooldown = Math.max(0.32, 0.88 - state.wave * 0.1);
+          spawnCooldown = Math.max(0.2, 0.62 - state.wave * 0.08);
         }
         if (waveSpawned >= waveToSpawn && enemies.length === 0) {
           finishWave();
@@ -2352,7 +2634,7 @@
           const d = Math.hypot(en.x - state.player.x, en.y - state.player.y);
           if (d < minD) { minD = d; nearest = en; }
         });
-        if (minD < 430) {
+        if (minD < 300) {
           shootEventWeapon(nearest);
           state.player.fireTimer = state.weaponData.fireRate * (isOverdrive ? 0.38 : 1);
         }
@@ -2374,7 +2656,7 @@
       for (let i = lootDrops.length - 1; i >= 0; i--) {
         const dr = lootDrops[i];
         const d = Math.hypot(state.player.x - dr.x, state.player.y - dr.y);
-        if (d < state.magnetRange) {
+        if (d < state.magnetRange && d > 0.5) {
           dr.x += ((state.player.x - dr.x) / d) * 420 * dt;
           dr.y += ((state.player.y - dr.y) / d) * 420 * dt;
         }
@@ -2406,10 +2688,13 @@
 
         if (d < 26) {
           if (dr.type === 'cash') {
-            state.cash += dr.val;
-            addFloatingText(state.player.x, state.player.y - 35, `+$${dr.val}`, '#4ade80', 14);
+            const gain = Math.round(dr.val * (state.heroData.id === 'duke' ? 1.25 : 1));
+            state.cash += gain;
+            sfx('coin');
+            addFloatingText(state.player.x, state.player.y - 35, `+$${gain}`, '#4ade80', 14);
           } else if (dr.type === 'ticket') {
             state.tickets += dr.val;
+            state.runTickets += dr.val;
             addFloatingText(state.player.x, state.player.y - 42, `+${dr.val} 🎟️`, '#f472b6', 15);
           } else {
             state.xp += dr.val;
@@ -2430,6 +2715,7 @@
       // 7. Draw & Update Enemies
       for (let i = enemies.length - 1; i >= 0; i--) {
         const en = enemies[i];
+        if (en.hp <= 0) { handleEnemyDeath(i); continue; }
         if (en.hitFlash > 0) en.hitFlash -= dt;
         if (en.freezeTime > 0) en.freezeTime -= dt;
 
@@ -2437,6 +2723,9 @@
         const mult = en.freezeTime > 0 ? 0.35 : 1.0;
         en.x += Math.cos(a) * en.speed * mult * dt;
         en.y += Math.sin(a) * en.speed * mult * dt;
+        if (Math.hypot(state.player.x - en.x, state.player.y - en.y) < (en.isBoss ? 46 : 26)) {
+          damagePlayer(contactDamage(en));
+        }
 
         drawDetailedEnemy(ctx, en, camX, camY, timeSec);
       }
@@ -2527,7 +2816,8 @@
             }
             if (b.freeze) en.freezeTime = 1.6;
 
-            addFloatingText(en.x, en.y - 18, Math.round(b.dmg), b.dmg > 90 ? '#fde047' : '#fff', b.dmg > 90 ? 16 : 13);
+            addFloatingText(en.x, en.y - 18, Math.round(b.dmg) + (b.crit ? '!' : ''), b.crit ? '#fde047' : '#fff', b.crit ? 17 : 13);
+            sfx('hit');
             addBurstParticles(en.x, en.y, b.color, 4);
 
             b.pierce--;
@@ -2571,6 +2861,19 @@
       ctx.textAlign = 'center';
       ctx.fillText(`💵 $${state.cash}`, heroScreenX, heroScreenY - 50);
 
+      // Floating HP bar above the hero
+      {
+        const hpPct = Math.max(0, state.player.hp / state.player.maxHp);
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(heroScreenX - 30, heroScreenY - 78, 60, 9);
+        ctx.fillStyle = hpPct > 0.5 ? '#4ade80' : (hpPct > 0.25 ? '#facc15' : '#ef4444');
+        ctx.fillRect(heroScreenX - 28, heroScreenY - 76, 56 * hpPct, 5);
+        if (state.hurtFlash > 0) {
+          ctx.fillStyle = `rgba(239,68,68,${Math.min(0.45, state.hurtFlash * 1.2)})`;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+
       // Orbiting SSS Pet
       const petOrbitAngle = timeSec * 2.0;
       const petWorldX = state.player.x + Math.cos(petOrbitAngle) * 58;
@@ -2580,7 +2883,7 @@
       state.player.petTimer -= dt;
       if (state.player.petTimer <= 0 && enemies.length > 0) {
         shootSSSPet(petWorldX, petWorldY);
-        state.player.petTimer = state.petData.cooldown;
+        state.player.petTimer = state.petData.cooldown * (state.heroData.id === 'mage' ? 0.6 : 1);
       }
 
       // 10. Parabolic Flying Banknotes & Particles & Floating Damage Numbers
@@ -2628,7 +2931,9 @@
     function handleEnemyDeath(idx) {
       if (idx < 0 || idx >= enemies.length) return;
       const en = enemies[idx];
+      state.kills++;
       addBurstParticles(en.x, en.y, en.isElite ? '#ff2a85' : '#4ade80', 10);
+      if (en.type === 'tank') lootDrops.push({ x: en.x, y: en.y + 10, type: 'cash', val: 30 });
 
       const cashBonus = state.petData.id === 'kitsune' ? 22 : 15;
       lootDrops.push({ x: en.x - 8, y: en.y, type: 'cash', val: cashBonus });
