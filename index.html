@@ -1346,6 +1346,7 @@
 
     // Draw Detailed Hero (Works both in the Arena and in Portrait/Paperdoll Canvases!)
     function drawDetailedHero(g, x, y, scale, hero, weapon, cashCount, aimAngle, walkTime, recoil, isOverdrive) {
+      if (window.skinned) hero = window.skinned(hero);
       g.save();
       g.translate(x, y);
       g.scale(scale, scale);
@@ -1682,10 +1683,10 @@
     // 4. ARENA BASE PADS, TURRETS & EVENT PORTAL
     // ============================================================================
     const basePads = [
-      { id: 'turret_nw', name: 'Torreta Gatling', x: -155, y: -95, level: 0, cost: 30, paid: 0, color: '#fbbf24', angle: 0, cd: 0 },
-      { id: 'turret_ne', name: 'Cañón Plasma', x: 155, y: -95, level: 0, cost: 30, paid: 0, color: '#38bdf8', angle: 0, cd: 0 },
-      { id: 'turret_sw', name: 'Mortero Crio', x: -155, y: 105, level: 0, cost: 40, paid: 0, color: '#4ade80', angle: 0, cd: 0 },
-      { id: 'portal_se', name: '🌀 PORTAL EVENTO', x: 155, y: 105, level: 1, cost: 25, paid: 0, color: '#ff2a85', isPortal: true, angle: 0, cd: 0 }
+      { id: 'turret_nw', name: 'Torreta Gatling', x: -128, y: -95, level: 0, cost: 30, paid: 0, color: '#fbbf24', angle: 0, cd: 0 },
+      { id: 'turret_ne', name: 'Cañón Plasma', x: 128, y: -95, level: 0, cost: 30, paid: 0, color: '#38bdf8', angle: 0, cd: 0 },
+      { id: 'turret_sw', name: 'Mortero Crio', x: -128, y: 105, level: 0, cost: 40, paid: 0, color: '#4ade80', angle: 0, cd: 0 },
+      { id: 'portal_se', name: '🌀 PORTAL EVENTO', x: 128, y: 105, level: 1, cost: 25, paid: 0, color: '#ff2a85', isPortal: true, angle: 0, cd: 0 }
     ];
 
     const enemies = [];
@@ -2104,7 +2105,7 @@
 
       const grid = document.getElementById('gacha-drops-grid');
       grid.innerHTML = '';
-      const pool = [...EVENT_WEAPONS, ...SSS_PETS];
+      const pool = [...EVENT_WEAPONS, ...SSS_PETS].filter(x => !x.exclusive);
       for (let i = 0; i < count; i++) {
         const reward = pool[Math.floor(Math.random() * pool.length)];
         reward.level++;
@@ -2963,5 +2964,6 @@
 
     requestAnimationFrame(gameLoop);
   </script>
+  <script src="features.js"></script>
 </body>
 </html>
