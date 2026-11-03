@@ -417,7 +417,7 @@
         <button class="ts-btn" onclick="openTab('shop')">🛒 TIENDA</button>
         <button class="ts-btn" onclick="FX2.replayTutorial()">❓ TUTORIAL</button>
       </div>
-      <div class="ts-sub" style="margin-top:10px;font-size:.62rem">Beta 1.0 · Las compras de la tienda son una demostración (no se cobra nada)</div>`;
+      <div class="ts-sub" style="margin-top:10px;font-size:.62rem">Beta 1.0 (build 20261102-1922) · Las compras de la tienda son una demostración (no se cobra nada)</div>`;
     title.classList.add('open');
     document.body.classList.add('in-title');
     clearInterval(titleT);
