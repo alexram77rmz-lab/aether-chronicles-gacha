@@ -47,3 +47,32 @@ Wyrm Galáctico SSS+) solo salen del Festival Astral. Estado de depuración: `wi
 > tienda con ofertas por tiempo y recompensas offline; (4) añade música y ajustes; (5) empaqueta con Capacitor.
 > Tras cada tarea ejecuta `node --check`, prueba en Edge headless, mantén el balance (bot pasivo pierde en la oleada 5,
 > bot activo gana) y haz `git commit` + `git push origin main`.
+
+## ACTUALIZACIÓN — `features2.js` (se carga después de `features.js`)
+Usa la API pública `window.FXI` (exportada por features.js) y envuelve más funciones globales
+(`drawDetailedHero`, `spawnEnemy`, `contactDamage`, `resetRun`, `startNextWave`, `finishWave`,
+`handleEnemyDeath`, `endRun`, `refreshWaveTimeline`, `populateDrawers`, `pullGacha`, `openTab`).
+Estado extra en `F.x2` (se guarda junto al resto en `duckPixelSurvivor_features_v1`).
+
+| Sistema | Dónde |
+|---|---|
+| Héroes gato (Siamés, Calicó): `species:'cat'`, dibujo propio `drawCatHero`, skins de gato, pasivas | features2.js «GATOS» |
+| Elección de héroe tras el tutorial (`FX2.pickHero`) | «MENÚ DE INICIO / FLUJO» |
+| Nivel de estrellas (1-5) en armas/mascotas con fragmentos (+20% daño base) y en skins con gemas (+3% daño/estrella) | «ESTRELLAS» |
+| Niveles (`STAGES`): 1 Campamento, 2 Bosque Neón (más difícil, tema morado, jefe Treant), 3 bloqueado | «NIVELES» |
+| Menú de inicio (`showTitle`), botón ☰ MENÚ, selector de niveles para saltar del 1 al 2 | «MENÚ DE INICIO» |
+| Subida de nivel «caracterizada»: draft gratis al terminar cada oleada, XP por bolita crece con la oleada, `STAGE_XP_GROWTH` por nivel | wrappers de `finishWave`/`handleEnemyDeath` |
+| AFK por progreso (máx. 8 h), ritmo según oleadas/niveles superados | «AFK» |
+| Tienda: paquetes 0,99 / 4,99 / 9,99 / 19,99 / 49,99 / **99,99 €** + pase mensual + regalo diario. **Compras SIMULADAS (demo)** | «TIENDA» (`PACKS`) |
+| Torretas con habilidad (NV.3, NV.5 más rápida) + evolución con 🔩 Núcleos + Torreta Tesla | «TORRETAS CON HABILIDAD» |
+| Eventos de Héroe (Cacería Felina) y Base (Fortaleza Tesla) junto al Astral (pestañas) | «EVENTOS HÉROE Y BASE» |
+
+Ganchos añadidos en `index.html`: `window.THEME`/`window.EC` (colores por nivel), `window.STAGE_XP_GROWTH`,
+y la etiqueta `<script src="features2.js">`.
+
+### Pendiente específico de esta ronda
+1. **Cobros reales**: `FX2.buyPack` solo simula; conectar Google Play Billing / App Store (Capacitor + RevenueCat) y validar recibos en servidor.
+2. Nivel 3 «Ciudad Zombi Neón» está bloqueado (placeholder): crear tema, enemigos y jefe.
+3. Nivel 2 se desbloquea desde el inicio por petición del usuario; si se quiere progresión, exigir ganar el nivel 1.
+4. Más armas SSS con proyectil propio, más héroes (con estrellas), más skins de torreta (el evento Base ya da 🔩 Núcleos).
+5. AFK/eventos usan la hora del dispositivo; para producción validar en servidor.

@@ -26,7 +26,7 @@
     clan: null,
     daily: { date: '', prog: {}, claimed: {}, chest: false },
     login: { streak: 0, last: '', claimed: false },
-    tutorialDone: false,
+    tutorialDone: false, shards: {}, stars: {}, x2: {},
     own: {}, lv: {}, equip: {}, runs: 0
   };
 
@@ -92,7 +92,8 @@
   const labCost = (t) => Math.round(t.base * (1 + labLv(t.id) * 0.7));
   const bigUnlocked = () => state.bestCycle >= 1;
 
-  function mods() {
+  function mods() { const m = mods0(); if (window.extraMods) window.extraMods(m); return m; }
+  function mods0() {
     return {
       hp: 1 + labLv('hp') * 0.06 + clanLv() * 0.03,
       dmg: 1 + labLv('dmg') * 0.05 + clanLv() * 0.02,
@@ -176,7 +177,7 @@
     }
   }
   const addProg = (k, n) => { ensureDaily(); F.daily.prog[k] = (F.daily.prog[k] || 0) + n; save(); updateRail(); };
-  const addEventPts = (n) => { F.event.points += n; save(); updateRail(); };
+  const addEventPts = (n) => { F.event.points += n; if (window.addEvent2) window.addEvent2(n); save(); updateRail(); };
 
   const MISSIONS = [
     { id: 'kills', icon: '🧟', name: 'Elimina 120 enemigos', goal: 120, r: { gems: 100 } },
@@ -202,13 +203,17 @@
     if (r.pet) { const it = findItem('pet', r.pet); out.push(giveItem(it)); }
     if (r.wpn) { const it = findItem('wpn', r.wpn); out.push(giveItem(it)); }
     if (r.skin) { F.skins.owned[r.skin] = true; out.push('🎨 Skin'); }
+    if (r.cores) { F.x2.cores = (F.x2.cores || 0) + r.cores; out.push('🔩' + r.cores); }
+    if (r.shardW) { F.shards[state.weaponData.id] = (F.shards[state.weaponData.id] || 0) + r.shardW; out.push('⭐' + r.shardW + ' frag. arma'); }
+    if (r.shardP) { F.shards[state.petData.id] = (F.shards[state.petData.id] || 0) + r.shardP; out.push('⭐' + r.shardP + ' frag. mascota'); }
+    if (r.tesla) { F.x2.tesla = true; out.push('⚡ Torreta Tesla'); }
     refreshTopHUD(); save(); updateRail();
     return out.join(' ');
   }
   function giveItem(it) {
     if (!it) return '';
     if (!it.owned) { it.owned = true; return `${it.icon} ${it.name} (NUEVA)`; }
-    it.level++;
+    it.level++; F.shards[it.id] = (F.shards[it.id] || 0) + 10;
     return `${it.icon} ${it.name} +1 NV`;
   }
   const rewardText = (r) => grantPreview(r);
@@ -220,6 +225,10 @@
     if (r.pet) o.push('🐱 ' + findItem('pet', r.pet).name);
     if (r.wpn) o.push('⚔️ ' + findItem('wpn', r.wpn).name);
     if (r.skin) o.push('🎨 ' + SKINS.find((s) => s.id === r.skin).name);
+    if (r.cores) o.push('🔩' + r.cores);
+    if (r.shardW) o.push('⭐' + r.shardW + ' frag. arma');
+    if (r.shardP) o.push('⭐' + r.shardP + ' frag. mascota');
+    if (r.tesla) o.push('⚡ Torreta Tesla');
     return o.join(' + ');
   }
 
@@ -482,6 +491,7 @@
 
   // ---- EVENT
   R.event = function () {
+    if (window.EVTAB && window.EVTAB !== 'astral' && window.renderEvent2) { ensureDaily(); curBar('event'); window.renderEvent2(); return; }
     ensureDaily(); curBar('event');
     const left = Math.max(0, F.event.start + EVENT_DAYS * DAY - Date.now());
     const d = Math.floor(left / DAY), h = Math.floor((left % DAY) / 3600000);
@@ -504,6 +514,7 @@
         <button class="btn-action upgrade" style="margin-top:0" onclick="FX.summon(10)">💎 x10 (1350)</button></div>
       <div id="astral-results" style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px"></div>`;
     body('event').innerHTML = html;
+    if (window.decorateEventTabs) window.decorateEventTabs();
   };
   function pullOnce() {
     const E = F.event;
@@ -630,7 +641,7 @@
       const owned = !!F.skins.owned[s.id], eq = F.skins.equipped[s.hero] === s.id;
       html += `<div class="item-card ${eq ? 'equipped' : ''}"><span class="card-ribbon">${s.hero.toUpperCase()}</span>
         <div class="portrait-stage"><canvas width="76" height="76" data-skin="${s.id}"></canvas></div>
-        <div class="item-title" style="font-size:.78rem">${s.name}</div>
+        <div class="item-title" style="font-size:.78rem">${s.name}</div>${window.skinStarHtml ? window.skinStarHtml(s, owned) : ''}
         ${owned ? `<button class="btn-action" onclick="FX.equipSkin('${s.id}')">${eq ? '✓ EQUIPADA' : 'EQUIPAR'}</button>`
           : (s.price ? `<button class="btn-action upgrade" ${state.gems < s.price ? 'disabled' : ''} onclick="FX.buySkin('${s.id}')">💎 ${s.price}</button>` : `<button class="btn-action" disabled>🌌 SOLO EVENTO</button>`)}</div>`;
     });
@@ -876,6 +887,7 @@
   state.player.hp = state.player.maxHp;
   updateHpBar();
   updateRail();
-  if (!F.tutorialDone) setTimeout(() => FX.tutorial(0), 600);
+  /* el tutorial ahora se lanza desde el menú de inicio (features2.js) */
   window.__FEATURES = F; // debug / handoff
+  window.FXI = { F, grant, grantPreview, giveItem, save, doSave, updateRail, curBar, body, fmt, mods, power, findItem, SKINS, labLv, bigLv, addProg, R, $, shell, ensureDaily };
 })();

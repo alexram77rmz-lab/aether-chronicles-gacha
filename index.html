@@ -1626,14 +1626,14 @@
       g.lineWidth = 2.2;
 
       // Body (Purple ragged shirt or Demon Crimson armor)
-      g.fillStyle = en.hitFlash > 0 ? '#ffffff' : (en.isBoss ? '#991b1b' : (en.isElite ? '#7e22ce' : '#6b21a8'));
+      g.fillStyle = en.hitFlash > 0 ? '#ffffff' : (en.isBoss ? '#991b1b' : (en.isElite ? '#7e22ce' : (window.EC ? window.EC.body : '#6b21a8')));
       g.beginPath();
       g.roundRect(-11, -2, 22, 17, 6);
       g.fill();
       g.stroke();
 
       // Head (Zombie Green or Demon Dark Red)
-      g.fillStyle = en.hitFlash > 0 ? '#ffffff' : (en.isBoss ? '#dc2626' : (en.isElite ? '#c084fc' : (en.type === 'runner' ? '#fde047' : (en.type === 'tank' ? '#94a3b8' : '#4ade80'))));
+      g.fillStyle = en.hitFlash > 0 ? '#ffffff' : (en.isBoss ? (window.EC && window.EC.boss ? window.EC.boss : '#dc2626') : (en.isElite ? '#c084fc' : (en.type === 'runner' ? '#fde047' : (en.type === 'tank' ? '#94a3b8' : (window.EC ? window.EC.head : '#4ade80')))));
       g.beginPath();
       g.arc(0, -10, 12.5, 0, Math.PI * 2);
       g.fill();
@@ -2467,7 +2467,7 @@
       const camY = state.player.y - canvas.height / 2 - 20;
 
       // 2. Render Rich 2.5D Campground Background
-      ctx.fillStyle = state.phase === 'DAY' ? '#1e4631' : '#132a23';
+      ctx.fillStyle = window.THEME ? window.THEME[state.phase === 'DAY' ? 'day' : 'night'][0] : (state.phase === 'DAY' ? '#1e4631' : '#132a23');
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       // Checkerboard Grass Tiles & Decorative Tufts
@@ -2479,11 +2479,11 @@
           if (sx < -tileSize || sx > canvas.width || sy < -tileSize || sy > canvas.height) continue;
 
           if (((gx / tileSize) + (gy / tileSize)) % 2 === 0) {
-            ctx.fillStyle = state.phase === 'DAY' ? '#23533a' : '#17352c';
+            ctx.fillStyle = window.THEME ? window.THEME[state.phase === 'DAY' ? 'day' : 'night'][1] : (state.phase === 'DAY' ? '#23533a' : '#17352c');
             ctx.fillRect(sx, sy, tileSize, tileSize);
           }
           // Grass blades
-          ctx.fillStyle = state.phase === 'DAY' ? '#34d399' : '#10b981';
+          ctx.fillStyle = window.THEME ? window.THEME[state.phase === 'DAY' ? 'day' : 'night'][2] : (state.phase === 'DAY' ? '#34d399' : '#10b981');
           ctx.fillRect(sx + 14, sy + 18, 3, 7);
           ctx.fillRect(sx + 18, sy + 20, 3, 5);
         }
@@ -2492,6 +2492,7 @@
       // Arena Fence Perimeter
       ctx.strokeStyle = '#fbbf24';
       ctx.lineWidth = 5;
+      ctx.strokeStyle = window.THEME ? window.THEME.fence : '#fbbf24';
       ctx.strokeRect(-445 - camX, -445 - camY, 890, 890);
 
       // 3. Draw & Update Ground Build Pads + Turrets + Event Portal
@@ -2702,7 +2703,7 @@
             if (state.xp >= state.xpNext) {
               state.xp -= state.xpNext;
               state.level++;
-              state.xpNext = Math.round(state.xpNext * 1.35);
+              state.xpNext = Math.round(state.xpNext * (window.STAGE_XP_GROWTH || 1.2));
               openSkillDraftModal();
             }
             document.getElementById('xp-fill').style.width = (state.xp / state.xpNext) * 100 + '%';
@@ -2965,5 +2966,6 @@
     requestAnimationFrame(gameLoop);
   </script>
   <script src="features.js"></script>
+  <script src="features2.js"></script>
 </body>
 </html>
